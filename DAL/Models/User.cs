@@ -23,27 +23,9 @@ public partial class User
 
     public int RoleId { get; set; }
 
-    public Guid? OwnerId { get; set; }
-
     public DateTime? CreatedDateTime { get; set; }
 
-    public Guid? ResetPasswordToken { get; set; }
-
-    public string? EmailPassword { get; set; }
-
-    public string? EmailSmtpServer { get; set; }
-
-    public int? EmailSmtpPort { get; set; }
-
-    public virtual ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
-
-    public virtual ICollection<Job> Jobs { get; set; } = new List<Job>();
+    public virtual ICollection<Account> Accounts { get; set; } = new List<Account>();
 
     public virtual Role Role { get; set; } = null!;
-
-    public virtual ICollection<Shoping> Shopings { get; set; } = new List<Shoping>();
-
-    public virtual ICollection<TeamUser> TeamUsers { get; set; } = new List<TeamUser>();
-
-    public virtual ICollection<Team> Teams { get; set; } = new List<Team>();
 }

@@ -22,6 +22,4 @@ public partial class MediaDatum
     public Guid? OwnerId { get; set; }
 
     public DateTime? CreatedDateTime { get; set; }
-
-    public virtual ObjectType ObjectType { get; set; } = null!;
 }

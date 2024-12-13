@@ -1,0 +1,42 @@
+USE [bank] -- Укажите вашу базу данных
+GO
+
+-- Удаляем все ограничения внешних ключей
+DECLARE @sql NVARCHAR(MAX) = N'';
+SELECT @sql += 'ALTER TABLE ' + QUOTENAME(s.name) + '.' + QUOTENAME(t.name) + ' DROP CONSTRAINT ' + QUOTENAME(fk.name) + ';'
+FROM sys.foreign_keys fk
+JOIN sys.tables t ON fk.parent_object_id = t.object_id
+JOIN sys.schemas s ON t.schema_id = s.schema_id;
+EXEC sp_executesql @sql;
+
+-- Удаляем все таблицы
+SET @sql = N'';
+SELECT @sql += 'DROP TABLE ' + QUOTENAME(s.name) + '.' + QUOTENAME(t.name) + ';'
+FROM sys.tables t
+JOIN sys.schemas s ON t.schema_id = s.schema_id;
+EXEC sp_executesql @sql;
+
+-- Удаляем все представления
+SET @sql = N'';
+SELECT @sql += 'DROP VIEW ' + QUOTENAME(s.name) + '.' + QUOTENAME(v.name) + ';'
+FROM sys.views v
+JOIN sys.schemas s ON v.schema_id = s.schema_id;
+EXEC sp_executesql @sql;
+
+-- Удаляем все хранимые процедуры
+SET @sql = N'';
+SELECT @sql += 'DROP PROCEDURE ' + QUOTENAME(s.name) + '.' + QUOTENAME(p.name) + ';'
+FROM sys.procedures p
+JOIN sys.schemas s ON p.schema_id = s.schema_id;
+EXEC sp_executesql @sql;
+
+
+
+-- Удаляем все триггеры уровня базы данных
+SET @sql = N'';
+SELECT @sql += 'DROP TRIGGER ' + QUOTENAME(name) + ';'
+FROM sys.triggers
+WHERE parent_id = 0;
+EXEC sp_executesql @sql;
+
+PRINT 'Очистка базы данных завершена.';
