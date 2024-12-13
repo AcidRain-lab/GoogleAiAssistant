@@ -15,7 +15,5 @@ public partial class Phone
 
     public Guid AssociatedRecordId { get; set; }
 
-    public int ObjectTypeId { get; set; }
-
     public virtual PhoneType PhoneType { get; set; } = null!;
 }

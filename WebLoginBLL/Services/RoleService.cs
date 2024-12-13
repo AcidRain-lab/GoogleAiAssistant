@@ -9,10 +9,10 @@ namespace WebLoginBLL.Services
 {
     public class RoleService
     {
-        private readonly CrmContext _context;
+        private readonly BankContext _context;
         private readonly IMapper _mapper;
 
-        public RoleService(CrmContext context, IMapper mapper)
+        public RoleService(BankContext context, IMapper mapper)
         {
             _context = context;
             _mapper = mapper;
