@@ -1,0 +1,19 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+    bool isAuthenticated = User.Identity?.IsAuthenticated ?? false;
+    string userName = ViewContext.HttpContext.Session.GetString("ActiveLoginedUser") ?? "Guest";
+    string userRole = ViewContext.HttpContext.Session.GetString("UserRole") ?? "User";
+}
+
+<div class="text-center">
+    @if (isAuthenticated)
+    {
+        <h1 class="display-4">Welcome, @userName</h1>
+        <p>Your role is: @userRole</p>
+    }
+    else
+    {
+        <h1 class="display-4">Not Authorized</h1>
+        <p>Please <a asp-controller="Auth" asp-action="LoginBasic">log in</a> to continue.</p>
+    }
+</div>
