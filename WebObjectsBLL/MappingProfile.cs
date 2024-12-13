@@ -14,6 +14,7 @@ namespace WebObjectsBLL
             CreateMap<Phone, PhoneDTO>().ReverseMap();
             CreateMap<PhoneType, PhoneTypeDTO>().ReverseMap();
             CreateMap<Country, CountryDTO>().ReverseMap();
+            CreateMap<DocumentsDatum, DocumentsDataDTO>().ReverseMap();
         }
     }
 }
