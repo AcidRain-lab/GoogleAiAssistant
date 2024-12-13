@@ -7,10 +7,10 @@ namespace WebObjectsBLL.Services
 {
     public class TransactionService
     {
-        private readonly CrmContext _context;
+        private readonly BankContext _context;
         private readonly IMapper _mapper;
 
-        public TransactionService(CrmContext context, IMapper mapper)
+        public TransactionService(BankContext context, IMapper mapper)
         {
             _context = context;
             _mapper = mapper;

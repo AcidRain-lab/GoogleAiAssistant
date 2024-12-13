@@ -9,10 +9,10 @@ namespace WebLoginBLL.Services
 {
     public class RoleService
     {
-        private readonly CrmContext _context;
+        private readonly BankContext _context;
         private readonly IMapper _mapper;
 
-        public RoleService(CrmContext context, IMapper mapper)
+        public RoleService(BankContext context, IMapper mapper)
         {
             _context = context;
             _mapper = mapper;
@@ -53,5 +53,15 @@ namespace WebLoginBLL.Services
                 await _context.SaveChangesAsync();
             }
         }
+
+        public async Task<IEnumerable<UserDTO>> GetUsersInRoleAsync(int roleId)
+        {
+            var users = await _context.Users
+                .Where(u => u.RoleId == roleId)
+                .ToListAsync();
+            return _mapper.Map<IEnumerable<UserDTO>>(users);
+        }
+
+
     }
 }

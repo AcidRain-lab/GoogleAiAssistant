@@ -13,6 +13,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebObjectsBLL", "WebObjects
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebSite", "WebSite\WebSite.csproj", "{C2D6BDAB-8D98-450E-87C7-C2A88FB4686E}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DB", "DB", "{A86441B1-497D-40F7-AD15-DD9334AF8798}"
+	ProjectSection(SolutionItems) = preProject
+		DB\bank.db = DB\bank.db
+		DB\dbo.txt = DB\dbo.txt
+		DB\drop_all.txt = DB\drop_all.txt
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

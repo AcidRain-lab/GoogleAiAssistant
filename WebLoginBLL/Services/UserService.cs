@@ -12,10 +12,10 @@ namespace WebLoginBLL.Services
 {
     public class UserService
     {
-        private readonly CrmContext _context;
+        private readonly BankContext _context;
         private readonly IMapper _mapper;
 
-        public UserService(CrmContext context, IMapper mapper)
+        public UserService(BankContext context, IMapper mapper)
         {
             _context = context;
             _mapper = mapper;

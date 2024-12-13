@@ -57,7 +57,7 @@ string connectionStringKey = authSettings.ServerName switch
 var connectionStringCRM = builder.Configuration.GetConnectionString(connectionStringKey);
 
 // Настройка DbContext
-builder.Services.AddDbContext<DAL.Models.CrmContext>(options =>
+builder.Services.AddDbContext<DAL.Models.BankContext>(options =>
     options.UseSqlServer(connectionStringCRM));
 
 // Добавление Razor Pages и настройка сессий
