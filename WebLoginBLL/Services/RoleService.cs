@@ -53,5 +53,15 @@ namespace WebLoginBLL.Services
                 await _context.SaveChangesAsync();
             }
         }
+
+        public async Task<IEnumerable<UserDTO>> GetUsersInRoleAsync(int roleId)
+        {
+            var users = await _context.Users
+                .Where(u => u.RoleId == roleId)
+                .ToListAsync();
+            return _mapper.Map<IEnumerable<UserDTO>>(users);
+        }
+
+
     }
 }
