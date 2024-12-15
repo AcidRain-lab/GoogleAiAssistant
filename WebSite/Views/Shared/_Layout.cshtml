@@ -36,10 +36,14 @@
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Role" asp-action="Index">Roles</a>
                             </li>
                             <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Client" asp-action="Index">Clients</a>
+                            </li>
+                            <li class="nav-item">
                                 <form asp-controller="Auth" asp-action="Logout" method="get" class="d-inline">
                                     <button class="btn btn-link nav-link text-dark" type="submit">Logout</button>
                                 </form>
                             </li>
+
                         }
                         else
                         {

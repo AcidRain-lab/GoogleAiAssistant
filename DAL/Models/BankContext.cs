@@ -15,19 +15,35 @@ public partial class BankContext : DbContext
     {
     }
 
-    public virtual DbSet<Account> Accounts { get; set; }
-
-    public virtual DbSet<AccountType> AccountTypes { get; set; }
-
     public virtual DbSet<Avatar> Avatars { get; set; }
+
+    public virtual DbSet<BankAccount> BankAccounts { get; set; }
+
+    public virtual DbSet<BankAccountTransaction> BankAccountTransactions { get; set; }
+
+    public virtual DbSet<BankAccountType> BankAccountTypes { get; set; }
+
+    public virtual DbSet<BankCard> BankCards { get; set; }
+
+    public virtual DbSet<BankCurrency> BankCurrencies { get; set; }
+
+    public virtual DbSet<CardType> CardTypes { get; set; }
+
+    public virtual DbSet<Client> Clients { get; set; }
 
     public virtual DbSet<Country> Countries { get; set; }
 
     public virtual DbSet<DocumentsDatum> DocumentsData { get; set; }
 
+    public virtual DbSet<Individual> Individuals { get; set; }
+
     public virtual DbSet<MediaDatum> MediaData { get; set; }
 
     public virtual DbSet<ObjectType> ObjectTypes { get; set; }
+
+    public virtual DbSet<Organization> Organizations { get; set; }
+
+    public virtual DbSet<PaymentSystemType> PaymentSystemTypes { get; set; }
 
     public virtual DbSet<Phone> Phones { get; set; }
 
@@ -37,60 +53,19 @@ public partial class BankContext : DbContext
 
     public virtual DbSet<Transaction> Transactions { get; set; }
 
+    public virtual DbSet<TransactionSourceType> TransactionSourceTypes { get; set; }
+
+    public virtual DbSet<TransactionType> TransactionTypes { get; set; }
+
     public virtual DbSet<User> Users { get; set; }
 
-//    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-//#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-//        => optionsBuilder.UseSqlServer("Server=DESKTOP-9M6MTGC\\SQLEXPRESS02;Database=bank;Trusted_Connection=True;Encrypt=False;");
-
+    /*protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+        => optionsBuilder.UseSqlServer("Server=DESKTOP-A1DDL4K\\SQLEXPRESS;Database=bank;Trusted_Connection=True;Encrypt=False;");
+*/
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Account>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PK__Accounts__3214EC0766C4DDB3");
-
-            entity.HasIndex(e => e.Email, "UQ__Accounts__A9D105345D6D285D").IsUnique();
-
-            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
-            entity.Property(e => e.Address).HasMaxLength(255);
-            entity.Property(e => e.City).HasMaxLength(50);
-            entity.Property(e => e.CreatedDateTime)
-                .HasDefaultValueSql("(sysdatetimeoffset())")
-                .HasColumnType("datetime");
-            entity.Property(e => e.Email).HasMaxLength(100);
-            entity.Property(e => e.FirstName).HasMaxLength(50);
-            entity.Property(e => e.LastName).HasMaxLength(50);
-            entity.Property(e => e.Phone).HasMaxLength(20);
-            entity.Property(e => e.SecretWord).HasMaxLength(50);
-            entity.Property(e => e.State).HasMaxLength(50);
-            entity.Property(e => e.Zip)
-                .HasMaxLength(20)
-                .HasColumnName("ZIP");
-
-            entity.HasOne(d => d.AccountType).WithMany(p => p.Accounts)
-                .HasForeignKey(d => d.AccountTypeId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Accounts_AccountTypes");
-
-            entity.HasOne(d => d.Country).WithMany(p => p.Accounts)
-                .HasForeignKey(d => d.CountryId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Accounts_Countries");
-
-            entity.HasOne(d => d.User).WithMany(p => p.Accounts)
-                .HasForeignKey(d => d.UserId)
-                .OnDelete(DeleteBehavior.SetNull)
-                .HasConstraintName("FK_Accounts_Users");
-        });
-
-        modelBuilder.Entity<AccountType>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PK__AccountT__3214EC0794EA3B09");
-
-            entity.Property(e => e.Id).ValueGeneratedNever();
-            entity.Property(e => e.Description).HasMaxLength(255);
-            entity.Property(e => e.Name).HasMaxLength(100);
-        });
+        modelBuilder.UseCollation("Ukrainian_CI_AS");
 
         modelBuilder.Entity<Avatar>(entity =>
         {
@@ -99,6 +74,135 @@ public partial class BankContext : DbContext
             entity.Property(e => e.AssociatedRecordId).ValueGeneratedNever();
             entity.Property(e => e.Extension).HasMaxLength(6);
             entity.Property(e => e.Name).HasMaxLength(255);
+        });
+
+        modelBuilder.Entity<BankAccount>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__BankAcco__3214EC0789479581");
+
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.AccountName).HasMaxLength(100);
+            entity.Property(e => e.AccountNumber).HasMaxLength(50);
+            entity.Property(e => e.Balance).HasColumnType("money");
+
+            entity.HasOne(d => d.BankAccountType).WithMany(p => p.BankAccounts)
+                .HasForeignKey(d => d.BankAccountTypeId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_BankAccounts_BankAccountTypes");
+
+            entity.HasOne(d => d.BankCurrency).WithMany(p => p.BankAccounts)
+                .HasForeignKey(d => d.BankCurrencyId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_BankAccounts_BankCurrencies");
+
+            entity.HasOne(d => d.Client).WithMany(p => p.BankAccounts)
+                .HasForeignKey(d => d.ClientId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_BankAccounts_Clients");
+        });
+
+        modelBuilder.Entity<BankAccountTransaction>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__BankAcco__3214EC07DA8E6AB0");
+
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.Iban)
+                .HasMaxLength(50)
+                .HasColumnName("IBAN");
+            entity.Property(e => e.Mfo)
+                .HasMaxLength(50)
+                .HasColumnName("MFO");
+            entity.Property(e => e.TransactionDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+
+            entity.HasOne(d => d.BankAccount).WithMany(p => p.BankAccountTransactions)
+                .HasForeignKey(d => d.BankAccountId)
+                .HasConstraintName("FK_BankAccountTransactions_BankAccounts1");
+
+            entity.HasOne(d => d.TransactionSourceType).WithMany(p => p.BankAccountTransactions)
+                .HasForeignKey(d => d.TransactionSourceTypeId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_BankAccountTransactions_TransactionSourceTypes");
+
+            entity.HasOne(d => d.TransactionType).WithMany(p => p.BankAccountTransactions)
+                .HasForeignKey(d => d.TransactionTypeId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_BankAccountTransactions_TransactionTypes");
+        });
+
+        modelBuilder.Entity<BankAccountType>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__BankAcco__3214EC075BDEC8D9");
+
+            entity.Property(e => e.Description).HasMaxLength(255);
+            entity.Property(e => e.Name).HasMaxLength(100);
+        });
+
+        modelBuilder.Entity<BankCard>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__BankCard__3214EC07F92DDE2D");
+
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.CardHolderName).HasMaxLength(100);
+            entity.Property(e => e.CardNumber).HasMaxLength(16);
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.PinCode).HasMaxLength(4);
+
+            entity.HasOne(d => d.BankAccount).WithMany(p => p.BankCards)
+                .HasForeignKey(d => d.BankAccountId)
+                .HasConstraintName("FK__BankCards__BankA__5EE9FC26");
+
+            entity.HasOne(d => d.CardType).WithMany(p => p.BankCards)
+                .HasForeignKey(d => d.CardTypeId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__BankCards__CardT__5FDE205F");
+        });
+
+        modelBuilder.Entity<BankCurrency>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__BankCurr__3214EC0720AD6727");
+
+            entity.Property(e => e.CreatedDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.CurrencyCode).HasMaxLength(10);
+            entity.Property(e => e.CurrencyName).HasMaxLength(100);
+            entity.Property(e => e.ExchangeRate)
+                .HasDefaultValueSql("((1.0))")
+                .HasColumnType("decimal(18, 4)");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.LastUpdatedDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.ShortName).HasMaxLength(50);
+            entity.Property(e => e.Symbol).HasMaxLength(5);
+        });
+
+        modelBuilder.Entity<CardType>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__CardType__3214EC07ED2565B8");
+
+            entity.Property(e => e.Description).HasMaxLength(255);
+            entity.Property(e => e.Name).HasMaxLength(100);
+
+            entity.HasOne(d => d.PaymentSystemType).WithMany(p => p.CardTypes)
+                .HasForeignKey(d => d.PaymentSystemTypeId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__CardTypes__Payme__5A254709");
+        });
+
+        modelBuilder.Entity<Client>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Clients__3214EC070BABE4E7");
+
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.CreatedDateTime)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.Email).HasMaxLength(100);
+            entity.Property(e => e.IsActive).HasDefaultValue(false);
+            entity.Property(e => e.Phone).HasMaxLength(50);
         });
 
         modelBuilder.Entity<Country>(entity =>
@@ -119,6 +223,18 @@ public partial class BankContext : DbContext
             entity.Property(e => e.Name).HasMaxLength(255);
         });
 
+        modelBuilder.Entity<Individual>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Individu__3214EC0774EEE91D");
+
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.FirstName).HasMaxLength(50);
+            entity.Property(e => e.Gender).HasMaxLength(10);
+            entity.Property(e => e.LastName).HasMaxLength(50);
+            entity.Property(e => e.PassportData).HasMaxLength(100);
+            entity.Property(e => e.TaxId).HasMaxLength(50);
+        });
+
         modelBuilder.Entity<MediaDatum>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__MediaDat__3214EC0742E47824");
@@ -135,6 +251,26 @@ public partial class BankContext : DbContext
         {
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Name).HasMaxLength(50);
+        });
+
+        modelBuilder.Entity<Organization>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Organiza__3214EC079278F197");
+
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.AnnualTurnover).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.CompanyName).HasMaxLength(100);
+            entity.Property(e => e.Industry).HasMaxLength(100);
+            entity.Property(e => e.RegistrationNumber).HasMaxLength(50);
+            entity.Property(e => e.TaxId).HasMaxLength(50);
+        });
+
+        modelBuilder.Entity<PaymentSystemType>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__PaymentS__3214EC075A91AA93");
+
+            entity.Property(e => e.Description).HasMaxLength(255);
+            entity.Property(e => e.Name).HasMaxLength(100);
         });
 
         modelBuilder.Entity<Phone>(entity =>
@@ -173,6 +309,22 @@ public partial class BankContext : DbContext
         modelBuilder.Entity<Transaction>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__Transact__3214EC0798563922");
+        });
+
+        modelBuilder.Entity<TransactionSourceType>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Transact__3214EC07E0E518D9");
+
+            entity.Property(e => e.Description).HasMaxLength(255);
+            entity.Property(e => e.Name).HasMaxLength(100);
+        });
+
+        modelBuilder.Entity<TransactionType>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Transact__3214EC0745989D90");
+
+            entity.Property(e => e.Description).HasMaxLength(255);
+            entity.Property(e => e.Name).HasMaxLength(100);
         });
 
         modelBuilder.Entity<User>(entity =>

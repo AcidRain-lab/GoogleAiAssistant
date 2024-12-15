@@ -25,7 +25,5 @@ public partial class User
 
     public DateTime? CreatedDateTime { get; set; }
 
-    public virtual ICollection<Account> Accounts { get; set; } = new List<Account>();
-
     public virtual Role Role { get; set; } = null!;
 }
