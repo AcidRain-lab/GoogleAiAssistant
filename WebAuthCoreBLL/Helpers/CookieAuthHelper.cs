@@ -12,7 +12,7 @@ namespace WebAuthCoreBLL.Helpers
       services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
           .AddCookie(options =>
           {
-            options.LoginPath = "/Auth/Login";
+            options.LoginPath = "/Auth/LoginBasic";
             options.AccessDeniedPath = "/Auth/AccessDenied";
 
             // Обработка перенаправления для API

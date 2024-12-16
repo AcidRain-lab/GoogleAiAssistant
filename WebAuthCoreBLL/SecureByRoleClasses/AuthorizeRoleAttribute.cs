@@ -17,31 +17,54 @@ public class AuthorizeRolesAttribute : ActionFilterAttribute
     {
         base.OnActionExecuting(context);
 
-        if (context.HttpContext.Request.Headers.ContainsKey("Authorization")) // API
+        var httpContext = context.HttpContext;
+
+        // Если есть заголовок Authorization, предполагаем JWT
+        if (httpContext.Request.Headers.ContainsKey("Authorization"))
         {
-            var token = context.HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
-            if (!string.IsNullOrEmpty(token))
+            HandleJwtAuthorization(context);
+        }
+        else if (httpContext.User.Identity?.IsAuthenticated == true) // Если пользователь аутентифицирован, предполагаем Cookies
+        {
+            HandleCookieAuthorization(context);
+        }
+        else
+        {
+            // Если ни один механизм аутентификации не прошел
+            context.Result = new RedirectToActionResult("Index", "Home", null);
+        }
+    }
+
+    private void HandleJwtAuthorization(ActionExecutingContext context)
+    {
+        var token = context.HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+        if (!string.IsNullOrEmpty(token))
+        {
+            var jwtRole = JwtAuthHelper.GetRoleFromToken(token);
+            if (!_roles.Contains(jwtRole))
             {
-                var jwtRole = JwtAuthHelper.GetRoleFromToken(token);
-                if (!_roles.Contains(jwtRole))
+                context.Result = new JsonResult(new { message = "Access denied for API." })
                 {
-                    context.Result = new ForbidResult();
-                    return;
-                }
-            }
-            else
-            {
-                context.Result = new ForbidResult(); // Отказать, если токен отсутствует
-                return;
+                    StatusCode = 403 // Запрет доступа
+                };
             }
         }
-        else // MVC
+        else
         {
-            var userRole = context.HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
-            if (!_roles.Contains(userRole))
+            context.Result = new JsonResult(new { message = "Missing authorization token." })
             {
-                context.Result = new RedirectToActionResult("AccessDenied", "Account", null);
-            }
+                StatusCode = 401 // Неавторизован
+            };
+        }
+    }
+
+    private void HandleCookieAuthorization(ActionExecutingContext context)
+    {
+        var userRole = context.HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+        if (!_roles.Contains(userRole))
+        {
+            // Перенаправить на AccessDenied, если роль не соответствует
+            context.Result = new RedirectToActionResult("AccessDenied", "Auth", null);
         }
     }
 }
