@@ -5,8 +5,8 @@ using WebObjectsBLL.Services;
 
 namespace WebSite.Controllers.MVC
 {
-    [Authorize(Policy = "AdminOrUser")] // Политика для Admin и User
-    //[Authorize(Policy = "CookiePolicy")]
+    [Authorize(Policy = "CookiePolicy")]
+    [AuthorizeRoles("Admin", "User")]
     [Controller]
     public class TransactionsController : Controller
     {

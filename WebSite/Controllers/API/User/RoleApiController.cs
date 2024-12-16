@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 namespace WebSite.Controllers.API.User
 {
     [Authorize(Policy = "JwtPolicy")] // Указываем политику JwtPolicy
+    [AuthorizeRoles("Admin", "User")]
     [Route("api/[controller]")]
     [ApiController]
     public class RoleApiController : ControllerBase

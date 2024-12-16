@@ -9,7 +9,7 @@ namespace WebSite.Controllers.MVC
 {
     //[Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
 
-    [LayoutByRole]
+    //[LayoutByRole]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;

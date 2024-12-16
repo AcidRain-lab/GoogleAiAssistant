@@ -1,25 +1,43 @@
-using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
+using System.Linq;
 using System.Security.Claims;
+using WebAuthCoreBLL.Helpers;
 
-namespace WebAuthCoreBLL.SecureByRoleClasses
+public class AuthorizeRolesAttribute : ActionFilterAttribute
 {
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
-    public class AuthorizeRoleAttribute : ActionFilterAttribute
+    private readonly string[] _roles;
+
+    public AuthorizeRolesAttribute(params string[] roles)
     {
-        private readonly string[] _roles;
+        _roles = roles;
+    }
 
-        public AuthorizeRoleAttribute(params string[] roles)
+    public override void OnActionExecuting(ActionExecutingContext context)
+    {
+        base.OnActionExecuting(context);
+
+        if (context.HttpContext.Request.Headers.ContainsKey("Authorization")) // API
         {
-            _roles = roles;
+            var token = context.HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+            if (!string.IsNullOrEmpty(token))
+            {
+                var jwtRole = JwtAuthHelper.GetRoleFromToken(token);
+                if (!_roles.Contains(jwtRole))
+                {
+                    context.Result = new ForbidResult();
+                    return;
+                }
+            }
+            else
+            {
+                context.Result = new ForbidResult(); // Отказать, если токен отсутствует
+                return;
+            }
         }
-
-        public override void OnActionExecuting(ActionExecutingContext context)
+        else // MVC
         {
-            base.OnActionExecuting(context);
-
             var userRole = context.HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
-
             if (!_roles.Contains(userRole))
             {
                 context.Result = new RedirectToActionResult("AccessDenied", "Account", null);

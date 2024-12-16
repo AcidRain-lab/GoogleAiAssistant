@@ -7,9 +7,8 @@ using WebLoginBLL.Services;
 
 namespace WebSite.Controllers.MVC.User
 {
-    //[LayoutByRole]
-    //[Authorize(Policy = "CookiePolicy")]
-    [Authorize(Policy = "AdminOnly")]
+    [Authorize(Policy = "CookiePolicy")]
+    [AuthorizeRoles("Admin")]
     public class UserController : Controller
     {
         private readonly UserService _userService;

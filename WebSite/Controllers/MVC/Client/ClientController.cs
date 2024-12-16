@@ -6,7 +6,8 @@ using WebObjectsBLL.Services;
 namespace WebSite.Controllers.MVC
 {
 
-    [Authorize(Roles = "Admin,User")]
+    [Authorize(Policy = "CookiePolicy")]
+    [AuthorizeRoles("Admin", "User")]
     public class ClientController : Controller
     {
         private readonly ClientService _clientService;
