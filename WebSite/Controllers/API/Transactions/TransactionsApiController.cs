@@ -5,7 +5,8 @@ using WebObjectsBLL.Services;
 
 namespace WebSite.Controllers.API.Transactions
 {
-    [Authorize(Policy = "JwtPolicy")] // Указываем политику JwtPolicy
+    //[Authorize(Policy = "JwtPolicy")] // Указываем политику JwtPolicy
+    [Authorize(Policy = "AdminOrUser")]
     [ApiController]
     [Route("api/[controller]")]
     public class TransactionsApiController : ControllerBase

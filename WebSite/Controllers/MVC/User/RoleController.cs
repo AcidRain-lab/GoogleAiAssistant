@@ -6,7 +6,7 @@ using WebAuthCoreBLL.SecureByRoleClasses;
 
 namespace WebSite.Controllers.MVC.User
 {
-    [LayoutByRole]
+    //[LayoutByRole]
     [Authorize(Policy = "CookiePolicy")]
     public class RoleController : Controller
     {

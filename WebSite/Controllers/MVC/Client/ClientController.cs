@@ -1,9 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using WebObjectsBLL.DTO;
 using WebObjectsBLL.Services;
 
 namespace WebSite.Controllers.MVC
 {
+
+    [Authorize(Roles = "Admin,User")]
     public class ClientController : Controller
     {
         private readonly ClientService _clientService;
