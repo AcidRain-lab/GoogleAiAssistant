@@ -3,10 +3,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Diagnostics;
 using WebSite.Models;
+using WebAuthCoreBLL.SecureByRoleClasses;
 
 namespace WebSite.Controllers.MVC
 {
     //[Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
+
+    [LayoutByRole]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;

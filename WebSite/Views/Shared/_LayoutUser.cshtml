@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -30,12 +31,6 @@
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Transactions" asp-action="Index">Transactions</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="Index">Users</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Role" asp-action="Index">Roles</a>
-                            </li>
-                            <li class="nav-item">
                                 <a class="nav-link" asp-area="" asp-controller="Client" asp-action="Index">Clients</a>
                             </li>
                             <li class="nav-item">
@@ -45,13 +40,18 @@
                             </li>
 
                         }
-                        else
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Auth" asp-action="LoginBasic">Login</a>
-                            </li>
-                        }
                     </ul>
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <span class="nav-link text-white">User: @Context.Session.GetString("UserName")</span>
+                        </li>
+                        <li class="nav-item">
+                            <form asp-controller="Auth" asp-action="Logout" method="get" class="d-inline">
+                                <button class="btn btn-link nav-link text-white" type="submit">Logout</button>
+                            </form>
+                        </li>
+                    </ul>
+
                 </div>
             </div>
         </nav>
@@ -73,3 +73,4 @@
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
+

@@ -2,8 +2,14 @@ using WebAuthCoreBLL.Helpers;
 using WebLoginBLL.Services;
 using WebObjectsBLL.Services;
 using Microsoft.EntityFrameworkCore;
+using WebAuthCoreBLL.SecureByRoleClasses;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddControllersWithViews(options =>
+{
+    options.Filters.Add(new LayoutByRoleAttribute());
+});
 
 // Настройка Kestrel для HTTP/HTTPS
 builder.WebHost.ConfigureKestrel(options =>
