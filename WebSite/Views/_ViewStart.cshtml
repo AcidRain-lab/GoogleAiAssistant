@@ -1,3 +1,23 @@
 ﻿@{
-    Layout = "_Layout";
+    var userRole = Context.Session.GetString("UserRole");
+
+    if (string.IsNullOrEmpty(userRole)) // Когда нет авторизации
+    {
+        Layout = "_Layout"; // Обычный Layout по умолчанию
+    }
+    else
+    {
+        switch (userRole)
+        {
+            case "Admin":
+                Layout = "_LayoutAdmin";
+                break;
+            case "User":
+                Layout = "_LayoutUser";
+                break;
+            default:
+                Layout = "_Layout"; // Обычный Layout для любых других ролей
+                break;
+        }
+    }
 }
