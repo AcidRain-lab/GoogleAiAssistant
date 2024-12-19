@@ -29,6 +29,8 @@ builder.Services.AddScoped<TransactionService>();
 builder.Services.AddScoped<ClientService>();
 builder.Services.AddScoped<IndividualService>();
 builder.Services.AddScoped<OrganizationService>();
+builder.Services.AddScoped<TermsAndRulesService>();
+
 
 
 // Регистрация AutoMapper

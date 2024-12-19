@@ -39,6 +39,8 @@ public partial class BankContext : DbContext
 
     public virtual DbSet<MediaDatum> MediaData { get; set; }
 
+    public virtual DbSet<NestedSubTerm> NestedSubTerms { get; set; }
+
     public virtual DbSet<ObjectType> ObjectTypes { get; set; }
 
     public virtual DbSet<Organization> Organizations { get; set; }
@@ -51,6 +53,10 @@ public partial class BankContext : DbContext
 
     public virtual DbSet<Role> Roles { get; set; }
 
+    public virtual DbSet<SubTermsAndRule> SubTermsAndRules { get; set; }
+
+    public virtual DbSet<TermsAndRule> TermsAndRules { get; set; }
+
     public virtual DbSet<Transaction> Transactions { get; set; }
 
     public virtual DbSet<TransactionSourceType> TransactionSourceTypes { get; set; }
@@ -59,10 +65,10 @@ public partial class BankContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
-    /*protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
         => optionsBuilder.UseSqlServer("Server=DESKTOP-A1DDL4K\\SQLEXPRESS;Database=bank;Trusted_Connection=True;Encrypt=False;");
-*/
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.UseCollation("Ukrainian_CI_AS");
@@ -247,6 +253,21 @@ public partial class BankContext : DbContext
             entity.Property(e => e.Name).HasMaxLength(255);
         });
 
+        modelBuilder.Entity<NestedSubTerm>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__NestedSu__3214EC0775FA1938");
+
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.CreatedDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.Title).HasMaxLength(255);
+
+            entity.HasOne(d => d.SubTermsAndRules).WithMany(p => p.NestedSubTerms)
+                .HasForeignKey(d => d.SubTermsAndRulesId)
+                .HasConstraintName("FK_NestedSubTerms_SubTermsAndRules");
+        });
+
         modelBuilder.Entity<ObjectType>(entity =>
         {
             entity.Property(e => e.Id).ValueGeneratedNever();
@@ -304,6 +325,32 @@ public partial class BankContext : DbContext
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Description).HasMaxLength(255);
             entity.Property(e => e.Name).HasMaxLength(50);
+        });
+
+        modelBuilder.Entity<SubTermsAndRule>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__SubTerms__3214EC07A37C8616");
+
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.CreatedDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.Title).HasMaxLength(255);
+
+            entity.HasOne(d => d.TermsAndRules).WithMany(p => p.SubTermsAndRules)
+                .HasForeignKey(d => d.TermsAndRulesId)
+                .HasConstraintName("FK_SubTermsAndRules_TermsAndRules");
+        });
+
+        modelBuilder.Entity<TermsAndRule>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__TermsAnd__3214EC0721D2C64C");
+
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.CreatedDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.Title).HasMaxLength(255);
         });
 
         modelBuilder.Entity<Transaction>(entity =>

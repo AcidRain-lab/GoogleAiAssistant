@@ -21,6 +21,13 @@ namespace WebObjectsBLL
 
             CreateMap<Individual, IndividualDTO>().ReverseMap();
             CreateMap<Organization, OrganizationDTO>().ReverseMap();
+            CreateMap<TermsAndRule, TermsAndRulesDto>()
+                .ForMember(dest => dest.SubTermsAndRules, opt => opt.MapFrom(src => src.SubTermsAndRules));
+
+            CreateMap<SubTermsAndRule, SubTermsAndRulesDto>()
+                .ForMember(dest => dest.NestedSubTerms, opt => opt.MapFrom(src => src.NestedSubTerms));
+
+            CreateMap<NestedSubTerm, NestedSubTermDto>();
         }
     }
 }

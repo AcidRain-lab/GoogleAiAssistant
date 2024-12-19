@@ -5,7 +5,6 @@ using WebObjectsBLL.Services;
 
 namespace WebSite.Controllers.MVC
 {
-
     [Authorize(Policy = "CookiePolicy")]
     [AuthorizeRoles("Admin", "User")]
     public class ClientController : Controller
@@ -25,7 +24,12 @@ namespace WebSite.Controllers.MVC
 
         public IActionResult Add()
         {
-            return View();
+            // Устанавливаем значение по умолчанию для IsActive
+            var clientDto = new ClientDTO
+            {
+                IsActive = false // Значение по умолчанию
+            };
+            return View(clientDto);
         }
 
         [HttpPost]

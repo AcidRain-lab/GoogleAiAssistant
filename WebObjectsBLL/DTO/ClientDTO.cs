@@ -12,7 +12,7 @@
 
         public string? Phone { get; set; }
 
-        public bool? IsActive { get; set; }
+        public bool IsActive { get; set; } // Изменено с bool? на bool
 
         public bool IsIndividual { get; set; } // Определяет тип клиента
 

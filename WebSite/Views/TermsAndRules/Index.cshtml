@@ -1,0 +1,61 @@
+@model IEnumerable<WebObjectsBLL.DTO.TermsAndRulesDto>
+
+@{
+    ViewData["Title"] = "Terms and Rules";
+}
+
+<h2>Terms and Rules</h2>
+
+<div class="accordion" id="termsAndRulesAccordion">
+    @foreach (var term in Model)
+    {
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="heading-@term.Id">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-@term.Id" aria-expanded="true" aria-controls="collapse-@term.Id">
+                    @term.Title
+                </button>
+            </h2>
+            <div id="collapse-@term.Id" class="accordion-collapse collapse" aria-labelledby="heading-@term.Id" data-bs-parent="#termsAndRulesAccordion">
+                <div class="accordion-body">
+                    <p>@term.Description</p>
+                    @if (term.SubTermsAndRules.Any())
+                    {
+                        <div class="accordion" id="subTermsAccordion-@term.Id">
+                            @foreach (var subTerm in term.SubTermsAndRules)
+                            {
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="subHeading-@subTerm.Id">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#subCollapse-@subTerm.Id" aria-expanded="false" aria-controls="subCollapse-@subTerm.Id">
+                                            @subTerm.Title
+                                        </button>
+                                    </h2>
+                                    <div id="subCollapse-@subTerm.Id" class="accordion-collapse collapse" aria-labelledby="subHeading-@subTerm.Id" data-bs-parent="#subTermsAccordion-@term.Id">
+                                        <div class="accordion-body">
+                                            <p>@subTerm.Description</p>
+                                            @if (subTerm.NestedSubTerms.Any())
+                                            {
+                                                <ul class="list-group">
+                                                    @foreach (var nestedSubTerm in subTerm.NestedSubTerms)
+                                                    {
+                                                        <li class="list-group-item">
+                                                            <strong>@nestedSubTerm.Title</strong>
+                                                            <p>@nestedSubTerm.Description</p>
+                                                        </li>
+                                                    }
+                                                </ul>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<script>
+    // Optional: Add JavaScript for managing collapsible sections if needed
+</script>
