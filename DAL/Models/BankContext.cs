@@ -29,27 +29,33 @@ public partial class BankContext : DbContext
 
     public virtual DbSet<CardType> CardTypes { get; set; }
 
+    public virtual DbSet<Cashback> Cashbacks { get; set; }
+
     public virtual DbSet<Client> Clients { get; set; }
 
     public virtual DbSet<Country> Countries { get; set; }
 
+    public virtual DbSet<Deposit> Deposits { get; set; }
+
     public virtual DbSet<DocumentsDatum> DocumentsData { get; set; }
 
-    public virtual DbSet<Individual> Individuals { get; set; }
+    public virtual DbSet<Language> Languages { get; set; }
 
     public virtual DbSet<MediaDatum> MediaData { get; set; }
+
+    public virtual DbSet<Message> Messages { get; set; }
 
     public virtual DbSet<NestedSubTerm> NestedSubTerms { get; set; }
 
     public virtual DbSet<ObjectType> ObjectTypes { get; set; }
-
-    public virtual DbSet<Organization> Organizations { get; set; }
 
     public virtual DbSet<PaymentSystemType> PaymentSystemTypes { get; set; }
 
     public virtual DbSet<Phone> Phones { get; set; }
 
     public virtual DbSet<PhoneType> PhoneTypes { get; set; }
+
+    public virtual DbSet<RegularPayment> RegularPayments { get; set; }
 
     public virtual DbSet<Role> Roles { get; set; }
 
@@ -65,9 +71,9 @@ public partial class BankContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+   /* protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Server=DESKTOP-A1DDL4K\\SQLEXPRESS;Database=bank;Trusted_Connection=True;Encrypt=False;");
+        => optionsBuilder.UseSqlServer("Server=DESKTOP-A1DDL4K\\SQLEXPRESS;Database=bank;Trusted_Connection=True;Encrypt=False;");*/
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -90,6 +96,7 @@ public partial class BankContext : DbContext
             entity.Property(e => e.AccountName).HasMaxLength(100);
             entity.Property(e => e.AccountNumber).HasMaxLength(50);
             entity.Property(e => e.Balance).HasColumnType("money");
+            entity.Property(e => e.IsFop).HasColumnName("IsFOP");
 
             entity.HasOne(d => d.BankAccountType).WithMany(p => p.BankAccounts)
                 .HasForeignKey(d => d.BankAccountTypeId)
@@ -150,8 +157,13 @@ public partial class BankContext : DbContext
             entity.HasKey(e => e.Id).HasName("PK__BankCard__3214EC07F92DDE2D");
 
             entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.AllowExternalTransfers).HasDefaultValue(true);
             entity.Property(e => e.CardHolderName).HasMaxLength(100);
             entity.Property(e => e.CardNumber).HasMaxLength(16);
+            entity.Property(e => e.CreditLimit).HasColumnType("money");
+            entity.Property(e => e.Cvv)
+                .HasMaxLength(3)
+                .HasColumnName("CVV");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.PinCode).HasMaxLength(4);
 
@@ -198,6 +210,22 @@ public partial class BankContext : DbContext
                 .HasConstraintName("FK__CardTypes__Payme__5A254709");
         });
 
+        modelBuilder.Entity<Cashback>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Cashback__3214EC07E5F58B65");
+
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.Amount).HasColumnType("money");
+            entity.Property(e => e.Category).HasMaxLength(50);
+            entity.Property(e => e.CreatedDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+
+            entity.HasOne(d => d.Client).WithMany(p => p.Cashbacks)
+                .HasForeignKey(d => d.ClientId)
+                .HasConstraintName("FK_Cashbacks_Clients");
+        });
+
         modelBuilder.Entity<Client>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__Clients__3214EC070BABE4E7");
@@ -207,8 +235,14 @@ public partial class BankContext : DbContext
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
             entity.Property(e => e.Email).HasMaxLength(100);
+            entity.Property(e => e.FirstName).HasMaxLength(50);
+            entity.Property(e => e.Gender).HasMaxLength(10);
             entity.Property(e => e.IsActive).HasDefaultValue(false);
+            entity.Property(e => e.IsFop).HasColumnName("IsFOP");
+            entity.Property(e => e.LastName).HasMaxLength(50);
+            entity.Property(e => e.PassportData).HasMaxLength(100);
             entity.Property(e => e.Phone).HasMaxLength(50);
+            entity.Property(e => e.TaxId).HasMaxLength(50);
         });
 
         modelBuilder.Entity<Country>(entity =>
@@ -217,6 +251,19 @@ public partial class BankContext : DbContext
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Name).HasMaxLength(50);
+        });
+
+        modelBuilder.Entity<Deposit>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Deposits__3214EC07F7192BEF");
+
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.Currency).HasMaxLength(10);
+            entity.Property(e => e.DepositAmount).HasColumnType("money");
+
+            entity.HasOne(d => d.Client).WithMany(p => p.Deposits)
+                .HasForeignKey(d => d.ClientId)
+                .HasConstraintName("FK_Deposits_Clients");
         });
 
         modelBuilder.Entity<DocumentsDatum>(entity =>
@@ -229,16 +276,12 @@ public partial class BankContext : DbContext
             entity.Property(e => e.Name).HasMaxLength(255);
         });
 
-        modelBuilder.Entity<Individual>(entity =>
+        modelBuilder.Entity<Language>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Individu__3214EC0774EEE91D");
+            entity.HasKey(e => e.Id).HasName("PK__Language__3214EC07B8D12D12");
 
-            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
-            entity.Property(e => e.FirstName).HasMaxLength(50);
-            entity.Property(e => e.Gender).HasMaxLength(10);
-            entity.Property(e => e.LastName).HasMaxLength(50);
-            entity.Property(e => e.PassportData).HasMaxLength(100);
-            entity.Property(e => e.TaxId).HasMaxLength(50);
+            entity.Property(e => e.Code).HasMaxLength(5);
+            entity.Property(e => e.Name).HasMaxLength(50);
         });
 
         modelBuilder.Entity<MediaDatum>(entity =>
@@ -251,6 +294,21 @@ public partial class BankContext : DbContext
                 .HasColumnType("datetime");
             entity.Property(e => e.Extension).HasMaxLength(6);
             entity.Property(e => e.Name).HasMaxLength(255);
+        });
+
+        modelBuilder.Entity<Message>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Messages__3214EC0724CA6D82");
+
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.CreatedDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+
+            entity.HasOne(d => d.User).WithMany(p => p.Messages)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Messages__UserId__4E7E8A33");
         });
 
         modelBuilder.Entity<NestedSubTerm>(entity =>
@@ -272,18 +330,6 @@ public partial class BankContext : DbContext
         {
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Name).HasMaxLength(50);
-        });
-
-        modelBuilder.Entity<Organization>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PK__Organiza__3214EC079278F197");
-
-            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
-            entity.Property(e => e.AnnualTurnover).HasColumnType("decimal(18, 2)");
-            entity.Property(e => e.CompanyName).HasMaxLength(100);
-            entity.Property(e => e.Industry).HasMaxLength(100);
-            entity.Property(e => e.RegistrationNumber).HasMaxLength(50);
-            entity.Property(e => e.TaxId).HasMaxLength(50);
         });
 
         modelBuilder.Entity<PaymentSystemType>(entity =>
@@ -314,6 +360,19 @@ public partial class BankContext : DbContext
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Name).HasMaxLength(50);
+        });
+
+        modelBuilder.Entity<RegularPayment>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__RegularP__3214EC070F9CAD29");
+
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.Frequency).HasMaxLength(50);
+            entity.Property(e => e.PaymentType).HasMaxLength(50);
+
+            entity.HasOne(d => d.Client).WithMany(p => p.RegularPayments)
+                .HasForeignKey(d => d.ClientId)
+                .HasConstraintName("FK_RegularPayments_Clients");
         });
 
         modelBuilder.Entity<Role>(entity =>
@@ -391,6 +450,10 @@ public partial class BankContext : DbContext
             entity.Property(e => e.PasswordHash).HasMaxLength(255);
             entity.Property(e => e.Phone).HasMaxLength(50);
             entity.Property(e => e.UserName).HasMaxLength(50);
+
+            entity.HasOne(d => d.PreferredLanguage).WithMany(p => p.Users)
+                .HasForeignKey(d => d.PreferredLanguageId)
+                .HasConstraintName("FK__Users__Preferred__59F03CDF");
 
             entity.HasOne(d => d.Role).WithMany(p => p.Users)
                 .HasForeignKey(d => d.RoleId)

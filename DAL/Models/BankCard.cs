@@ -21,6 +21,14 @@ public partial class BankCard
 
     public bool IsActive { get; set; }
 
+    public string Cvv { get; set; } = null!;
+
+    public decimal CreditLimit { get; set; }
+
+    public bool IsPrimary { get; set; }
+
+    public bool AllowExternalTransfers { get; set; }
+
     public virtual BankAccount BankAccount { get; set; } = null!;
 
     public virtual CardType CardType { get; set; } = null!;

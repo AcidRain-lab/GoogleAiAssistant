@@ -8,26 +8,14 @@ namespace WebObjectsBLL
     {
         public MappingProfile()
         {
+            CreateMap<Client, ClientDTO>().ReverseMap();
+
+            CreateMap<Client, ClientDetailDTO>()
+                .ForMember(dest => dest.BirthDate, opt => opt.MapFrom(src => src.BirthDate.HasValue ? src.BirthDate.Value.ToDateTime(TimeOnly.MinValue) : (DateTime?)null))
+                .ReverseMap()
+                .ForMember(dest => dest.BirthDate, opt => opt.MapFrom(src => src.BirthDate.HasValue ? DateOnly.FromDateTime(src.BirthDate.Value) : (DateOnly?)null));
+
             CreateMap<Transaction, TransactionDTO>().ReverseMap();
-            CreateMap<MediaDatum, MediaDataDTO>().ReverseMap();
-            CreateMap<Avatar, AvatarDTO>().ReverseMap();
-            CreateMap<Phone, PhoneDTO>().ReverseMap();
-            CreateMap<PhoneType, PhoneTypeDTO>().ReverseMap();
-            CreateMap<Country, CountryDTO>().ReverseMap();
-            CreateMap<DocumentsDatum, DocumentsDataDTO>().ReverseMap();
-            CreateMap<Client, ClientDTO>()
-               .ReverseMap();
-
-
-            CreateMap<Individual, IndividualDTO>().ReverseMap();
-            CreateMap<Organization, OrganizationDTO>().ReverseMap();
-            CreateMap<TermsAndRule, TermsAndRulesDto>()
-                .ForMember(dest => dest.SubTermsAndRules, opt => opt.MapFrom(src => src.SubTermsAndRules));
-
-            CreateMap<SubTermsAndRule, SubTermsAndRulesDto>()
-                .ForMember(dest => dest.NestedSubTerms, opt => opt.MapFrom(src => src.NestedSubTerms));
-
-            CreateMap<NestedSubTerm, NestedSubTermDto>();
         }
     }
 }

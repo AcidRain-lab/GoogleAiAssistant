@@ -5,8 +5,7 @@ using WebObjectsBLL.Services;
 
 namespace WebSite.Controllers.MVC
 {
-    [Authorize(Policy = "CookiePolicy")]
-    [AuthorizeRoles("Admin", "User")]
+    [Authorize]
     public class ClientController : Controller
     {
         private readonly ClientService _clientService;
@@ -16,77 +15,103 @@ namespace WebSite.Controllers.MVC
             _clientService = clientService;
         }
 
+        // Отображение всех клиентов
         public async Task<IActionResult> Index()
         {
             var clients = await _clientService.GetAllAsync();
             return View(clients);
         }
 
+        #region Добавление клиента
+        // Страница добавления клиента
         public IActionResult Add()
         {
-            // Устанавливаем значение по умолчанию для IsActive
-            var clientDto = new ClientDTO
-            {
-                IsActive = false // Значение по умолчанию
-            };
+            var clientDto = new ClientDetailDTO();
             return View(clientDto);
         }
 
+        // Обработка добавления клиента
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Add(ClientDTO clientDto)
+        public async Task<IActionResult> Add(ClientDetailDTO clientDetailDto)
         {
             if (!ModelState.IsValid)
             {
-                return View(clientDto);
+                return View(clientDetailDto);
             }
 
-            await _clientService.CreateAsync(clientDto);
-
-            TempData["Message"] = "Client created successfully.";
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                await _clientService.CreateAsync(clientDetailDto);
+                TempData["Message"] = "Client created successfully.";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", "An unexpected error occurred: " + ex.Message);
+                return View(clientDetailDto);
+            }
         }
+        #endregion
 
-        public async Task<IActionResult> Details(Guid id)
-        {
-            var client = await _clientService.GetByIdAsync(id);
-            if (client == null)
-                return NotFound();
-
-            return View(client);
-        }
-
+        #region Редактирование клиента
+        // Страница редактирования клиента
         public async Task<IActionResult> Edit(Guid id)
         {
-            var client = await _clientService.GetByIdAsync(id);
+            var client = await _clientService.GetDetailByIdAsync(id);
             if (client == null)
                 return NotFound();
 
             return View(client);
         }
 
+        // Обработка редактирования клиента
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(ClientDTO clientDto)
+        public async Task<IActionResult> Edit(ClientDetailDTO clientDetailDto)
         {
             if (!ModelState.IsValid)
             {
-                return View(clientDto);
+                return View(clientDetailDto);
             }
 
-            await _clientService.UpdateAsync(clientDto);
-
-            TempData["Message"] = "Client updated successfully.";
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                await _clientService.UpdateAsync(clientDetailDto);
+                TempData["Message"] = "Client updated successfully.";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (KeyNotFoundException ex)
+            {
+                ModelState.AddModelError("", ex.Message);
+                return View(clientDetailDto);
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", "An unexpected error occurred: " + ex.Message);
+                return View(clientDetailDto);
+            }
         }
+        #endregion
 
+        #region Удаление клиента
+        // Удаление клиента
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(Guid id)
         {
-            await _clientService.DeleteAsync(id);
-            TempData["Message"] = "Client deleted successfully.";
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                await _clientService.DeleteAsync(id);
+                TempData["Message"] = "Client deleted successfully.";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "An unexpected error occurred: " + ex.Message;
+                return RedirectToAction(nameof(Index));
+            }
         }
+        #endregion
     }
 }

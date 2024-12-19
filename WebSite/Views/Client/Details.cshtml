@@ -1,0 +1,22 @@
+﻿@model WebObjectsBLL.DTO.ClientDetailDTO
+
+@{
+    ViewData["Title"] = "Client Details";
+}
+
+<h2>Client Details</h2>
+
+<div class="card">
+    <div class="card-header">
+        <h4>@Model.FirstName @Model.LastName</h4>
+    </div>
+    <div class="card-body">
+        <p><strong>Email:</strong> @Model.Email</p>
+        <p><strong>Phone:</strong> @Model.Phone</p>
+        <p><strong>Birth Date:</strong> @Model.BirthDate?.ToShortDateString()</p>
+        <p><strong>Tax ID:</strong> @Model.TaxId</p>
+        <p><strong>Is FOP:</strong> @(Model.IsFop ? "Yes" : "No")</p>
+    </div>
+</div>
+
+<a asp-action="Index" class="btn btn-secondary">Back to List</a>

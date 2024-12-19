@@ -27,6 +27,8 @@ public partial class BankAccount
 
     public int BankCurrencyId { get; set; }
 
+    public bool IsFop { get; set; }
+
     public virtual ICollection<BankAccountTransaction> BankAccountTransactions { get; set; } = new List<BankAccountTransaction>();
 
     public virtual BankAccountType BankAccountType { get; set; } = null!;
