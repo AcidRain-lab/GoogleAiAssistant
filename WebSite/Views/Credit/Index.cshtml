@@ -1,0 +1,43 @@
+@model IEnumerable<WebObjectsBLL.DTO.CreditDTO>
+
+@{
+    ViewData["Title"] = "Credits";
+}
+
+<h2>Credits</h2>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Amount</th>
+            <th>Currency</th>
+            <th>Interest Rate</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Is Active</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var credit in Model)
+        {
+            <tr>
+                <td>@credit.CreditAmount</td>
+                <td>@credit.Currency</td>
+                <td>@credit.InterestRate</td>
+                <td>@credit.StartDate.ToShortDateString()</td>
+                <td>@credit.EndDate.ToShortDateString()</td>
+                <td>@(credit.IsActive ? "Yes" : "No")</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@credit.Id" class="btn btn-warning btn-sm">Edit</a>
+                    <form asp-action="Delete" method="post" class="d-inline">
+                        <input type="hidden" name="clientId" value="@credit.ClientId" />
+                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a asp-action="Add" class="btn btn-primary">Add New Credit</a>

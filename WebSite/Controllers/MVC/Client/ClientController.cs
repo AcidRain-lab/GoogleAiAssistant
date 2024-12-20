@@ -21,6 +21,26 @@ namespace WebSite.Controllers.MVC
             var clients = await _clientService.GetAllAsync();
             return View(clients);
         }
+        public async Task<IActionResult> Details(Guid id)
+        {
+            try
+            {
+                var client = await _clientService.GetDetailByIdAsync(id);
+                if (client == null)
+                {
+                    Console.WriteLine($"Client with ID {id} not found.");
+                    return NotFound();
+                }
+
+                return View(client);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred: {ex.Message}");
+                throw;
+            }
+        }
+
 
         #region Добавление клиента
         // Страница добавления клиента

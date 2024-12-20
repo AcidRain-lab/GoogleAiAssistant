@@ -1,0 +1,23 @@
+﻿@model WebObjectsBLL.DTO.DepositDTO
+
+@{
+    ViewData["Title"] = "Delete Deposit";
+}
+
+<h2>Delete Deposit</h2>
+
+<div class="card">
+    <div class="card-body">
+        <p><strong>Deposit Amount:</strong> @Model.DepositAmount</p>
+        <p><strong>Currency:</strong> @Model.Currency</p>
+        <p><strong>Interest Rate:</strong> @Model.InterestRate</p>
+        <p><strong>Maturity Date:</strong> @Model.MaturityDate.ToShortDateString()</p>
+    </div>
+</div>
+
+<form asp-action="DeleteConfirmed" method="post">
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="ClientId" />
+    <button type="submit" class="btn btn-danger">Delete</button>
+    <a asp-action="Index" asp-route-clientId="@Model.ClientId" class="btn btn-secondary">Cancel</a>
+</form>

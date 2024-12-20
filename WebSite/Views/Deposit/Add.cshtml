@@ -1,0 +1,33 @@
+﻿@model WebObjectsBLL.DTO.DepositDTO
+
+@{
+    ViewData["Title"] = "Add Deposit";
+}
+
+<h2>Add Deposit</h2>
+
+<form asp-action="Add" method="post">
+    <input type="hidden" asp-for="ClientId" />
+    <div class="form-group">
+        <label asp-for="DepositAmount" class="control-label"></label>
+        <input asp-for="DepositAmount" class="form-control" />
+        <span asp-validation-for="DepositAmount" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Currency" class="control-label"></label>
+        <input asp-for="Currency" class="form-control" />
+        <span asp-validation-for="Currency" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="InterestRate" class="control-label"></label>
+        <input asp-for="InterestRate" class="form-control" />
+        <span asp-validation-for="InterestRate" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="MaturityDate" class="control-label"></label>
+        <input asp-for="MaturityDate" class="form-control" type="date" />
+        <span asp-validation-for="MaturityDate" class="text-danger"></span>
+    </div>
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>

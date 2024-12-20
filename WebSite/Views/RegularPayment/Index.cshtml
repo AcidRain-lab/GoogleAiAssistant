@@ -1,0 +1,39 @@
+@model IEnumerable<WebObjectsBLL.DTO.RegularPaymentDTO>
+
+@{
+    ViewData["Title"] = "Regular Payments";
+}
+
+<h2>Regular Payments</h2>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Payment Details</th>
+            <th>Payment Type</th>
+            <th>Frequency</th>
+            <th>Next Payment Date</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var payment in Model)
+        {
+            <tr>
+                <td>@payment.PaymentDetails</td>
+                <td>@payment.PaymentType</td>
+                <td>@payment.Frequency</td>
+                <td>@payment.NextPaymentDate.ToShortDateString()</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@payment.Id" class="btn btn-warning btn-sm">Edit</a>
+                    <form asp-action="Delete" method="post" class="d-inline">
+                        <input type="hidden" name="clientId" value="@payment.ClientId" />
+                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a asp-action="Add" class="btn btn-primary">Add New Payment</a>

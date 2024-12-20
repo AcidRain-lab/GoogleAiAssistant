@@ -1,0 +1,23 @@
+@model WebObjectsBLL.DTO.CashbackDTO
+
+@{
+    ViewData["Title"] = "Add Cashback";
+}
+
+<h2>Add Cashback</h2>
+
+<form asp-action="Add" method="post">
+    <input type="hidden" asp-for="ClientId" />
+    <div class="form-group">
+        <label asp-for="Category" class="control-label"></label>
+        <input asp-for="Category" class="form-control" />
+        <span asp-validation-for="Category" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Amount" class="control-label"></label>
+        <input asp-for="Amount" class="form-control" />
+        <span asp-validation-for="Amount" class="text-danger"></span>
+    </div>
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>

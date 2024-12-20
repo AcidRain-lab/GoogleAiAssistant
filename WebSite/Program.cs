@@ -28,6 +28,11 @@ builder.Services.AddScoped<RoleService>();
 builder.Services.AddScoped<TransactionService>();
 builder.Services.AddScoped<ClientService>();
 builder.Services.AddScoped<TermsAndRulesService>();
+builder.Services.AddScoped<DepositService>();
+builder.Services.AddScoped<CashbackService>();
+builder.Services.AddScoped<MessageService>();
+builder.Services.AddScoped<RegularPaymentService>();
+builder.Services.AddScoped<CreditService>();
 
 
 

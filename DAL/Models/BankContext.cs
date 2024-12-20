@@ -35,6 +35,8 @@ public partial class BankContext : DbContext
 
     public virtual DbSet<Country> Countries { get; set; }
 
+    public virtual DbSet<Credit> Credits { get; set; }
+
     public virtual DbSet<Deposit> Deposits { get; set; }
 
     public virtual DbSet<DocumentsDatum> DocumentsData { get; set; }
@@ -71,7 +73,7 @@ public partial class BankContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
-   /* protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    /*protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
         => optionsBuilder.UseSqlServer("Server=DESKTOP-A1DDL4K\\SQLEXPRESS;Database=bank;Trusted_Connection=True;Encrypt=False;");*/
 
@@ -251,6 +253,20 @@ public partial class BankContext : DbContext
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Name).HasMaxLength(50);
+        });
+
+        modelBuilder.Entity<Credit>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Credits__3214EC07E48492B0");
+
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.CreditAmount).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.Currency).HasMaxLength(10);
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+
+            entity.HasOne(d => d.Client).WithMany(p => p.Credits)
+                .HasForeignKey(d => d.ClientId)
+                .HasConstraintName("FK__Credits__ClientI__0A93743A");
         });
 
         modelBuilder.Entity<Deposit>(entity =>
