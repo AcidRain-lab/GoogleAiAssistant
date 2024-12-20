@@ -1,4 +1,4 @@
-@model IEnumerable<WebObjectsBLL.DTO.DepositDTO>
+﻿@model IEnumerable<WebObjectsBLL.DTO.DepositDTO>
 
 @{
     ViewData["Title"] = "Deposits";
@@ -27,6 +27,7 @@
                 <td>
                     <a asp-action="Edit" asp-route-id="@deposit.Id" class="btn btn-warning btn-sm">Edit</a>
                     <form asp-action="Delete" method="post" class="d-inline">
+                        <input type="hidden" name="id" value="@deposit.Id" />
                         <input type="hidden" name="clientId" value="@deposit.ClientId" />
                         <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                     </form>
@@ -36,4 +37,7 @@
     </tbody>
 </table>
 
-<a asp-action="Add" class="btn btn-primary">Add New Deposit</a>
+<div class="d-flex justify-content-between mt-3">
+    <a asp-action="Add" asp-route-clientId="@ViewBag.ClientId" class="btn btn-primary">Add New Deposit</a>
+    <a asp-action="Index" asp-controller="Client" class="btn btn-secondary">Back to Clients</a>
+</div>

@@ -33,7 +33,7 @@ namespace WebObjectsBLL.Services
 
         public async Task CreateAsync(CreditDTO creditDto)
         {
-            var clientExists = await ClientExistsAsync(creditDto.ClientId);
+            var clientExists = await _context.Clients.AnyAsync(c => c.Id == creditDto.ClientId);
             if (!clientExists)
             {
                 throw new KeyNotFoundException($"Client with ID {creditDto.ClientId} not found.");
@@ -51,12 +51,6 @@ namespace WebObjectsBLL.Services
             if (credit == null)
                 throw new KeyNotFoundException($"Credit with ID {creditDto.Id} not found.");
 
-            var clientExists = await ClientExistsAsync(creditDto.ClientId);
-            if (!clientExists)
-            {
-                throw new KeyNotFoundException($"Client with ID {creditDto.ClientId} not found.");
-            }
-
             _mapper.Map(creditDto, credit);
             _context.Credits.Update(credit);
             await _context.SaveChangesAsync();
@@ -70,11 +64,6 @@ namespace WebObjectsBLL.Services
 
             _context.Credits.Remove(credit);
             await _context.SaveChangesAsync();
-        }
-
-        public async Task<bool> ClientExistsAsync(Guid clientId)
-        {
-            return await _context.Clients.AnyAsync(c => c.Id == clientId);
         }
     }
 }

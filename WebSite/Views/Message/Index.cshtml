@@ -23,6 +23,7 @@
                 <td>
                     <a asp-action="Edit" asp-route-id="@message.Id" class="btn btn-warning btn-sm">Edit</a>
                     <form asp-action="Delete" method="post" class="d-inline">
+                        <input type="hidden" name="id" value="@message.Id" />
                         <input type="hidden" name="userId" value="@message.UserId" />
                         <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                     </form>
@@ -32,4 +33,5 @@
     </tbody>
 </table>
 
-<a asp-action="Add" class="btn btn-primary">Add New Message</a>
+<a asp-action="Add" asp-route-userId="@ViewBag.ClientId" class="btn btn-primary">Add New Message</a>
+<a asp-action="Index" asp-controller="Client" class="btn btn-secondary">Back to Clients</a>

@@ -7,7 +7,6 @@
 <h2>Add Credit</h2>
 
 <form asp-action="Add" method="post">
-    <input type="hidden" asp-for="Id" />
     <input type="hidden" asp-for="ClientId" />
     <div class="form-group">
         <label asp-for="CreditAmount" class="control-label"></label>
@@ -40,5 +39,9 @@
         <span asp-validation-for="IsActive" class="text-danger"></span>
     </div>
     <button type="submit" class="btn btn-primary">Save</button>
-    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+    <a asp-action="Index" asp-route-clientId="@Model.ClientId" class="btn btn-secondary">Cancel</a>
 </form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

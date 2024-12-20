@@ -24,7 +24,12 @@ namespace WebSite.Controllers.MVC
 
         public IActionResult Add(Guid clientId)
         {
-            var credit = new CreditDTO { ClientId = clientId };
+            var credit = new CreditDTO
+            {
+                ClientId = clientId,
+                StartDate = DateTime.Now,
+                EndDate = DateTime.Now.AddMonths(1)
+            };
             return View(credit);
         }
 
@@ -32,20 +37,30 @@ namespace WebSite.Controllers.MVC
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Add(CreditDTO creditDto)
         {
+            Console.WriteLine("Метод Add вызван."); // Логирование для проверки вызова метода
+
             if (!ModelState.IsValid)
             {
+                Console.WriteLine("ModelState не валидна."); // Логирование состояния модели
                 return View(creditDto);
             }
 
-            var clientExists = await _creditService.ClientExistsAsync(creditDto.ClientId);
-            if (!clientExists)
+            if (creditDto.StartDate == default || creditDto.EndDate == default)
             {
-                ModelState.AddModelError("", "Specified client does not exist.");
+                ModelState.AddModelError("", "Start Date and End Date are required.");
                 return View(creditDto);
             }
 
-            await _creditService.CreateAsync(creditDto);
-            return RedirectToAction(nameof(Index), new { clientId = creditDto.ClientId });
+            try
+            {
+                await _creditService.CreateAsync(creditDto);
+                return RedirectToAction(nameof(Index), new { clientId = creditDto.ClientId });
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", ex.Message);
+                return View(creditDto);
+            }
         }
 
         public async Task<IActionResult> Edit(Guid id)

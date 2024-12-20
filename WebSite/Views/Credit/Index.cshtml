@@ -1,10 +1,13 @@
-@model IEnumerable<WebObjectsBLL.DTO.CreditDTO>
+﻿@model IEnumerable<WebObjectsBLL.DTO.CreditDTO>
 
 @{
     ViewData["Title"] = "Credits";
 }
 
 <h2>Credits</h2>
+
+
+
 
 <table class="table table-bordered">
     <thead>
@@ -30,8 +33,9 @@
                 <td>@(credit.IsActive ? "Yes" : "No")</td>
                 <td>
                     <a asp-action="Edit" asp-route-id="@credit.Id" class="btn btn-warning btn-sm">Edit</a>
-                    <form asp-action="Delete" method="post" class="d-inline">
-                        <input type="hidden" name="clientId" value="@credit.ClientId" />
+                    <form asp-action="DeleteConfirmed" method="post" class="d-inline">
+                        <input type="hidden" name="id" value="@credit.Id" />
+                        <input type="hidden" name="clientId" value="@ViewBag.ClientId" />
                         <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                     </form>
                 </td>
@@ -40,4 +44,8 @@
     </tbody>
 </table>
 
-<a asp-action="Add" class="btn btn-primary">Add New Credit</a>
+
+<div class="d-flex justify-content-between mt-3">
+    <a asp-action="Add" asp-route-clientId="@ViewBag.ClientId" class="btn btn-primary">Add New Credit</a>
+    <a asp-action="Index" asp-controller="Client" class="btn btn-secondary mb-3">Back to Clients</a>
+</div>

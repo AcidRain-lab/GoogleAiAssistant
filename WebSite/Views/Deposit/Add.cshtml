@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Add Deposit";
+    var today = DateTime.Now.ToString("yyyy-MM-dd"); // Текущая дата в формате yyyy-MM-dd
 }
 
 <h2>Add Deposit</h2>
@@ -25,9 +26,13 @@
     </div>
     <div class="form-group">
         <label asp-for="MaturityDate" class="control-label"></label>
-        <input asp-for="MaturityDate" class="form-control" type="date" />
+        <input asp-for="MaturityDate" class="form-control" type="date" value="@today" />
         <span asp-validation-for="MaturityDate" class="text-danger"></span>
     </div>
     <button type="submit" class="btn btn-primary">Save</button>
-    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+    <a asp-action="Index" asp-route-clientId="@Model.ClientId" class="btn btn-secondary">Cancel</a>
 </form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
