@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DAL\DAL.csproj" />
+    <ProjectReference Include="..\MediaLib\MediaLib.csproj" />
     <ProjectReference Include="..\WebAuthCoreBLL\WebAuthCoreBLL.csproj" />
     <ProjectReference Include="..\WebLoginBLL\WebLoginBLL.csproj" />
   </ItemGroup>

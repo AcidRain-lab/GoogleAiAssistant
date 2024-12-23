@@ -1,30 +1,52 @@
-@model WebObjectsBLL.DTO.TransactionDTO
+@model WebObjectsBLL.DTO.ClientDetailDTO
 
 @{
-    ViewData["Title"] = "Edit Transaction";
+    ViewData["Title"] = "Edit Client";
 }
 
-<h2>Edit Transaction</h2>
+<h2>Edit Client</h2>
 
 <form asp-action="Edit" method="post">
     <input type="hidden" asp-for="Id" />
     <div class="form-group">
-        <label asp-for="Date" class="control-label"></label>
-        <input asp-for="Date" class="form-control" type="date" />
-        <span asp-validation-for="Date" class="text-danger"></span>
+        <label asp-for="FirstName" class="control-label"></label>
+        <input asp-for="FirstName" class="form-control" />
+        <span asp-validation-for="FirstName" class="text-danger"></span>
     </div>
     <div class="form-group">
-        <label asp-for="Quantity" class="control-label"></label>
-        <input asp-for="Quantity" class="form-control" type="number" step="0.01" />
-        <span asp-validation-for="Quantity" class="text-danger"></span>
+        <label asp-for="LastName" class="control-label"></label>
+        <input asp-for="LastName" class="form-control" />
+        <span asp-validation-for="LastName" class="text-danger"></span>
     </div>
     <div class="form-group">
-        <label asp-for="ActionType" class="control-label"></label>
-        <select asp-for="ActionType" class="form-control">
-            <option value="1">Income</option>
-            <option value="2">Expense</option>
-        </select>
-        <span asp-validation-for="ActionType" class="text-danger"></span>
+        <label asp-for="Email" class="control-label"></label>
+        <input asp-for="Email" class="form-control" type="email" />
+        <span asp-validation-for="Email" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Phone" class="control-label"></label>
+        <input asp-for="Phone" class="form-control" type="tel" />
+        <span asp-validation-for="Phone" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="BirthDate" class="control-label"></label>
+        <input asp-for="BirthDate" class="form-control" type="date" />
+        <span asp-validation-for="BirthDate" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="PassportData" class="control-label"></label>
+        <input asp-for="PassportData" class="form-control" />
+        <span asp-validation-for="PassportData" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="TaxId" class="control-label"></label>
+        <input asp-for="TaxId" class="form-control" />
+        <span asp-validation-for="TaxId" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="IsActive" class="control-label"></label>
+        <input asp-for="IsActive" class="form-check-input" type="checkbox" />
+        <span asp-validation-for="IsActive" class="text-danger"></span>
     </div>
     <button type="submit" class="btn btn-primary">Save</button>
     <a asp-action="Index" class="btn btn-secondary">Cancel</a>

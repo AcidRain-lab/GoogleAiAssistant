@@ -25,5 +25,11 @@ public partial class User
 
     public DateTime? CreatedDateTime { get; set; }
 
+    public int? PreferredLanguageId { get; set; }
+
+    public virtual ICollection<Message> Messages { get; set; } = new List<Message>();
+
+    public virtual Language? PreferredLanguage { get; set; }
+
     public virtual Role Role { get; set; } = null!;
 }

@@ -1,4 +1,4 @@
-using WebAuthCoreBLL.Helpers;
+п»їusing WebAuthCoreBLL.Helpers;
 using WebLoginBLL.Services;
 using WebObjectsBLL.Services;
 using Microsoft.EntityFrameworkCore;
@@ -11,7 +11,7 @@ builder.Services.AddControllersWithViews(options =>
     options.Filters.Add(new LayoutByRoleAttribute());
 });
 
-// Настройка Kestrel для HTTP/HTTPS
+// ГЌГ Г±ГІГ°Г®Г©ГЄГ  Kestrel Г¤Г«Гї HTTP/HTTPS
 builder.WebHost.ConfigureKestrel(options =>
 {
     options.ListenLocalhost(5000); // HTTP
@@ -27,36 +27,45 @@ builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<RoleService>();
 builder.Services.AddScoped<TransactionService>();
 builder.Services.AddScoped<ClientService>();
-builder.Services.AddScoped<IndividualService>();
-builder.Services.AddScoped<OrganizationService>();
+builder.Services.AddScoped<TermsAndRulesService>();
+builder.Services.AddScoped<DepositService>();
+builder.Services.AddScoped<CashbackService>();
+builder.Services.AddScoped<MessageService>();
+builder.Services.AddScoped<RegularPaymentService>();
+builder.Services.AddScoped<CreditService>();
+builder.Services.AddScoped<BankCardService>();
+builder.Services.AddScoped<BankAccountService>();
+builder.Services.AddScoped<CardTypesService>();
+builder.Services.AddScoped<PaymentSystemService>();
 
 
-// Регистрация AutoMapper
+
+// ГђГҐГЈГЁГ±ГІГ°Г Г¶ГЁГї AutoMapper
 builder.Services.AddAutoMapper(
     typeof(WebLoginBLL.MappingProfile),
     typeof(WebObjectsBLL.MappingProfile)
     );
 
-// Регистрация CORS
+// ГђГҐГЈГЁГ±ГІГ°Г Г¶ГЁГї CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigins", policy =>
     {
-        policy.WithOrigins("http://localhost:3000", "http://localhost:5000") // Укажите разрешенные домены
+        policy.WithOrigins("http://localhost:3000", "http://localhost:5000") // Г“ГЄГ Г¦ГЁГІГҐ Г°Г Г§Г°ГҐГёГҐГ­Г­Г»ГҐ Г¤Г®Г¬ГҐГ­Г»
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
     });
 });
 
-// Регистрация HttpContextAccessor
+// ГђГҐГЈГЁГ±ГІГ°Г Г¶ГЁГї HttpContextAccessor
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
-// Чтение настроек аутентификации
+// Г—ГІГҐГ­ГЁГҐ Г­Г Г±ГІГ°Г®ГҐГЄ Г ГіГІГҐГ­ГІГЁГґГЁГЄГ Г¶ГЁГЁ
 var authSettings = builder.Configuration.GetSection("AuthenticationSettings").Get<AuthenticationSettings>();
 AuthHelper.ConfigureAuthentication(builder.Services, builder.Configuration, authSettings.EnableJwt, authSettings.EnableCookies);
 
-// Настройка строки подключения
+// ГЌГ Г±ГІГ°Г®Г©ГЄГ  Г±ГІГ°Г®ГЄГЁ ГЇГ®Г¤ГЄГ«ГѕГ·ГҐГ­ГЁГї
 string connectionStringKey = authSettings.ServerName switch
 {
     "Host" => "CRMConnection",
@@ -66,11 +75,11 @@ string connectionStringKey = authSettings.ServerName switch
 };
 var connectionStringCRM = builder.Configuration.GetConnectionString(connectionStringKey);
 
-// Настройка DbContext
+// ГЌГ Г±ГІГ°Г®Г©ГЄГ  DbContext
 builder.Services.AddDbContext<DAL.Models.BankContext>(options =>
     options.UseSqlServer(connectionStringCRM));
 
-// Добавление Razor Pages и настройка сессий
+// Г„Г®ГЎГ ГўГ«ГҐГ­ГЁГҐ Razor Pages ГЁ Г­Г Г±ГІГ°Г®Г©ГЄГ  Г±ГҐГ±Г±ГЁГ©
 builder.Services.AddRazorPages();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
@@ -82,7 +91,7 @@ builder.Services.AddSession(options =>
 
 var app = builder.Build();
 
-// Middleware для обработки ошибок
+// Middleware Г¤Г«Гї Г®ГЎГ°Г ГЎГ®ГІГЄГЁ Г®ГёГЁГЎГ®ГЄ
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -93,17 +102,17 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseSession();
 app.UseRouting();
-// Включение CORS перед аутентификацией и авторизацией
+// Г‚ГЄГ«ГѕГ·ГҐГ­ГЁГҐ CORS ГЇГҐГ°ГҐГ¤ Г ГіГІГҐГ­ГІГЁГґГЁГЄГ Г¶ГЁГҐГ© ГЁ Г ГўГІГ®Г°ГЁГ§Г Г¶ГЁГҐГ©
 app.UseCors("AllowSpecificOrigins");
 
-// Аутентификация
+// ГЂГіГІГҐГ­ГІГЁГґГЁГЄГ Г¶ГЁГї
 if (authSettings.EnableCookies || authSettings.EnableJwt)
 {
     app.UseAuthentication();
     app.UseAuthorization();
 }
 
-// Настройка маршрутов для MVC и API
+// ГЌГ Г±ГІГ°Г®Г©ГЄГ  Г¬Г Г°ГёГ°ГіГІГ®Гў Г¤Г«Гї MVC ГЁ API
 if (authSettings.EnableCookies)
 {
     app.MapControllerRoute(
@@ -119,7 +128,7 @@ else
 
 if (authSettings.EnableJwt)
 {
-    app.MapControllers(); // Маршруты API
+    app.MapControllers(); // ГЊГ Г°ГёГ°ГіГІГ» API
 }
 
 app.Run();

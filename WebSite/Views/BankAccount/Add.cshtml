@@ -1,0 +1,33 @@
+﻿@model WebObjectsBLL.DTO.BankAccountDTO
+
+@{
+    ViewData["Title"] = "Open New Bank Account";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<form asp-action="Add" method="post">
+    <input type="hidden" asp-for="ClientId" />
+    <div class="form-group">
+        <label asp-for="AccountName" class="control-label"></label>
+        <input asp-for="AccountName" class="form-control" />
+        <span asp-validation-for="AccountName" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="AccountNumber" class="control-label"></label>
+        <input asp-for="AccountNumber" class="form-control" />
+        <span asp-validation-for="AccountNumber" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Balance" class="control-label"></label>
+        <input asp-for="Balance" class="form-control" />
+        <span asp-validation-for="Balance" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="BankAccountTypeId" class="control-label"></label>
+        <input asp-for="BankAccountTypeId" class="form-control" />
+        <span asp-validation-for="BankAccountTypeId" class="text-danger"></span>
+    </div>
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a asp-action="Index" asp-route-clientId="@Model.ClientId" class="btn btn-secondary">Cancel</a>
+</form>

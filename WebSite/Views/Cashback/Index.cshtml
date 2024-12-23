@@ -1,0 +1,39 @@
+@model IEnumerable<WebObjectsBLL.DTO.CashbackDTO>
+
+@{
+    ViewData["Title"] = "Cashbacks";
+}
+
+<h2>Cashbacks</h2>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Category</th>
+            <th>Amount</th>
+            <th>Created Date</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var cashback in Model)
+        {
+            <tr>
+                <td>@cashback.Category</td>
+                <td>@cashback.Amount</td>
+                <td>@cashback.CreatedDate?.ToShortDateString()</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@cashback.Id" class="btn btn-warning btn-sm">Edit</a>
+                    <form asp-action="Delete" method="post" class="d-inline">
+                        <input type="hidden" name="id" value="@cashback.Id" />
+                        <input type="hidden" name="clientId" value="@ViewBag.ClientId" />
+                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a asp-action="Add" asp-route-clientId="@ViewBag.ClientId" class="btn btn-primary">Add New Cashback</a>
+<a asp-action="Index" asp-controller="Client" class="btn btn-secondary">Back to Clients</a>

@@ -18,186 +18,63 @@ namespace WebObjectsBLL.Services
 
         public async Task<IEnumerable<ClientDTO>> GetAllAsync()
         {
-            // Получаем всех клиентов
             var clients = await _context.Clients.ToListAsync();
 
-            // Преобразуем клиентов в DTO
-            var clientDtos = _mapper.Map<IEnumerable<ClientDTO>>(clients);
-
-            // Для каждого клиента подтягиваем данные из таблиц Individuals или Organizations
-            foreach (var clientDto in clientDtos)
+            var clientDtos = clients.Select(client => new ClientDTO
             {
-                if (clientDto.IsIndividual)
-                {
-                    var individual = await _context.Individuals.FirstOrDefaultAsync(i => i.ClientId == clientDto.Id);
-                    if (individual != null)
-                    {
-                        clientDto.Name = $"{individual.FirstName} {individual.LastName}";
-                    }
-                }
-                else
-                {
-                    var organization = await _context.Organizations.FirstOrDefaultAsync(o => o.ClientId == clientDto.Id);
-                    if (organization != null)
-                    {
-                        clientDto.Name = organization.CompanyName;
-                    }
-                }
-            }
+                Id = client.Id,
+                Name = $"{client.FirstName} {client.LastName}",
+                Email = client.Email,
+                Phone = client.Phone,
+                IsActive = client.IsActive ?? false
+            });
 
             return clientDtos;
         }
 
-        public async Task<ClientDTO?> GetByIdAsync(Guid id)
+        public async Task<ClientDetailDTO?> GetDetailByIdAsync(Guid id)
         {
-            // Получаем клиента по его ID
             var client = await _context.Clients.FirstOrDefaultAsync(c => c.Id == id);
             if (client == null)
-                return null;
+                return null; // Return null if the client is not found
 
-            // Преобразуем клиента в DTO
-            var clientDto = _mapper.Map<ClientDTO>(client);
-
-            // Подтягиваем дополнительные данные в зависимости от типа клиента
-            if (client.IsIndividual)
-            {
-                var individual = await _context.Individuals.FirstOrDefaultAsync(i => i.ClientId == id);
-                if (individual != null)
-                {
-                    clientDto.Name = $"{individual.FirstName} {individual.LastName}";
-                }
-            }
-            else
-            {
-                var organization = await _context.Organizations.FirstOrDefaultAsync(o => o.ClientId == id);
-                if (organization != null)
-                {
-                    clientDto.Name = organization.CompanyName;
-                }
-            }
-
-            return clientDto;
+            return _mapper.Map<ClientDetailDTO>(client);
         }
 
-        public async Task CreateAsync(ClientDTO clientDto)
+        public async Task CreateAsync(ClientDetailDTO clientDetailDto)
         {
-            // Создаем базового клиента
-            var client = _mapper.Map<Client>(clientDto);
-            client.Id = Guid.NewGuid();
+            var client = _mapper.Map<Client>(clientDetailDto);
 
+            client.Id = Guid.NewGuid();
             _context.Clients.Add(client);
             await _context.SaveChangesAsync();
-
-            // В зависимости от типа клиента добавляем данные в соответствующую таблицу
-            if (clientDto.IsIndividual)
-            {
-                var individual = new Individual
-                {
-                    Id = Guid.NewGuid(),
-                    ClientId = client.Id,
-                    FirstName = clientDto.Name?.Split(' ')[0] ?? string.Empty,
-                    LastName = clientDto.Name?.Split(' ').Skip(1).FirstOrDefault() ?? string.Empty
-                };
-                _context.Individuals.Add(individual);
-            }
-            else
-            {
-                var organization = new Organization
-                {
-                    Id = Guid.NewGuid(),
-                    ClientId = client.Id,
-                    CompanyName = clientDto.Name ?? string.Empty
-                };
-                _context.Organizations.Add(organization);
-            }
-
-            await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateAsync(ClientDTO clientDto)
+        public async Task UpdateAsync(ClientDetailDTO clientDetailDto)
         {
-            // Получаем клиента из базы
-            var client = await _context.Clients.FirstOrDefaultAsync(c => c.Id == clientDto.Id);
+            var client = await _context.Clients.FirstOrDefaultAsync(c => c.Id == clientDetailDto.Id);
             if (client == null)
-                throw new Exception("Client not found");
+                throw new KeyNotFoundException($"Client with ID {clientDetailDto.Id} not found.");
 
-            // Обновляем данные клиента
-            _mapper.Map(clientDto, client);
+            // Update data
+            client.FirstName = clientDetailDto.FirstName;
+            client.LastName = clientDetailDto.LastName;
+            client.Email = clientDetailDto.Email;
+            client.Phone = clientDetailDto.Phone;
+            client.BirthDate = clientDetailDto.BirthDate.HasValue ? DateOnly.FromDateTime(clientDetailDto.BirthDate.Value) : null;
+            client.PassportData = clientDetailDto.PassportData;
+            client.TaxId = clientDetailDto.TaxId;
+            client.IsActive = clientDetailDto.IsActive;
+
             _context.Clients.Update(client);
-
-            // Обновляем данные в зависимости от типа клиента
-            if (clientDto.IsIndividual)
-            {
-                var individual = await _context.Individuals.FirstOrDefaultAsync(i => i.ClientId == clientDto.Id);
-                if (individual == null)
-                {
-                    // Если данных нет, создаем новую запись
-                    individual = new Individual
-                    {
-                        Id = Guid.NewGuid(),
-                        ClientId = clientDto.Id,
-                        FirstName = clientDto.Name?.Split(' ')[0] ?? string.Empty,
-                        LastName = clientDto.Name?.Split(' ').Skip(1).FirstOrDefault() ?? string.Empty
-                    };
-                    _context.Individuals.Add(individual);
-                }
-                else
-                {
-                    // Если данные есть, обновляем
-                    individual.FirstName = clientDto.Name?.Split(' ')[0] ?? string.Empty;
-                    individual.LastName = clientDto.Name?.Split(' ').Skip(1).FirstOrDefault() ?? string.Empty;
-                    _context.Individuals.Update(individual);
-                }
-            }
-            else
-            {
-                var organization = await _context.Organizations.FirstOrDefaultAsync(o => o.ClientId == clientDto.Id);
-                if (organization == null)
-                {
-                    // Если данных нет, создаем новую запись
-                    organization = new Organization
-                    {
-                        Id = Guid.NewGuid(),
-                        ClientId = clientDto.Id,
-                        CompanyName = clientDto.Name ?? string.Empty
-                    };
-                    _context.Organizations.Add(organization);
-                }
-                else
-                {
-                    // Если данные есть, обновляем
-                    organization.CompanyName = clientDto.Name ?? string.Empty;
-                    _context.Organizations.Update(organization);
-                }
-            }
-
             await _context.SaveChangesAsync();
         }
 
         public async Task DeleteAsync(Guid id)
         {
-            // Удаляем базового клиента
             var client = await _context.Clients.FirstOrDefaultAsync(c => c.Id == id);
             if (client == null)
-                throw new Exception("Client not found");
-
-            // Удаляем данные из таблиц Individual или Organization
-            if (client.IsIndividual)
-            {
-                var individual = await _context.Individuals.FirstOrDefaultAsync(i => i.ClientId == id);
-                if (individual != null)
-                {
-                    _context.Individuals.Remove(individual);
-                }
-            }
-            else
-            {
-                var organization = await _context.Organizations.FirstOrDefaultAsync(o => o.ClientId == id);
-                if (organization != null)
-                {
-                    _context.Organizations.Remove(organization);
-                }
-            }
+                throw new KeyNotFoundException($"Client with ID {id} not found.");
 
             _context.Clients.Remove(client);
             await _context.SaveChangesAsync();

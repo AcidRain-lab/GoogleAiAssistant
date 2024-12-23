@@ -1,0 +1,23 @@
+﻿@model WebObjectsBLL.DTO.RegularPaymentDTO
+
+@{
+    ViewData["Title"] = "Delete Regular Payment";
+}
+
+<h2>Delete Regular Payment</h2>
+
+<div class="card">
+    <div class="card-body">
+        <p><strong>Payment Details:</strong> @Model.PaymentDetails</p>
+        <p><strong>Payment Type:</strong> @Model.PaymentType</p>
+        <p><strong>Frequency:</strong> @Model.Frequency</p>
+        <p><strong>Next Payment Date:</strong> @Model.NextPaymentDate.ToShortDateString()</p>
+    </div>
+</div>
+
+<form asp-action="DeleteConfirmed" method="post">
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="ClientId" />
+    <button type="submit" class="btn btn-danger">Delete</button>
+    <a asp-action="Index" asp-route-clientId="@Model.ClientId" class="btn btn-secondary">Cancel</a>
+</form>
