@@ -29,8 +29,6 @@ public partial class Client
 
     public string TaxId { get; set; } = null!;
 
-    public bool IsFop { get; set; }
-
     public virtual ICollection<BankAccount> BankAccounts { get; set; } = new List<BankAccount>();
 
     public virtual ICollection<Cashback> Cashbacks { get; set; } = new List<Cashback>();

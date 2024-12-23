@@ -15,7 +15,6 @@ namespace WebObjectsBLL.DTO
         public DateTime? BirthDate { get; set; }
         public string? PassportData { get; set; }
         public string? TaxId { get; set; }
-        public bool IsFop { get; set; } // ФОП или юридическое лицо
         public string? Email { get; set; }
         public string? Phone { get; set; }
         public bool IsActive { get; set; }

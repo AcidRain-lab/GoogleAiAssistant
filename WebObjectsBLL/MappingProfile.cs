@@ -59,6 +59,23 @@ namespace WebObjectsBLL
                 .ForMember(dest => dest.SubTermsAndRules, opt => opt.MapFrom(src => src.SubTermsAndRules))
                 .ReverseMap()
                 .ForMember(dest => dest.SubTermsAndRules, opt => opt.MapFrom(src => src.SubTermsAndRules));
+            CreateMap<BankCard, BankCardDTO>()
+    .ForMember(dest => dest.ExpirationDate, opt => opt.MapFrom(src => src.ExpirationDate.ToDateTime(TimeOnly.MinValue)))
+    .ForMember(dest => dest.CardTypeName, opt => opt.MapFrom(src => src.CardType.Name))
+    .ReverseMap()
+    .ForMember(dest => dest.ExpirationDate, opt => opt.MapFrom(src => DateOnly.FromDateTime(src.ExpirationDate)));
+            CreateMap<BankAccount, BankAccountDTO>()
+                .ForMember(dest => dest.OpenedDate, opt => opt.MapFrom(src => src.OpenedDate.ToDateTime(TimeOnly.MinValue)))
+                .ForMember(dest => dest.ClosedDate, opt => opt.MapFrom(src => src.ClosedDate.HasValue ? src.ClosedDate.Value.ToDateTime(TimeOnly.MinValue) : (DateTime?)null))
+                .ReverseMap()
+                .ForMember(dest => dest.OpenedDate, opt => opt.MapFrom(src => DateOnly.FromDateTime(src.OpenedDate)))
+                .ForMember(dest => dest.ClosedDate, opt => opt.MapFrom(src => src.ClosedDate.HasValue ? DateOnly.FromDateTime(src.ClosedDate.Value) : (DateOnly?)null));
+            CreateMap<CardType, CardTypeDTO>()
+    .ForMember(dest => dest.PaymentSystemTypeName, opt => opt.MapFrom(src => src.PaymentSystemType != null ? src.PaymentSystemType.Name : null))
+    .ReverseMap()
+    .ForMember(dest => dest.PaymentSystemType, opt => opt.Ignore()); // Игнорируем связь при обратном маппинге
+            CreateMap<PaymentSystemType, PaymentSystemTypeDTO>().ReverseMap();
         }
+
     }
 }

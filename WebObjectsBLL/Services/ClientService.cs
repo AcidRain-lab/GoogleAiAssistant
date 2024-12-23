@@ -26,7 +26,6 @@ namespace WebObjectsBLL.Services
                 Name = $"{client.FirstName} {client.LastName}",
                 Email = client.Email,
                 Phone = client.Phone,
-                IsFop = client.IsFop,
                 IsActive = client.IsActive ?? false
             });
 
@@ -62,7 +61,6 @@ namespace WebObjectsBLL.Services
             client.LastName = clientDetailDto.LastName;
             client.Email = clientDetailDto.Email;
             client.Phone = clientDetailDto.Phone;
-            client.IsFop = clientDetailDto.IsFop;
             client.BirthDate = clientDetailDto.BirthDate.HasValue ? DateOnly.FromDateTime(clientDetailDto.BirthDate.Value) : null;
             client.PassportData = clientDetailDto.PassportData;
             client.TaxId = clientDetailDto.TaxId;

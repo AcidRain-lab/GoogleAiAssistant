@@ -75,8 +75,8 @@ public partial class BankContext : DbContext
 
     /*protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Server=DESKTOP-A1DDL4K\\SQLEXPRESS;Database=bank;Trusted_Connection=True;Encrypt=False;");*/
-
+        => optionsBuilder.UseSqlServer("Server=DESKTOP-A1DDL4K\\SQLEXPRESS;Database=bank;Trusted_Connection=True;Encrypt=False;");
+*/
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.UseCollation("Ukrainian_CI_AS");
@@ -176,7 +176,7 @@ public partial class BankContext : DbContext
             entity.HasOne(d => d.CardType).WithMany(p => p.BankCards)
                 .HasForeignKey(d => d.CardTypeId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__BankCards__CardT__5FDE205F");
+                .HasConstraintName("FK_BankCards_CardTypes");
         });
 
         modelBuilder.Entity<BankCurrency>(entity =>
@@ -201,10 +201,15 @@ public partial class BankContext : DbContext
 
         modelBuilder.Entity<CardType>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__CardType__3214EC07ED2565B8");
-
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.Caption1).HasMaxLength(50);
+            entity.Property(e => e.Caption2).HasMaxLength(50);
+            entity.Property(e => e.Caption3).HasMaxLength(50);
             entity.Property(e => e.Description).HasMaxLength(255);
             entity.Property(e => e.Name).HasMaxLength(100);
+            entity.Property(e => e.Value1).HasMaxLength(50);
+            entity.Property(e => e.Value2).HasMaxLength(50);
+            entity.Property(e => e.Value3).HasMaxLength(50);
 
             entity.HasOne(d => d.PaymentSystemType).WithMany(p => p.CardTypes)
                 .HasForeignKey(d => d.PaymentSystemTypeId)
@@ -240,7 +245,6 @@ public partial class BankContext : DbContext
             entity.Property(e => e.FirstName).HasMaxLength(50);
             entity.Property(e => e.Gender).HasMaxLength(10);
             entity.Property(e => e.IsActive).HasDefaultValue(false);
-            entity.Property(e => e.IsFop).HasColumnName("IsFOP");
             entity.Property(e => e.LastName).HasMaxLength(50);
             entity.Property(e => e.PassportData).HasMaxLength(100);
             entity.Property(e => e.Phone).HasMaxLength(50);

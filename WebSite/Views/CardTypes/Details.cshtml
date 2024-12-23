@@ -1,0 +1,12 @@
+﻿@model WebObjectsBLL.DTO.CardTypeDTO
+
+<h1>@Model.Name</h1>
+
+<p>@Model.Description</p>
+<p><strong>@Model.Caption1:</strong> @Model.Value1</p>
+<p><strong>@Model.Caption2:</strong> @Model.Value2</p>
+<p><strong>@Model.Caption3:</strong> @Model.Value3</p>
+
+<p><strong>Платежная система:</strong> @Model.PaymentSystemTypeName</p>
+
+<a asp-action="Index" class="btn btn-secondary">Назад</a>

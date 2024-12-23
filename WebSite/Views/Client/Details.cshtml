@@ -16,7 +16,6 @@
         <p><strong>Birth Date:</strong> @(Model.BirthDate.HasValue ? Model.BirthDate.Value.ToShortDateString() : "N/A")</p>
         <p><strong>Passport Data:</strong> @(string.IsNullOrWhiteSpace(Model.PassportData) ? "N/A" : Model.PassportData)</p>
         <p><strong>Tax ID:</strong> @(string.IsNullOrWhiteSpace(Model.TaxId) ? "N/A" : Model.TaxId)</p>
-        <p><strong>Is FOP:</strong> @(Model.IsFop ? "Yes" : "No")</p>
         <p><strong>Is Active:</strong> @(Model.IsActive ? "Yes" : "No")</p>
     </div>
 </div>

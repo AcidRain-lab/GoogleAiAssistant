@@ -17,8 +17,6 @@ public partial class BankCard
 
     public string PinCode { get; set; } = null!;
 
-    public int CardTypeId { get; set; }
-
     public bool IsActive { get; set; }
 
     public string Cvv { get; set; } = null!;
@@ -28,6 +26,8 @@ public partial class BankCard
     public bool IsPrimary { get; set; }
 
     public bool AllowExternalTransfers { get; set; }
+
+    public Guid CardTypeId { get; set; }
 
     public virtual BankAccount BankAccount { get; set; } = null!;
 
