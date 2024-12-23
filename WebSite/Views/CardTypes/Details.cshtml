@@ -1,12 +1,18 @@
 ﻿@model WebObjectsBLL.DTO.CardTypeDTO
 
-<h1>@Model.Name</h1>
+<h1>Card Type Details</h1>
 
-<p>@Model.Description</p>
-<p><strong>@Model.Caption1:</strong> @Model.Value1</p>
-<p><strong>@Model.Caption2:</strong> @Model.Value2</p>
-<p><strong>@Model.Caption3:</strong> @Model.Value3</p>
+@if (!string.IsNullOrEmpty(Model.AvatarBase64))
+{
+    <img src="data:image/jpeg;base64,@Model.AvatarBase64" style="width: 100px; height: 100px;" />
+}
+else
+{
+    <p>No Avatar</p>
+}
 
-<p><strong>Платежная система:</strong> @Model.PaymentSystemTypeName</p>
+<p><strong>Name:</strong> @Model.Name</p>
+<p><strong>Description:</strong> @Model.Description</p>
+<p><strong>Payment System:</strong> @Model.PaymentSystemTypeName</p>
 
-<a asp-action="Index" class="btn btn-secondary">Назад</a>
+<a asp-action="Index" class="btn btn-secondary">Back to List</a>

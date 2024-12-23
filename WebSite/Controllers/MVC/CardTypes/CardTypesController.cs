@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using WebObjectsBLL.DTO;
 using WebObjectsBLL.Services;
+using MediaLib.DTO;
 
 namespace WebSite.Controllers.MVC
 {
@@ -35,15 +36,25 @@ namespace WebSite.Controllers.MVC
 
         [HttpPost("Add")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Add(CardTypeDTO cardTypeDto)
+        public async Task<IActionResult> Add(CardTypeDTO cardTypeDto, IFormFile? avatarFile)
         {
-            /*if (!ModelState.IsValid)
-            {
-                ViewBag.PaymentSystemTypes = new SelectList(await _paymentSystemService.GetAllAsync(), "Id", "Name");
-                return View(cardTypeDto);
-            }*/
+            //if (!ModelState.IsValid)
+            //{
+            //    ViewBag.PaymentSystemTypes = new SelectList(await _paymentSystemService.GetAllAsync(), "Id", "Name");
+            //    return View(cardTypeDto);
+            //}
 
-            await _cardTypesService.AddAsync(cardTypeDto);
+            AvatarDTO? avatar = null;
+            if (avatarFile != null)
+            {
+                avatar = new AvatarDTO
+                {
+                    ImgName = avatarFile.FileName,
+                    Base64Image = Convert.ToBase64String(await GetFileBytesAsync(avatarFile))
+                };
+            }
+
+            await _cardTypesService.AddAsync(cardTypeDto, avatar);
             return RedirectToAction(nameof(Index));
         }
 
@@ -60,17 +71,28 @@ namespace WebSite.Controllers.MVC
 
         [HttpPost("Edit/{id}")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(CardTypeDTO cardTypeDto)
+        public async Task<IActionResult> Edit(CardTypeDTO cardTypeDto, IFormFile? avatarFile)
         {
-           /* if (!ModelState.IsValid)
-            {
-                ViewBag.PaymentSystemTypes = new SelectList(await _paymentSystemService.GetAllAsync(), "Id", "Name");
-                return View(cardTypeDto);
-            }*/
+            //if (!ModelState.IsValid)
+            //{
+            //    ViewBag.PaymentSystemTypes = new SelectList(await _paymentSystemService.GetAllAsync(), "Id", "Name");
+            //    return View(cardTypeDto);
+            //}
 
-            await _cardTypesService.UpdateAsync(cardTypeDto);
+            AvatarDTO? avatar = null;
+            if (avatarFile != null)
+            {
+                avatar = new AvatarDTO
+                {
+                    ImgName = avatarFile.FileName,
+                    Base64Image = Convert.ToBase64String(await GetFileBytesAsync(avatarFile))
+                };
+            }
+
+            await _cardTypesService.UpdateAsync(cardTypeDto, avatar);
             return RedirectToAction(nameof(Index));
         }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(Guid id)
@@ -78,8 +100,8 @@ namespace WebSite.Controllers.MVC
             await _cardTypesService.DeleteAsync(id);
             TempData["Message"] = $"Card Type with ID {id} deleted successfully.";
             return RedirectToAction("Index");
-
         }
+
         [HttpGet("Details/{id}")]
         public async Task<IActionResult> Details(Guid id)
         {
@@ -88,6 +110,13 @@ namespace WebSite.Controllers.MVC
                 return NotFound();
 
             return View(cardType);
+        }
+
+        private async Task<byte[]> GetFileBytesAsync(IFormFile file)
+        {
+            using var memoryStream = new MemoryStream();
+            await file.CopyToAsync(memoryStream);
+            return memoryStream.ToArray();
         }
     }
 }
