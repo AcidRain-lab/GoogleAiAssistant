@@ -1,6 +1,5 @@
 ﻿using DAL.Models;
 using MediaLib.DTO;
-using MediaLib.DTO.MediaData;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;

@@ -22,7 +22,6 @@ builder.WebHost.ConfigureKestrel(options =>
 });
 
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
-builder.Services.AddScoped<MediaLib.Services.MediaService>();
 builder.Services.AddScoped<MediaLib.Services.MediaGalleryService>();
 builder.Services.AddScoped<MediaLib.Services.AvatarService>();
 builder.Services.AddScoped<AuthService>();
