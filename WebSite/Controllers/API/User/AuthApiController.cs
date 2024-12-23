@@ -5,7 +5,6 @@ using WebLoginBLL.Services;
 
 namespace WebSite.Controllers.API.User
 {
-    [Authorize(Policy = "JwtPolicy")] // Указываем политику JwtPolicy
     [ApiController]
     [Route("api/[controller]")]
     public class AuthApiController : ControllerBase

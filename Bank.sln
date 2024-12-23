@@ -20,6 +20,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DB", "DB", "{A86441B1-497D-
 		DB\drop_all.txt = DB\drop_all.txt
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaLib", "MediaLib\MediaLib.csproj", "{49111BE1-34AD-4105-84FB-D77A96FD97EA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -46,6 +48,10 @@ Global
 		{C2D6BDAB-8D98-450E-87C7-C2A88FB4686E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C2D6BDAB-8D98-450E-87C7-C2A88FB4686E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C2D6BDAB-8D98-450E-87C7-C2A88FB4686E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{49111BE1-34AD-4105-84FB-D77A96FD97EA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{49111BE1-34AD-4105-84FB-D77A96FD97EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{49111BE1-34AD-4105-84FB-D77A96FD97EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{49111BE1-34AD-4105-84FB-D77A96FD97EA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

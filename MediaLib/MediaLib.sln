@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.33530.505
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MediaLib", "MediaLib.csproj", "{5DCD74B6-754E-4C4E-AA37-CDCBFEBE4E45}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DAL", "..\DAL\DAL.csproj", "{24DED159-F4AB-4FFC-9B97-EEF601F50FC1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5DCD74B6-754E-4C4E-AA37-CDCBFEBE4E45}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5DCD74B6-754E-4C4E-AA37-CDCBFEBE4E45}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5DCD74B6-754E-4C4E-AA37-CDCBFEBE4E45}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5DCD74B6-754E-4C4E-AA37-CDCBFEBE4E45}.Release|Any CPU.Build.0 = Release|Any CPU
+		{24DED159-F4AB-4FFC-9B97-EEF601F50FC1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{24DED159-F4AB-4FFC-9B97-EEF601F50FC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{24DED159-F4AB-4FFC-9B97-EEF601F50FC1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{24DED159-F4AB-4FFC-9B97-EEF601F50FC1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {DEADD670-95E6-4C72-827F-8713A1DAEE2E}
+	EndGlobalSection
+EndGlobal

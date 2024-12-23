@@ -1,0 +1,26 @@
+﻿@model WebObjectsBLL.DTO.CreditDTO
+
+@{
+    ViewData["Title"] = "Delete Credit";
+}
+
+<h2>Delete Credit</h2>
+
+<div class="alert alert-danger">
+    <p>Are you sure you want to delete this credit?</p>
+</div>
+
+<form asp-action="Delete" method="post">
+    <input type="hidden" asp-for="Id" />
+    <div>
+        <strong>Credit Amount:</strong> @Model.CreditAmount
+    </div>
+    <div>
+        <strong>Currency:</strong> @Model.Currency
+    </div>
+    <div>
+        <strong>Interest Rate:</strong> @Model.InterestRate
+    </div>
+    <button type="submit" class="btn btn-danger">Delete</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>

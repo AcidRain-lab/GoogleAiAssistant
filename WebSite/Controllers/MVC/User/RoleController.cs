@@ -2,10 +2,12 @@
 using Microsoft.AspNetCore.Mvc;
 using WebLoginBLL.DTO;
 using WebLoginBLL.Services;
+using WebAuthCoreBLL.SecureByRoleClasses;
 
 namespace WebSite.Controllers.MVC.User
 {
     [Authorize(Policy = "CookiePolicy")]
+    [AuthorizeRoles("Admin")]
     public class RoleController : Controller
     {
         private readonly RoleService _roleService;
