@@ -1,12 +1,7 @@
 ﻿using DAL.Models;
 using MediaLib.DTO;
+using MediaLib.Helpers;
 using Microsoft.EntityFrameworkCore;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats.Jpeg;
-using SixLabors.ImageSharp.Processing;
-using System;
-using System.IO;
-using System.Threading.Tasks;
 
 namespace MediaLib.Services
 {
@@ -19,73 +14,67 @@ namespace MediaLib.Services
             _context = context;
         }
 
-        public async Task<bool> HasAvatarAsync(Guid associatedRecordId)
-        {
-            return await _context.Avatars.AnyAsync(m => m.AssociatedRecordId == associatedRecordId);
-        }
-
-        public async Task<string?> GetAvatarBase64Async(Guid associatedRecordId)
+        public async Task<AvatarDTO?> GetAvatarAsync(Guid associatedRecordId)
         {
             var avatar = await _context.Avatars.FirstOrDefaultAsync(m => m.AssociatedRecordId == associatedRecordId);
-            return avatar != null ? Convert.ToBase64String(avatar.Content) : null;
-        }
+            if (avatar == null) return null;
 
-        public async Task<byte[]?> GetAvatarBytesAsync(Guid associatedRecordId)
-        {
-            var avatar = await _context.Avatars.FirstOrDefaultAsync(m => m.AssociatedRecordId == associatedRecordId);
-            return avatar?.Content;
-        }
-
-        public async Task<bool> SetAvatarAsync(AvatarDTO model, Guid associatedRecordId, string objectTypeName)
-        {
-            var existingAvatar = await _context.Avatars.FirstOrDefaultAsync(m => m.AssociatedRecordId == associatedRecordId);
-            var objectType = _context.ObjectTypes.FirstOrDefault(t => t.Name == objectTypeName);
-
-            if (existingAvatar != null && model.IsDeletedImg == true)
+            return new AvatarDTO
             {
-                _context.Avatars.Remove(existingAvatar);
-                await _context.SaveChangesAsync();
-                return true;
+                Id = avatar.AssociatedRecordId,
+                Name = avatar.Name,
+                Extension = avatar.Extension,
+                Content = avatar.Content,
+                AssociatedRecordId = avatar.AssociatedRecordId,
+                ObjectTypeId = avatar.ObjectTypeId,
+                Base64Image = avatar.Content != null ? FileHelper.ToBase64(avatar.Content) : null
+            };
+        }
+
+        public async Task<bool> SetAvatarAsync(AvatarDTO model)
+        {
+            var avatar = await _context.Avatars.FirstOrDefaultAsync(a => a.AssociatedRecordId == model.AssociatedRecordId);
+
+            if (model.Content == null)
+            {
+                return false; // Нельзя сохранить пустой аватар
             }
 
-            if (!string.IsNullOrEmpty(model.Base64Image) && !string.IsNullOrEmpty(model.ImgName))
-            {
-                byte[] imageData = Convert.FromBase64String(model.Base64Image);
-                imageData = await ResizeAndCompressImageAsync(imageData);
+            // Используем FileHelper для обработки
+            var optimizedContent = FileHelper.ResizeAndCompressImage(model.Content, 100, 100);
 
-                if (existingAvatar != null)
-                {
-                    existingAvatar.Name = model.ImgName;
-                    existingAvatar.Extension = Path.GetExtension(model.ImgName);
-                    existingAvatar.Content = imageData;
-                    _context.Avatars.Update(existingAvatar);
-                }
-                else
-                {
-                    var avatar = new Avatar
-                    {
-                        Name = model.ImgName,
-                        Extension = Path.GetExtension(model.ImgName),
-                        Content = imageData,
-                        AssociatedRecordId = associatedRecordId,
-                        ObjectTypeId = objectType?.Id ?? 1
-                    };
-                    _context.Avatars.Add(avatar);
-                }
-                await _context.SaveChangesAsync();
-                return true;
+            if (avatar != null)
+            {
+                avatar.Name = model.Name;
+                avatar.Content = optimizedContent;
+                avatar.Extension = ".png";
+                _context.Avatars.Update(avatar);
             }
-            return false;
+            else
+            {
+                var newAvatar = new Avatar
+                {
+                    AssociatedRecordId = model.AssociatedRecordId,
+                    Name = model.Name,
+                    Extension = ".png",
+                    Content = optimizedContent,
+                    ObjectTypeId = model.ObjectTypeId
+                };
+                _context.Avatars.Add(newAvatar);
+            }
+
+            await _context.SaveChangesAsync();
+            return true;
         }
 
-        private async Task<byte[]> ResizeAndCompressImageAsync(byte[] imageData)
+        public async Task<bool> RemoveAvatarAsync(Guid associatedRecordId)
         {
-            using var image = Image.Load(imageData);
-            image.Mutate(x => x.Resize(100, 100));
+            var avatar = await _context.Avatars.FirstOrDefaultAsync(a => a.AssociatedRecordId == associatedRecordId);
+            if (avatar == null) return false;
 
-            using var outputStream = new MemoryStream();
-            await image.SaveAsJpegAsync(outputStream, new JpegEncoder { Quality = 75 });
-            return outputStream.ToArray();
+            _context.Avatars.Remove(avatar);
+            await _context.SaveChangesAsync();
+            return true;
         }
     }
 }

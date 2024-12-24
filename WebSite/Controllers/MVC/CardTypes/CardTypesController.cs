@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using WebObjectsBLL.DTO;
 using WebObjectsBLL.Services;
 using MediaLib.DTO;
-using MediaLib.Services;
 
 namespace WebSite.Controllers.MVC
 {
@@ -15,7 +14,9 @@ namespace WebSite.Controllers.MVC
         private readonly CardTypesService _cardTypesService;
         private readonly PaymentSystemService _paymentSystemService;
 
-        public CardTypesController(CardTypesService cardTypesService, PaymentSystemService paymentSystemService)
+        public CardTypesController(
+            CardTypesService cardTypesService,
+            PaymentSystemService paymentSystemService)
         {
             _cardTypesService = cardTypesService;
             _paymentSystemService = paymentSystemService;
@@ -28,7 +29,6 @@ namespace WebSite.Controllers.MVC
             return View(cardTypes);
         }
 
-
         [HttpGet("Add")]
         public async Task<IActionResult> Add()
         {
@@ -38,26 +38,43 @@ namespace WebSite.Controllers.MVC
 
         [HttpPost("Add")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Add(CardTypeDTO cardTypeDto, IFormFile? avatarFile, List<IFormFile>? mediaFiles)
+        public async Task<IActionResult> Add(
+            CardTypeDetailDTO cardTypeDto,
+            IFormFile? avatarFile,
+            List<IFormFile>? mediaFiles,
+            List<IFormFile>? documentFiles)
         {
             AvatarDTO? avatar = null;
+
             if (avatarFile != null)
             {
                 avatar = new AvatarDTO
                 {
-                    ImgName = avatarFile.FileName,
-                    Base64Image = Convert.ToBase64String(await GetFileBytesAsync(avatarFile))
+                    UploadedFile = avatarFile,
+                    Name = avatarFile.FileName
                 };
             }
 
-            await _cardTypesService.AddAsync(cardTypeDto, avatar, mediaFiles);
+            var mediaDTOs = mediaFiles?.Select(file => new MediaDataDTO
+            {
+                UploadedFile = file,
+                Name = file.FileName
+            }).ToList();
+
+            var documentDTOs = documentFiles?.Select(file => new DocumentsDTO
+            {
+                UploadedFile = file,
+                Name = file.FileName
+            }).ToList();
+
+            await _cardTypesService.AddAsync(cardTypeDto, avatar, mediaDTOs, documentDTOs);
             return RedirectToAction(nameof(Index));
         }
 
         [HttpGet("Edit/{id}")]
         public async Task<IActionResult> Edit(Guid id)
         {
-            var cardType = await _cardTypesService.GetByIdAsync(id);
+            var cardType = await _cardTypesService.GetByIdWithDetailsAsync(id);
             if (cardType == null)
                 return NotFound();
 
@@ -67,48 +84,56 @@ namespace WebSite.Controllers.MVC
 
         [HttpPost("Edit/{id}")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(CardTypeDTO cardTypeDto, IFormFile? avatarFile, List<IFormFile>? mediaFiles)
+        public async Task<IActionResult> Edit(
+            CardTypeDetailDTO cardTypeDto,
+            IFormFile? avatarFile,
+            List<IFormFile>? mediaFiles,
+            List<IFormFile>? documentFiles)
         {
             AvatarDTO? avatar = null;
+
             if (avatarFile != null)
             {
                 avatar = new AvatarDTO
                 {
-                    ImgName = avatarFile.FileName,
-                    Base64Image = Convert.ToBase64String(await GetFileBytesAsync(avatarFile))
+                    UploadedFile = avatarFile,
+                    Name = avatarFile.FileName
                 };
             }
 
-            await _cardTypesService.UpdateAsync(cardTypeDto, avatar, mediaFiles);
+            var mediaDTOs = mediaFiles?.Select(file => new MediaDataDTO
+            {
+                UploadedFile = file,
+                Name = file.FileName
+            }).ToList();
+
+            var documentDTOs = documentFiles?.Select(file => new DocumentsDTO
+            {
+                UploadedFile = file,
+                Name = file.FileName
+            }).ToList();
+
+            await _cardTypesService.UpdateAsync(cardTypeDto, avatar, mediaDTOs, documentDTOs);
             return RedirectToAction(nameof(Index));
         }
 
-        [HttpPost]
+        [HttpPost("Delete/{id}")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(Guid id)
         {
             await _cardTypesService.DeleteAsync(id);
             TempData["Message"] = $"Card Type with ID {id} deleted successfully.";
-            return RedirectToAction("Index");
+            return RedirectToAction(nameof(Index));
         }
 
         [HttpGet("Details/{id}")]
         public async Task<IActionResult> Details(Guid id)
         {
-            var cardType = await _cardTypesService.GetByIdAsync(id);
+            var cardType = await _cardTypesService.GetByIdWithDetailsAsync(id);
             if (cardType == null)
                 return NotFound();
 
             return View(cardType);
         }
-
-        private async Task<byte[]> GetFileBytesAsync(IFormFile file)
-        {
-            using var memoryStream = new MemoryStream();
-            await file.CopyToAsync(memoryStream);
-            return memoryStream.ToArray();
-        }
-
-
     }
 }

@@ -1,4 +1,4 @@
-﻿@model IEnumerable<WebObjectsBLL.DTO.CardTypeDTO>
+﻿@model IEnumerable<WebObjectsBLL.DTO.CardTypeTableDTO>
 
 @{
     ViewData["Title"] = "Card Types";
@@ -25,9 +25,9 @@
         {
             <tr>
                 <td style="width: 160px; height: 120px; padding: 4px; text-align: center;">
-                    @if (!string.IsNullOrEmpty(cardType.AvatarBase64))
+                    @if (cardType.Avatar != null && !string.IsNullOrEmpty(cardType.Avatar.Base64Image))
                     {
-                        <img src="@Html.Raw(cardType.AvatarBase64)" alt="Avatar" style="width: 100%; height: 100%; object-fit: contain; border: 1px solid #ddd;" />
+                        <img src="@Html.Raw(cardType.Avatar.Base64Image)" alt="Avatar" style="width: 100%; height: 100%; object-fit: contain; border: 1px solid #ddd;" />
                     }
                     else
                     {
@@ -42,7 +42,7 @@
                 <td>
                     <a asp-action="Details" asp-route-id="@cardType.Id" class="btn btn-sm btn-info">Details</a>
                     <a asp-action="Edit" asp-route-id="@cardType.Id" class="btn btn-sm btn-warning">Edit</a>
-                    <button class="btn btn-sm btn-danger" onclick="showDeleteModal(@cardType.Id)">Delete</button>
+                    <button class="btn btn-sm btn-danger" onclick="showDeleteModal('@cardType.Id')">Delete</button>
                 </td>
             </tr>
         }

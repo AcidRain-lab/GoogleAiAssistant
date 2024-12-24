@@ -1,4 +1,4 @@
-﻿@model WebObjectsBLL.DTO.CardTypeDTO
+﻿@model WebObjectsBLL.DTO.CardTypeDetailDTO
 
 <h1>Детали типа карты</h1>
 
@@ -28,9 +28,9 @@
             Аватар
         </dt>
         <dd class="col-sm-10">
-            @if (!string.IsNullOrEmpty(Model.AvatarBase64))
+            @if (Model.Avatar != null && !string.IsNullOrEmpty(Model.Avatar.Base64Image))
             {
-                <img src="@Model.AvatarBase64" alt="Avatar" style="max-width: 150px; max-height: 150px; border: 1px solid #ccc;" />
+                <img src="@Model.Avatar.Base64Image" alt="Avatar" style="max-width: 150px; max-height: 150px; border: 1px solid #ccc;" />
             }
             else
             {
@@ -55,6 +55,26 @@
             else
             {
                 <p>Медиа файлы не загружены.</p>
+            }
+        </dd>
+        <dt class="col-sm-2">
+            Документы
+        </dt>
+        <dd class="col-sm-10">
+            @if (Model.Documents != null && Model.Documents.Any())
+            {
+                <ul>
+                    @foreach (var doc in Model.Documents)
+                    {
+                        <li>
+                            <a href="@Url.Action("DownloadDocument", "CardTypes", new { id = doc.Id })">@doc.Name</a>
+                        </li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <p>Документы не загружены.</p>
             }
         </dd>
     </dl>

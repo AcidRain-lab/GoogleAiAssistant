@@ -2,11 +2,6 @@
 using MediaLib.DTO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace MediaLib.Services
 {
@@ -19,15 +14,10 @@ namespace MediaLib.Services
             _context = context;
         }
 
-        public async Task<bool> HasMediaAsync(Guid associatedRecordId)
-        {
-            return await _context.MediaData.AnyAsync(m => m.AssociatedRecordId == associatedRecordId);
-        }
-
-        public async Task<List<MediaDataDTO>> GetMediaDataListAsync(Guid associatedRecordId)
+        public async Task<List<MediaDataDTO>> GetMediaDataListAsync(Guid recordId)
         {
             var mediaList = await _context.MediaData
-                .Where(m => m.AssociatedRecordId == associatedRecordId)
+                .Where(m => m.AssociatedRecordId == recordId)
                 .ToListAsync();
 
             return mediaList.Select(m => new MediaDataDTO
@@ -38,48 +28,69 @@ namespace MediaLib.Services
                 Content = m.Content,
                 AssociatedRecordId = m.AssociatedRecordId,
                 ObjectTypeId = m.ObjectTypeId,
-                IsPrime = m.IsPrime
+                IsPrime = m.IsPrime,
+                Base64Image = m.Content != null ? Convert.ToBase64String(m.Content) : null
             }).ToList();
         }
 
-        public async Task AddMediaAsync(Guid associatedRecordId, List<IFormFile> imageFiles, string objectTypeName)
+        public async Task AddMediaAsync(List<MediaDataDTO> mediaFiles)
         {
-            var objectType = _context.ObjectTypes.FirstOrDefault(t => t.Name == objectTypeName);
-
-            if (imageFiles != null)
+            foreach (var media in mediaFiles)
             {
-                foreach (var file in imageFiles)
+                var newMedia = new MediaDatum
                 {
-                    using var stream = new MemoryStream();
-                    await file.CopyToAsync(stream);
-
-                    var media = new MediaDatum
-                    {
-                        Id = Guid.NewGuid(),
-                        Name = file.FileName,
-                        Extension = Path.GetExtension(file.FileName),
-                        Content = stream.ToArray(),
-                        AssociatedRecordId = associatedRecordId,
-                        ObjectTypeId = objectType?.Id ?? 1,
-                        IsPrime = false
-                    };
-                    await _context.MediaData.AddAsync(media);
-                }
-                await _context.SaveChangesAsync();
+                    Id = Guid.NewGuid(),
+                    Name = media.Name,
+                    Extension = media.Extension,
+                    Content = media.Content,
+                    AssociatedRecordId = media.AssociatedRecordId,
+                    ObjectTypeId = media.ObjectTypeId,
+                    IsPrime = media.IsPrime
+                };
+                await _context.MediaData.AddAsync(newMedia);
             }
+
+            await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteMediaAsync(List<Guid> mediaIds)
+        public async Task UpdateMediaAsync(List<MediaDataDTO> mediaFiles)
         {
-            foreach (var id in mediaIds)
+            foreach (var media in mediaFiles)
             {
-                var media = await _context.MediaData.FindAsync(id);
-                if (media != null)
+                var existingMedia = await _context.MediaData.FindAsync(media.Id);
+                if (existingMedia != null)
                 {
-                    _context.MediaData.Remove(media);
+                    existingMedia.Name = media.Name;
+                    existingMedia.Extension = media.Extension;
+                    existingMedia.Content = media.Content;
+                    existingMedia.IsPrime = media.IsPrime;
                 }
             }
+
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<bool> RemoveMediaByRecordIdAsync(Guid recordId)
+        {
+            var mediaFiles = await _context.MediaData
+                .Where(m => m.AssociatedRecordId == recordId)
+                .ToListAsync();
+
+            if (!mediaFiles.Any()) return false;
+
+            _context.MediaData.RemoveRange(mediaFiles);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> RemoveMediaAsync(Guid mediaId)
+        {
+            var media = await _context.MediaData.FindAsync(mediaId);
+            if (media == null) return false;
+
+            _context.MediaData.Remove(media);
+            await _context.SaveChangesAsync();
+            return true;
         }
     }
 }

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using WebObjectsBLL.DTO;
 
@@ -17,33 +18,56 @@ namespace WebObjectsBLL.Services
         private readonly IMapper _mapper;
         private readonly AvatarService _avatarService;
         private readonly MediaGalleryService _mediaGalleryService;
+        private readonly DocumentService _documentService;
 
-        public CardTypesService(BankContext context, IMapper mapper, AvatarService avatarService, MediaGalleryService mediaGalleryService)
+        public CardTypesService(
+            BankContext context,
+            IMapper mapper,
+            AvatarService avatarService,
+            MediaGalleryService mediaGalleryService,
+            DocumentService documentService)
         {
             _context = context;
             _mapper = mapper;
             _avatarService = avatarService;
             _mediaGalleryService = mediaGalleryService;
+            _documentService = documentService;
         }
 
-        public async Task<IEnumerable<CardTypeDTO>> GetAllAsync()
+        public async Task<IEnumerable<CardTypeTableDTO>> GetAllWithAvatarsAsync()
         {
             var cardTypes = await _context.CardTypes
                 .Include(ct => ct.PaymentSystemType)
                 .ToListAsync();
 
-            var cardTypeDtos = _mapper.Map<IEnumerable<CardTypeDTO>>(cardTypes);
-
-            foreach (var dto in cardTypeDtos)
+            return cardTypes.Select(ct => new CardTypeTableDTO
             {
-                dto.AvatarBase64 = await _avatarService.GetAvatarBase64Async(dto.Id);
-            }
-
-            return cardTypeDtos;
+                Id = ct.Id,
+                Name = ct.Name,
+                Description = ct.Description,
+                PaymentSystemTypeName = ct.PaymentSystemType?.Name,
+                Avatar = _avatarService.GetAvatarAsync(ct.Id).Result
+            });
         }
 
-        
-        public async Task AddAsync(CardTypeDTO cardTypeDto, AvatarDTO? avatar, List<IFormFile>? mediaFiles)
+        public async Task<CardTypeDetailDTO> GetByIdWithDetailsAsync(Guid id)
+        {
+            var cardType = await _context.CardTypes
+                .Include(ct => ct.PaymentSystemType)
+                .FirstOrDefaultAsync(ct => ct.Id == id);
+
+            if (cardType == null)
+                throw new KeyNotFoundException("Card type not found");
+
+            var dto = _mapper.Map<CardTypeDetailDTO>(cardType);
+            dto.Avatar = await _avatarService.GetAvatarAsync(id);
+            dto.MediaFiles = await _mediaGalleryService.GetMediaDataListAsync(id);
+            dto.Documents = await _documentService.GetDocumentsListAsync(id);
+
+            return dto;
+        }
+
+        public async Task AddAsync(CardTypeDetailDTO cardTypeDto, AvatarDTO? avatar, List<MediaDataDTO>? mediaFiles, List<DocumentsDTO>? documents)
         {
             var cardType = _mapper.Map<CardType>(cardTypeDto);
             _context.CardTypes.Add(cardType);
@@ -51,93 +75,85 @@ namespace WebObjectsBLL.Services
 
             if (avatar != null)
             {
-                await _avatarService.SetAvatarAsync(avatar, cardType.Id, "CardType");
+                avatar.AssociatedRecordId = cardType.Id;
+                await _avatarService.SetAvatarAsync(avatar);
             }
 
             if (mediaFiles != null && mediaFiles.Any())
             {
-                await _mediaGalleryService.AddMediaAsync(cardType.Id, mediaFiles, "CardType");
+                foreach (var media in mediaFiles)
+                {
+                    media.AssociatedRecordId = cardType.Id;
+                }
+                await _mediaGalleryService.AddMediaAsync(mediaFiles);
+            }
+
+            if (documents != null && documents.Any())
+            {
+                foreach (var document in documents)
+                {
+                    document.AssociatedRecordId = cardType.Id;
+                }
+                await _documentService.AddDocumentsAsync(documents);
             }
         }
 
-        public async Task UpdateAsync(CardTypeDTO cardTypeDto, AvatarDTO? avatar, List<IFormFile>? mediaFiles)
+        public async Task UpdateAsync(CardTypeDetailDTO cardTypeDto, AvatarDTO? avatar, List<MediaDataDTO>? mediaFiles, List<DocumentsDTO>? documents)
         {
             var cardType = await _context.CardTypes.FirstOrDefaultAsync(ct => ct.Id == cardTypeDto.Id);
             if (cardType == null)
-                throw new KeyNotFoundException("Тип карты не найден");
+                throw new KeyNotFoundException("Card type not found");
 
             _mapper.Map(cardTypeDto, cardType);
             await _context.SaveChangesAsync();
 
             if (avatar != null)
             {
-                await _avatarService.SetAvatarAsync(avatar, cardType.Id, "CardType");
+                avatar.AssociatedRecordId = cardType.Id;
+                await _avatarService.SetAvatarAsync(avatar);
             }
 
             if (mediaFiles != null && mediaFiles.Any())
             {
-                await _mediaGalleryService.AddMediaAsync(cardType.Id, mediaFiles, "CardType");
+                foreach (var media in mediaFiles)
+                {
+                    media.AssociatedRecordId = cardType.Id;
+                }
+                await _mediaGalleryService.UpdateMediaAsync(mediaFiles);
             }
-        }
 
-        public async Task<CardTypeDTO> GetByIdAsync(Guid id)
-        {
-            var cardType = await _context.CardTypes
-                .Include(ct => ct.PaymentSystemType)
-                .FirstOrDefaultAsync(ct => ct.Id == id);
-
-            if (cardType == null)
-                throw new KeyNotFoundException("Тип карты не найден");
-
-            var cardTypeDto = _mapper.Map<CardTypeDTO>(cardType);
-            cardTypeDto.AvatarBase64 = await _avatarService.GetAvatarBase64Async(cardTypeDto.Id);
-            cardTypeDto.MediaFiles = await _mediaGalleryService.GetMediaDataListAsync(cardTypeDto.Id);
-
-            return cardTypeDto;
+            if (documents != null && documents.Any())
+            {
+                foreach (var document in documents)
+                {
+                    document.AssociatedRecordId = cardType.Id;
+                }
+                await _documentService.UpdateDocumentsAsync(documents);
+            }
         }
 
         public async Task DeleteAsync(Guid id)
         {
             var cardType = await _context.CardTypes.FirstOrDefaultAsync(ct => ct.Id == id);
             if (cardType == null)
-                throw new KeyNotFoundException("Тип карты не найден");
+                throw new KeyNotFoundException("Card type not found");
 
             _context.CardTypes.Remove(cardType);
             await _context.SaveChangesAsync();
 
-            await _avatarService.SetAvatarAsync(null, id, "CardType");
+            await _avatarService.RemoveAvatarAsync(id);
+            await _mediaGalleryService.RemoveMediaByRecordIdAsync(id);
+            await _documentService.RemoveDocumentsByRecordIdAsync(id);
         }
 
-
-        public async Task<IEnumerable<CardTypeDTO>> GetAllWithAvatarsAsync()
+        public async Task<bool> RemoveMediaAsync(Guid mediaId)
         {
-            var cardTypes = await _context.CardTypes
-                .Include(ct => ct.PaymentSystemType)
-                .ToListAsync();
-
-            var cardTypeDTOs = cardTypes.Select(ct =>
-            {
-                var dto = _mapper.Map<CardTypeDTO>(ct);
-
-                // Retrieve the associated avatar
-                var avatar = _context.Avatars
-                    .FirstOrDefault(a => a.AssociatedRecordId == ct.Id && a.ObjectTypeId == 1);
-
-                // Ensure the avatar is not null and contains content
-                if (avatar != null && avatar.Content != null)
-                {
-                    // Assuming the Avatar model has a 'Content' (byte[]) property
-                    // MIME type is hardcoded as 'image/jpeg'. Adjust if needed.
-                    dto.AvatarBase64 = $"data:image/jpeg;base64,{Convert.ToBase64String(avatar.Content)}";
-                }
-
-                return dto;
-            }).ToList();
-
-            return cardTypeDTOs;
+            return await _mediaGalleryService.RemoveMediaAsync(mediaId);
         }
 
-
+        public async Task<bool> RemoveDocumentAsync(Guid documentId)
+        {
+            return await _documentService.RemoveDocumentAsync(documentId);
+        }
     }
 }
-
