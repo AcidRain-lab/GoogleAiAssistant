@@ -1,7 +1,12 @@
 ﻿using DAL.Models;
 using MediaLib.DTO;
 using MediaLib.Helpers;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace MediaLib.Services
 {
@@ -15,8 +20,58 @@ namespace MediaLib.Services
         }
 
         /// <summary>
-        /// Получение списка медиа-данных для записи.
+        /// Универсальный метод для управления медиа-данными.
         /// </summary>
+        public async Task ManageMediaAsync(
+            Guid recordId,
+            List<IFormFile>? newFiles,
+            List<Guid>? mediaToDelete,
+            Guid? primaryMediaId,
+            ObjectType? objectType = null)
+        {
+            // Удаляем указанные медиа
+            if (mediaToDelete != null && mediaToDelete.Any())
+            {
+                foreach (var mediaId in mediaToDelete)
+                {
+                    await RemoveMediaAsync(mediaId);
+                }
+            }
+
+            // Добавляем новые медиа
+            if (newFiles != null && newFiles.Any())
+            {
+                var newMediaFiles = await FileHelper.CreateDTOListFromUploadedFilesAsync<MediaDataDTO>(newFiles);
+                foreach (var media in newMediaFiles)
+                {
+                    media.AssociatedRecordId = recordId;
+                    media.ObjectTypeId = objectType.HasValue ? (int)objectType : 0;
+                }
+                await AddMediaAsync(newMediaFiles);
+            }
+
+            // Обновляем PrimaryMedia только после добавления и удаления файлов
+            var remainingMedia = await GetMediaDataListAsync(recordId);
+            if (primaryMediaId.HasValue)
+            {
+                var primaryMediaExists = remainingMedia.Any(m => m.Id == primaryMediaId.Value);
+                if (primaryMediaExists)
+                {
+                    await SetPrimaryMediaAsync(recordId, primaryMediaId.Value);
+                }
+                else if (remainingMedia.Any())
+                {
+                    var firstMedia = remainingMedia.First();
+                    await SetPrimaryMediaAsync(recordId, firstMedia.Id);
+                }
+            }
+            else if (remainingMedia.Any())
+            {
+                var firstMedia = remainingMedia.First();
+                await SetPrimaryMediaAsync(recordId, firstMedia.Id);
+            }
+        }
+
         public async Task<List<MediaDataDTO>> GetMediaDataListAsync(Guid recordId)
         {
             var mediaList = await _context.MediaData
@@ -36,9 +91,6 @@ namespace MediaLib.Services
             }).ToList();
         }
 
-        /// <summary>
-        /// Добавление новых медиа-файлов.
-        /// </summary>
         public async Task AddMediaAsync(List<MediaDataDTO> mediaFiles)
         {
             foreach (var media in mediaFiles)
@@ -66,108 +118,22 @@ namespace MediaLib.Services
             await _context.SaveChangesAsync();
         }
 
-        /// <summary>
-        /// Обновление существующих медиа-файлов.
-        /// </summary>
-        public async Task UpdateMediaAsync(List<MediaDataDTO> mediaFiles)
-        {
-            if (mediaFiles == null || !mediaFiles.Any())
-                return;
-
-            var recordId = mediaFiles.First().AssociatedRecordId;
-
-            // Сброс всех IsPrime для записи
-            var existingMedia = await _context.MediaData
-                .Where(m => m.AssociatedRecordId == recordId)
-                .ToListAsync();
-
-            foreach (var media in existingMedia)
-            {
-                media.IsPrime = false;
-            }
-
-            // Обновление или добавление записей
-            foreach (var media in mediaFiles)
-            {
-                var existing = existingMedia.FirstOrDefault(m => m.Id == media.Id);
-                if (existing != null)
-                {
-                    existing.Name = media.Name;
-                    existing.Extension = media.Extension;
-
-                    if (media.UploadedFile != null)
-                    {
-                        existing.Content = await FileHelper.ConvertToByteArrayAsync(media.UploadedFile);
-                    }
-
-                    // Установить IsPrime
-                    existing.IsPrime = media.IsPrime;
-                }
-                else
-                {
-                    var newMedia = new MediaDatum
-                    {
-                        Id = Guid.NewGuid(),
-                        Name = media.Name,
-                        Extension = media.Extension,
-                        Content = media.Content ?? await FileHelper.ConvertToByteArrayAsync(media.UploadedFile),
-                        AssociatedRecordId = media.AssociatedRecordId,
-                        ObjectTypeId = media.ObjectTypeId,
-                        IsPrime = media.IsPrime
-                    };
-
-                    await _context.MediaData.AddAsync(newMedia);
-                }
-            }
-
-            await _context.SaveChangesAsync();
-        }
-
-
-
-        /// <summary>
-        /// Удаление медиа-файлов по идентификатору записи.
-        /// </summary>
-        public async Task<bool> RemoveMediaByRecordIdAsync(Guid recordId)
-        {
-            var mediaFiles = await _context.MediaData
-                .Where(m => m.AssociatedRecordId == recordId)
-                .ToListAsync();
-
-            if (!mediaFiles.Any()) return false;
-
-            _context.MediaData.RemoveRange(mediaFiles);
-            await _context.SaveChangesAsync();
-            return true;
-        }
-
-        /// <summary>
-        /// Удаление конкретного медиа-файла по идентификатору.
-        /// </summary>
         public async Task<bool> RemoveMediaAsync(Guid mediaId)
         {
-            // Найти удаляемый медиа файл
             var media = await _context.MediaData.FindAsync(mediaId);
             if (media == null) return false;
 
-            // Получить AssociatedRecordId, чтобы проверить оставшиеся медиа
             var associatedRecordId = media.AssociatedRecordId;
-
-            // Удалить медиа файл
             _context.MediaData.Remove(media);
             await _context.SaveChangesAsync();
 
-            // Проверить, остались ли медиа файлы для этой записи
             var remainingMedia = await _context.MediaData
                 .Where(m => m.AssociatedRecordId == associatedRecordId)
                 .ToListAsync();
 
             if (remainingMedia.Any())
             {
-                // Найти текущий IsPrime файл
                 var currentPrime = remainingMedia.FirstOrDefault(m => m.IsPrime);
-
-                // Если IsPrime отсутствует, установить его для первого в списке
                 if (currentPrime == null)
                 {
                     var firstMedia = remainingMedia.First();
@@ -179,7 +145,6 @@ namespace MediaLib.Services
 
             return true;
         }
-
 
         public async Task<MediaDataDTO?> GetPrimaryMediaAsync(Guid recordId)
         {
@@ -208,13 +173,11 @@ namespace MediaLib.Services
                 .Where(m => m.AssociatedRecordId == recordId)
                 .ToListAsync();
 
-            // Сбрасываем флаг IsPrime у всех медиа
             foreach (var media in mediaList)
             {
                 media.IsPrime = false;
             }
 
-            // Устанавливаем IsPrime для выбранного медиа
             var primaryMedia = mediaList.FirstOrDefault(m => m.Id == primaryMediaId);
             if (primaryMedia != null)
             {
@@ -224,5 +187,19 @@ namespace MediaLib.Services
             await _context.SaveChangesAsync();
         }
 
+        public async Task<bool> RemoveMediaByRecordIdAsync(Guid recordId)
+        {
+            var mediaFiles = await _context.MediaData
+                .Where(m => m.AssociatedRecordId == recordId)
+                .ToListAsync();
+
+            if (!mediaFiles.Any())
+                return false;
+
+            _context.MediaData.RemoveRange(mediaFiles);
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
     }
 }

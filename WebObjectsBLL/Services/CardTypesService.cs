@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
 using DAL.Models;
 using MediaLib.DTO;
+using MediaLib.Helpers;
 using MediaLib.Services;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -59,7 +61,6 @@ namespace WebObjectsBLL.Services
             return result;
         }
 
-
         public async Task<CardTypeDetailDTO> GetByIdWithDetailsAsync(Guid id)
         {
             var cardType = await _context.CardTypes
@@ -109,12 +110,12 @@ namespace WebObjectsBLL.Services
         }
 
         public async Task UpdateAsync(
-     CardTypeDetailDTO cardTypeDto,
-     AvatarDTO? avatar,
-     List<MediaDataDTO>? newMediaFiles,
-     List<DocumentsDTO>? newDocuments,
-     Guid? primaryMediaId,
-     List<Guid>? mediaToDelete)
+             CardTypeDetailDTO cardTypeDto,
+             AvatarDTO? avatar,
+             List<IFormFile>? newMediaFiles,
+             List<IFormFile>? newDocumentFiles,
+             Guid? primaryMediaId,
+             List<Guid>? mediaToDelete)
         {
             // Обновляем основные данные типа карты
             var cardType = await _context.CardTypes.FirstOrDefaultAsync(ct => ct.Id == cardTypeDto.Id);
@@ -131,34 +132,18 @@ namespace WebObjectsBLL.Services
                 await _avatarService.SetAvatarAsync(avatar);
             }
 
-            // Удаляем указанные медиа
-            if (mediaToDelete != null && mediaToDelete.Any())
-            {
-                foreach (var mediaId in mediaToDelete)
-                {
-                    await _mediaGalleryService.RemoveMediaAsync(mediaId);
-                }
-            }
-
-            // Добавляем новые медиа
-            if (newMediaFiles != null)
-            {
-                foreach (var media in newMediaFiles)
-                {
-                    media.AssociatedRecordId = cardType.Id;
-                }
-                await _mediaGalleryService.AddMediaAsync(newMediaFiles);
-            }
-
-            // Обновляем существующие медиа: сброс IsPrime и установка нового PrimaryMedia
-            if (primaryMediaId.HasValue)
-            {
-                await _mediaGalleryService.SetPrimaryMediaAsync(cardType.Id, primaryMediaId.Value);
-            }
+            // Обновляем медиа-файлы через универсальный метод
+            await _mediaGalleryService.ManageMediaAsync(
+                cardType.Id,
+                newMediaFiles,
+                mediaToDelete,
+                primaryMediaId
+            );
 
             // Добавляем новые документы
-            if (newDocuments != null)
+            if (newDocumentFiles != null)
             {
+                var newDocuments = await FileHelper.CreateDTOListFromUploadedFilesAsync<DocumentsDTO>(newDocumentFiles);
                 foreach (var document in newDocuments)
                 {
                     document.AssociatedRecordId = cardType.Id;
@@ -166,7 +151,6 @@ namespace WebObjectsBLL.Services
                 await _documentService.AddDocumentsAsync(newDocuments);
             }
         }
-
 
         public async Task DeleteAsync(Guid id)
         {

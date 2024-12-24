@@ -76,24 +76,18 @@ namespace WebSite.Controllers.MVC
         {
             // Создание нового аватара, если он был загружен
             var avatar = await FileHelper.CreateDTOFromUploadedFileAsync<AvatarDTO>(avatarFile);
-            // Добавление новых медиа
-            var mediaDTOs = await FileHelper.CreateDTOListFromUploadedFilesAsync<MediaDataDTO>(mediaFiles);
-            // Добавление новых документов
-            var documentDTOs = await FileHelper.CreateDTOListFromUploadedFilesAsync<DocumentsDTO>(documentFiles);
 
-            // Обновление информации о существующих медиа
+            // Обновление данных
             await _cardTypesService.UpdateAsync(
                 cardTypeDto,
                 avatar,
-                mediaDTOs,
-                documentDTOs,
+                mediaFiles,
+                documentFiles,
                 PrimaryMediaId,
                 MediaToDelete);
 
             return RedirectToAction(nameof(Index));
         }
-
-
 
         [HttpPost]
         [ValidateAntiForgeryToken]
