@@ -1,18 +1,65 @@
 ﻿@model WebObjectsBLL.DTO.CardTypeDTO
 
-<h1>Card Type Details</h1>
+<h1>Детали типа карты</h1>
 
-@if (!string.IsNullOrEmpty(Model.AvatarBase64))
-{
-    <img src="data:image/jpeg;base64,@Model.AvatarBase64" style="width: 100px; height: 100px;" />
-}
-else
-{
-    <p>No Avatar</p>
-}
-
-<p><strong>Name:</strong> @Model.Name</p>
-<p><strong>Description:</strong> @Model.Description</p>
-<p><strong>Payment System:</strong> @Model.PaymentSystemTypeName</p>
-
-<a asp-action="Index" class="btn btn-secondary">Back to List</a>
+<div>
+    <h4>Тип карты</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">
+            Название
+        </dt>
+        <dd class="col-sm-10">
+            @Model.Name
+        </dd>
+        <dt class="col-sm-2">
+            Описание
+        </dt>
+        <dd class="col-sm-10">
+            @Model.Description
+        </dd>
+        <dt class="col-sm-2">
+            Платежная система
+        </dt>
+        <dd class="col-sm-10">
+            @Model.PaymentSystemTypeName
+        </dd>
+        <dt class="col-sm-2">
+            Аватар
+        </dt>
+        <dd class="col-sm-10">
+            @if (!string.IsNullOrEmpty(Model.AvatarBase64))
+            {
+                <img src="@Model.AvatarBase64" alt="Avatar" style="max-width: 150px; max-height: 150px; border: 1px solid #ccc;" />
+            }
+            else
+            {
+                <p>Аватар не загружен.</p>
+            }
+        </dd>
+        <dt class="col-sm-2">
+            Медиа файлы
+        </dt>
+        <dd class="col-sm-10">
+            @if (Model.MediaFiles != null && Model.MediaFiles.Any())
+            {
+                <ul>
+                    @foreach (var media in Model.MediaFiles)
+                    {
+                        <li>
+                            <a href="@Url.Action("DownloadMedia", "CardTypes", new { id = media.Id })">@media.Name</a>
+                        </li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <p>Медиа файлы не загружены.</p>
+            }
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Редактировать</a>
+    <a asp-action="Index" class="btn btn-secondary">Назад к списку</a>
+</div>
