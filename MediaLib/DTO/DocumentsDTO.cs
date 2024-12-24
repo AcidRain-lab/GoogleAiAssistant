@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace MediaLib.DTO
 {
-    public class MediaDataDTO : IFileEntity
+    public class DocumentsDTO : IFileEntity
     {
         public Guid Id { get; set; }
         public string Name { get; set; } = string.Empty;

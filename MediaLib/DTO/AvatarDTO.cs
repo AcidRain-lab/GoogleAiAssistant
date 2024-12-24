@@ -1,17 +1,18 @@
-﻿using DAL.Models;
+﻿using MediaLib.Interfaces;
 using Microsoft.AspNetCore.Http;
-using System.ComponentModel.DataAnnotations;
 
 namespace MediaLib.DTO
 {
-    public class AvatarDTO
+    public class AvatarDTO : IFileEntity
     {
-        public IFormFile? ImageFile { get; set; } = null;
-        public bool? IsDeletedImg { get; set; } = false;
-        public string? Base64Image { get; set; } = null;
-        public string? ImgName { get; set; } = null;
-
+        public Guid Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Extension { get; set; } = ".png";
+        public byte[]? Content { get; set; }
+        public Guid AssociatedRecordId { get; set; }
+        public int ObjectTypeId { get; set; }
+        public bool IsPrime { get; set; }
+        public string? Base64Image { get; set; }
+        public IFormFile? UploadedFile { get; set; }
     }
-
-
 }

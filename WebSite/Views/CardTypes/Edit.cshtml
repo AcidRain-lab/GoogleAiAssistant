@@ -1,4 +1,4 @@
-﻿@model WebObjectsBLL.DTO.CardTypeDTO
+﻿@model WebObjectsBLL.DTO.CardTypeDetailDTO
 
 <h1>Редактировать тип карты</h1>
 
@@ -26,10 +26,10 @@
 
     <div class="form-group">
         <label>Текущий аватар</label>
-        @if (!string.IsNullOrEmpty(Model.AvatarBase64))
+        @if (Model.Avatar != null && Model.Avatar.Content != null)
         {
             <div class="mb-3">
-                <img src="@Model.AvatarBase64" alt="Avatar" style="max-width: 150px; max-height: 150px; border: 1px solid #ccc;" />
+                <img src="data:image/png;base64,@Convert.ToBase64String(Model.Avatar.Content)" alt="Avatar" style="max-width: 150px; max-height: 150px; border: 1px solid #ccc;" />
             </div>
         }
         else
@@ -48,19 +48,62 @@
         <label>Существующие медиа файлы</label>
         @if (Model.MediaFiles != null && Model.MediaFiles.Any())
         {
-            <ul>
+            <div class="row">
                 @foreach (var media in Model.MediaFiles)
                 {
+                    <div class="col-md-3 text-center mb-3">
+                        @if (!string.IsNullOrEmpty(media.Base64Image))
+                        {
+                            <div>
+                                <img src="data:image/jpeg;base64,@media.Base64Image" alt="@media.Name" style="max-width: 100%; max-height: 150px; border: 1px solid #ddd;" />
+                            </div>
+                        }
+                        else
+                        {
+                            <div>
+                                <a href="@Url.Action("DownloadMedia", "CardTypes", new { id = media.Id })">@media.Name</a>
+                            </div>
+                        }
+                        @if (Model.MediaFiles.Count > 1)
+                        {
+                            <div class="form-check mt-2">
+                                <input class="form-check-input" type="radio" name="IsPrimaryMediaId" value="@media.Id" @(media.IsPrime ? "checked" : "") />
+                                <label class="form-check-label">Установить как основное</label>
+                            </div>
+                        }
+                        <button type="button" class="btn btn-danger btn-sm mt-2" onclick="removeMedia('@media.Id')">Удалить</button>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <p>Нет прикрепленных медиа файлов.</p>
+        }
+    </div>
+
+    <div class="form-group">
+        <label>Добавить документы</label>
+        <input type="file" name="documentFiles" class="form-control" multiple />
+    </div>
+
+    <div class="form-group">
+        <label>Существующие документы</label>
+        @if (Model.Documents != null && Model.Documents.Any())
+        {
+            <ul>
+                @foreach (var document in Model.Documents)
+                {
                     <li>
-                        <a href="@Url.Action("DownloadMedia", "CardTypes", new { id = media.Id })">@media.Name</a>
-                        <button type="button" class="btn btn-danger btn-sm" onclick="removeMedia('@media.Id')">Удалить</button>
+                        <a href="@Url.Action("DownloadDocument", "CardTypes", new { id = document.Id })">@document.Name</a>
+                        <button type="button" class="btn btn-danger btn-sm" onclick="removeDocument('@document.Id')">Удалить</button>
                     </li>
                 }
             </ul>
         }
         else
         {
-            <p>Нет прикрепленных медиа файлов.</p>
+            <p>Нет прикрепленных документов.</p>
         }
     </div>
 
@@ -81,6 +124,22 @@
                     },
                     error: function () {
                         alert('Ошибка при удалении медиа файла.');
+                    }
+                });
+            }
+        }
+
+        function removeDocument(documentId) {
+            if (confirm('Вы уверены, что хотите удалить этот документ?')) {
+                $.ajax({
+                    url: '@Url.Action("DeleteDocument", "CardTypes")',
+                    type: 'POST',
+                    data: { id: documentId },
+                    success: function () {
+                        location.reload();
+                    },
+                    error: function () {
+                        alert('Ошибка при удалении документа.');
                     }
                 });
             }

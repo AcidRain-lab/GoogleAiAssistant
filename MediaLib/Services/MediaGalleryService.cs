@@ -1,12 +1,7 @@
 ﻿using DAL.Models;
 using MediaLib.DTO;
-using Microsoft.AspNetCore.Http;
+using MediaLib.Helpers;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace MediaLib.Services
 {
@@ -19,15 +14,13 @@ namespace MediaLib.Services
             _context = context;
         }
 
-        public async Task<bool> HasMediaAsync(Guid associatedRecordId)
-        {
-            return await _context.MediaData.AnyAsync(m => m.AssociatedRecordId == associatedRecordId);
-        }
-
-        public async Task<List<MediaDataDTO>> GetMediaDataListAsync(Guid associatedRecordId)
+        /// <summary>
+        /// Получение списка медиа-данных для записи.
+        /// </summary>
+        public async Task<List<MediaDataDTO>> GetMediaDataListAsync(Guid recordId)
         {
             var mediaList = await _context.MediaData
-                .Where(m => m.AssociatedRecordId == associatedRecordId)
+                .Where(m => m.AssociatedRecordId == recordId)
                 .ToListAsync();
 
             return mediaList.Select(m => new MediaDataDTO
@@ -38,48 +31,141 @@ namespace MediaLib.Services
                 Content = m.Content,
                 AssociatedRecordId = m.AssociatedRecordId,
                 ObjectTypeId = m.ObjectTypeId,
-                IsPrime = m.IsPrime
+                IsPrime = m.IsPrime,
+                Base64Image = m.Content != null ? FileHelper.ToBase64(m.Content) : null
             }).ToList();
         }
 
-        public async Task AddMediaAsync(Guid associatedRecordId, List<IFormFile> imageFiles, string objectTypeName)
+        /// <summary>
+        /// Добавление новых медиа-файлов.
+        /// </summary>
+        public async Task AddMediaAsync(List<MediaDataDTO> mediaFiles)
         {
-            var objectType = _context.ObjectTypes.FirstOrDefault(t => t.Name == objectTypeName);
-
-            if (imageFiles != null)
+            foreach (var media in mediaFiles)
             {
-                foreach (var file in imageFiles)
+                if (media.UploadedFile != null)
                 {
-                    using var stream = new MemoryStream();
-                    await file.CopyToAsync(stream);
-
-                    var media = new MediaDatum
-                    {
-                        Id = Guid.NewGuid(),
-                        Name = file.FileName,
-                        Extension = Path.GetExtension(file.FileName),
-                        Content = stream.ToArray(),
-                        AssociatedRecordId = associatedRecordId,
-                        ObjectTypeId = objectType?.Id ?? 1,
-                        IsPrime = false
-                    };
-                    await _context.MediaData.AddAsync(media);
+                    media.Content = await FileHelper.ConvertToByteArrayAsync(media.UploadedFile);
+                    media.Extension = Path.GetExtension(media.UploadedFile.FileName);
+                    media.Name = FileHelper.GenerateUniqueFileName(media.UploadedFile.FileName);
                 }
-                await _context.SaveChangesAsync();
+
+                var newMedia = new MediaDatum
+                {
+                    Id = Guid.NewGuid(),
+                    Name = media.Name,
+                    Extension = media.Extension,
+                    Content = media.Content,
+                    AssociatedRecordId = media.AssociatedRecordId,
+                    ObjectTypeId = media.ObjectTypeId,
+                    IsPrime = media.IsPrime
+                };
+                await _context.MediaData.AddAsync(newMedia);
             }
+
+            await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteMediaAsync(List<Guid> mediaIds)
+        /// <summary>
+        /// Обновление существующих медиа-файлов.
+        /// </summary>
+        public async Task UpdateMediaAsync(List<MediaDataDTO> mediaFiles)
         {
-            foreach (var id in mediaIds)
+            foreach (var media in mediaFiles)
             {
-                var media = await _context.MediaData.FindAsync(id);
-                if (media != null)
+                // Попытка найти существующий медиа-файл по ID
+                var existingMedia = await _context.MediaData.FindAsync(media.Id);
+
+                if (existingMedia != null)
                 {
-                    _context.MediaData.Remove(media);
+                    // Обновление существующего медиа-файла
+                    existingMedia.Name = media.Name;
+                    existingMedia.Extension = media.Extension;
+
+                    if (media.UploadedFile != null)
+                    {
+                        existingMedia.Content = await FileHelper.ConvertToByteArrayAsync(media.UploadedFile);
+                    }
+
+                    existingMedia.IsPrime = media.IsPrime;
+                }
+                else
+                {
+                    // Создание нового медиа-файла, если он не существует
+                    if (media.UploadedFile != null)
+                    {
+                        media.Content = await FileHelper.ConvertToByteArrayAsync(media.UploadedFile);
+                        media.Extension = Path.GetExtension(media.UploadedFile.FileName);
+                        media.Name = FileHelper.GenerateUniqueFileName(media.UploadedFile.FileName);
+                    }
+
+                    var newMedia = new MediaDatum
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = media.Name,
+                        Extension = media.Extension,
+                        Content = media.Content,
+                        AssociatedRecordId = media.AssociatedRecordId,
+                        ObjectTypeId = media.ObjectTypeId,
+                        IsPrime = mediaFiles.Count == 1 // Если это единственный файл, делаем его основным
+                    };
+
+                    await _context.MediaData.AddAsync(newMedia);
                 }
             }
+
             await _context.SaveChangesAsync();
+        }
+
+
+        /// <summary>
+        /// Удаление медиа-файлов по идентификатору записи.
+        /// </summary>
+        public async Task<bool> RemoveMediaByRecordIdAsync(Guid recordId)
+        {
+            var mediaFiles = await _context.MediaData
+                .Where(m => m.AssociatedRecordId == recordId)
+                .ToListAsync();
+
+            if (!mediaFiles.Any()) return false;
+
+            _context.MediaData.RemoveRange(mediaFiles);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        /// <summary>
+        /// Удаление конкретного медиа-файла по идентификатору.
+        /// </summary>
+        public async Task<bool> RemoveMediaAsync(Guid mediaId)
+        {
+            var media = await _context.MediaData.FindAsync(mediaId);
+            if (media == null) return false;
+
+            _context.MediaData.Remove(media);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<MediaDataDTO?> GetPrimaryMediaAsync(Guid recordId)
+        {
+            var primaryMedia = await _context.MediaData
+                .Where(m => m.AssociatedRecordId == recordId && m.IsPrime)
+                .FirstOrDefaultAsync();
+
+            if (primaryMedia == null) return null;
+
+            return new MediaDataDTO
+            {
+                Id = primaryMedia.Id,
+                Name = primaryMedia.Name,
+                Extension = primaryMedia.Extension,
+                Content = primaryMedia.Content,
+                AssociatedRecordId = primaryMedia.AssociatedRecordId,
+                ObjectTypeId = primaryMedia.ObjectTypeId,
+                IsPrime = primaryMedia.IsPrime,
+                Base64Image = primaryMedia.Content != null ? Convert.ToBase64String(primaryMedia.Content) : null
+            };
         }
     }
 }
