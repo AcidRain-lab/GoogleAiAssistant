@@ -3,6 +3,7 @@
 <h1>Редактировать тип карты</h1>
 
 <form asp-action="Edit" method="post" enctype="multipart/form-data">
+    @Html.AntiForgeryToken()
     <input type="hidden" asp-for="Id" />
 
     <div class="form-group">
@@ -18,64 +19,71 @@
     </div>
 
     <div class="form-group">
-        <label asp-for="Caption1" class="control-label">Заголовок 1</label>
-        <input asp-for="Caption1" class="form-control" />
-        <span asp-validation-for="Caption1" class="text-danger"></span>
-    </div>
-
-    <div class="form-group">
-        <label asp-for="Value1" class="control-label">Значение 1</label>
-        <input asp-for="Value1" class="form-control" />
-        <span asp-validation-for="Value1" class="text-danger"></span>
-    </div>
-
-    <div class="form-group">
-        <label asp-for="Caption2" class="control-label">Заголовок 2</label>
-        <input asp-for="Caption2" class="form-control" />
-        <span asp-validation-for="Caption2" class="text-danger"></span>
-    </div>
-
-    <div class="form-group">
-        <label asp-for="Value2" class="control-label">Значение 2</label>
-        <input asp-for="Value2" class="form-control" />
-        <span asp-validation-for="Value2" class="text-danger"></span>
-    </div>
-
-    <div class="form-group">
-        <label asp-for="Caption3" class="control-label">Заголовок 3</label>
-        <input asp-for="Caption3" class="form-control" />
-        <span asp-validation-for="Caption3" class="text-danger"></span>
-    </div>
-
-    <div class="form-group">
-        <label asp-for="Value3" class="control-label">Значение 3</label>
-        <input asp-for="Value3" class="form-control" />
-        <span asp-validation-for="Value3" class="text-danger"></span>
-    </div>
-
-    <div class="form-group">
         <label asp-for="PaymentSystemTypeId" class="control-label">Платежная система</label>
         <select asp-for="PaymentSystemTypeId" class="form-control" asp-items="ViewBag.PaymentSystemTypes"></select>
         <span asp-validation-for="PaymentSystemTypeId" class="text-danger"></span>
     </div>
 
     <div class="form-group">
-        <label>Аватар</label>
+        <label>Текущий аватар</label>
         @if (!string.IsNullOrEmpty(Model.AvatarBase64))
         {
             <div class="mb-3">
-                <img src="data:image/png;base64,@Model.AvatarBase64" alt="Avatar" style="max-width: 150px; max-height: 150px; border: 1px solid #ccc;" />
+                <img src="@Model.AvatarBase64" alt="Avatar" style="max-width: 150px; max-height: 150px; border: 1px solid #ccc;" />
             </div>
         }
         else
         {
             <p>Аватар не загружен.</p>
         }
+        <input type="file" name="avatarFile" class="form-control" />
+    </div>
 
-        <label>Заменить аватар:</label>
-        <input type="file" name="avatarFile" class="form-control" accept="image/*" />
+    <div class="form-group">
+        <label>Добавить медиа файлы</label>
+        <input type="file" name="mediaFiles" class="form-control" multiple />
+    </div>
+
+    <div class="form-group">
+        <label>Существующие медиа файлы</label>
+        @if (Model.MediaFiles != null && Model.MediaFiles.Any())
+        {
+            <ul>
+                @foreach (var media in Model.MediaFiles)
+                {
+                    <li>
+                        <a href="@Url.Action("DownloadMedia", "CardTypes", new { id = media.Id })">@media.Name</a>
+                        <button type="button" class="btn btn-danger btn-sm" onclick="removeMedia('@media.Id')">Удалить</button>
+                    </li>
+                }
+            </ul>
+        }
+        else
+        {
+            <p>Нет прикрепленных медиа файлов.</p>
+        }
     </div>
 
     <button type="submit" class="btn btn-success">Сохранить</button>
     <a asp-action="Index" class="btn btn-secondary">Отмена</a>
 </form>
+
+@section Scripts {
+    <script>
+        function removeMedia(mediaId) {
+            if (confirm('Вы уверены, что хотите удалить этот медиа файл?')) {
+                $.ajax({
+                    url: '@Url.Action("DeleteMedia", "CardTypes")',
+                    type: 'POST',
+                    data: { id: mediaId },
+                    success: function () {
+                        location.reload();
+                    },
+                    error: function () {
+                        alert('Ошибка при удалении медиа файла.');
+                    }
+                });
+            }
+        }
+    </script>
+}

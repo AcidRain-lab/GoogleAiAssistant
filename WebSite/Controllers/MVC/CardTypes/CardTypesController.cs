@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using WebObjectsBLL.DTO;
 using WebObjectsBLL.Services;
 using MediaLib.DTO;
+using MediaLib.Services;
 
 namespace WebSite.Controllers.MVC
 {
@@ -23,9 +24,10 @@ namespace WebSite.Controllers.MVC
         [HttpGet("")]
         public async Task<IActionResult> Index()
         {
-            var cardTypes = await _cardTypesService.GetAllAsync();
+            var cardTypes = await _cardTypesService.GetAllWithAvatarsAsync();
             return View(cardTypes);
         }
+
 
         [HttpGet("Add")]
         public async Task<IActionResult> Add()
@@ -36,14 +38,8 @@ namespace WebSite.Controllers.MVC
 
         [HttpPost("Add")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Add(CardTypeDTO cardTypeDto, IFormFile? avatarFile)
+        public async Task<IActionResult> Add(CardTypeDTO cardTypeDto, IFormFile? avatarFile, List<IFormFile>? mediaFiles)
         {
-            //if (!ModelState.IsValid)
-            //{
-            //    ViewBag.PaymentSystemTypes = new SelectList(await _paymentSystemService.GetAllAsync(), "Id", "Name");
-            //    return View(cardTypeDto);
-            //}
-
             AvatarDTO? avatar = null;
             if (avatarFile != null)
             {
@@ -54,7 +50,7 @@ namespace WebSite.Controllers.MVC
                 };
             }
 
-            await _cardTypesService.AddAsync(cardTypeDto, avatar);
+            await _cardTypesService.AddAsync(cardTypeDto, avatar, mediaFiles);
             return RedirectToAction(nameof(Index));
         }
 
@@ -71,14 +67,8 @@ namespace WebSite.Controllers.MVC
 
         [HttpPost("Edit/{id}")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(CardTypeDTO cardTypeDto, IFormFile? avatarFile)
+        public async Task<IActionResult> Edit(CardTypeDTO cardTypeDto, IFormFile? avatarFile, List<IFormFile>? mediaFiles)
         {
-            //if (!ModelState.IsValid)
-            //{
-            //    ViewBag.PaymentSystemTypes = new SelectList(await _paymentSystemService.GetAllAsync(), "Id", "Name");
-            //    return View(cardTypeDto);
-            //}
-
             AvatarDTO? avatar = null;
             if (avatarFile != null)
             {
@@ -89,7 +79,7 @@ namespace WebSite.Controllers.MVC
                 };
             }
 
-            await _cardTypesService.UpdateAsync(cardTypeDto, avatar);
+            await _cardTypesService.UpdateAsync(cardTypeDto, avatar, mediaFiles);
             return RedirectToAction(nameof(Index));
         }
 
@@ -118,5 +108,7 @@ namespace WebSite.Controllers.MVC
             await file.CopyToAsync(memoryStream);
             return memoryStream.ToArray();
         }
+
+
     }
 }

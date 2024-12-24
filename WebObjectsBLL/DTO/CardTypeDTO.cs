@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MediaLib.DTO;
+using System;
 
 namespace WebObjectsBLL.DTO
 {
@@ -18,5 +19,6 @@ namespace WebObjectsBLL.DTO
 
         // Добавлено свойство для отображения аватара
         public string? AvatarBase64 { get; set; }
+        public List<MediaDataDTO>? MediaFiles { get; set; }
     }
 }
