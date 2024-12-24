@@ -67,18 +67,32 @@ namespace WebSite.Controllers.MVC
         [HttpPost("Edit/{id}")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(
-            CardTypeDetailDTO cardTypeDto,
-            IFormFile? avatarFile,
-            List<IFormFile>? mediaFiles,
-            List<IFormFile>? documentFiles)
+             CardTypeDetailDTO cardTypeDto,
+             IFormFile? avatarFile,
+             List<IFormFile>? mediaFiles,
+             List<IFormFile>? documentFiles,
+             Guid? PrimaryMediaId, // ID медиа, которое будет отмечено как IsPrime
+             List<Guid>? MediaToDelete) // Список ID медиа, которые нужно удалить
         {
+            // Создание нового аватара, если он был загружен
             var avatar = await FileHelper.CreateDTOFromUploadedFileAsync<AvatarDTO>(avatarFile);
+            // Добавление новых медиа
             var mediaDTOs = await FileHelper.CreateDTOListFromUploadedFilesAsync<MediaDataDTO>(mediaFiles);
+            // Добавление новых документов
             var documentDTOs = await FileHelper.CreateDTOListFromUploadedFilesAsync<DocumentsDTO>(documentFiles);
 
-            await _cardTypesService.UpdateAsync(cardTypeDto, avatar, mediaDTOs, documentDTOs);
+            // Обновление информации о существующих медиа
+            await _cardTypesService.UpdateAsync(
+                cardTypeDto,
+                avatar,
+                mediaDTOs,
+                documentDTOs,
+                PrimaryMediaId,
+                MediaToDelete);
+
             return RedirectToAction(nameof(Index));
         }
+
 
 
         [HttpPost]

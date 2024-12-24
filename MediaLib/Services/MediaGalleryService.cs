@@ -71,43 +71,49 @@ namespace MediaLib.Services
         /// </summary>
         public async Task UpdateMediaAsync(List<MediaDataDTO> mediaFiles)
         {
+            if (mediaFiles == null || !mediaFiles.Any())
+                return;
+
+            var recordId = mediaFiles.First().AssociatedRecordId;
+
+            // Сброс всех IsPrime для записи
+            var existingMedia = await _context.MediaData
+                .Where(m => m.AssociatedRecordId == recordId)
+                .ToListAsync();
+
+            foreach (var media in existingMedia)
+            {
+                media.IsPrime = false;
+            }
+
+            // Обновление или добавление записей
             foreach (var media in mediaFiles)
             {
-                // Попытка найти существующий медиа-файл по ID
-                var existingMedia = await _context.MediaData.FindAsync(media.Id);
-
-                if (existingMedia != null)
+                var existing = existingMedia.FirstOrDefault(m => m.Id == media.Id);
+                if (existing != null)
                 {
-                    // Обновление существующего медиа-файла
-                    existingMedia.Name = media.Name;
-                    existingMedia.Extension = media.Extension;
+                    existing.Name = media.Name;
+                    existing.Extension = media.Extension;
 
                     if (media.UploadedFile != null)
                     {
-                        existingMedia.Content = await FileHelper.ConvertToByteArrayAsync(media.UploadedFile);
+                        existing.Content = await FileHelper.ConvertToByteArrayAsync(media.UploadedFile);
                     }
 
-                    existingMedia.IsPrime = media.IsPrime;
+                    // Установить IsPrime
+                    existing.IsPrime = media.IsPrime;
                 }
                 else
                 {
-                    // Создание нового медиа-файла, если он не существует
-                    if (media.UploadedFile != null)
-                    {
-                        media.Content = await FileHelper.ConvertToByteArrayAsync(media.UploadedFile);
-                        media.Extension = Path.GetExtension(media.UploadedFile.FileName);
-                        media.Name = FileHelper.GenerateUniqueFileName(media.UploadedFile.FileName);
-                    }
-
                     var newMedia = new MediaDatum
                     {
                         Id = Guid.NewGuid(),
                         Name = media.Name,
                         Extension = media.Extension,
-                        Content = media.Content,
+                        Content = media.Content ?? await FileHelper.ConvertToByteArrayAsync(media.UploadedFile),
                         AssociatedRecordId = media.AssociatedRecordId,
                         ObjectTypeId = media.ObjectTypeId,
-                        IsPrime = mediaFiles.Count == 1 // Если это единственный файл, делаем его основным
+                        IsPrime = media.IsPrime
                     };
 
                     await _context.MediaData.AddAsync(newMedia);
@@ -116,6 +122,7 @@ namespace MediaLib.Services
 
             await _context.SaveChangesAsync();
         }
+
 
 
         /// <summary>
@@ -139,13 +146,40 @@ namespace MediaLib.Services
         /// </summary>
         public async Task<bool> RemoveMediaAsync(Guid mediaId)
         {
+            // Найти удаляемый медиа файл
             var media = await _context.MediaData.FindAsync(mediaId);
             if (media == null) return false;
 
+            // Получить AssociatedRecordId, чтобы проверить оставшиеся медиа
+            var associatedRecordId = media.AssociatedRecordId;
+
+            // Удалить медиа файл
             _context.MediaData.Remove(media);
             await _context.SaveChangesAsync();
+
+            // Проверить, остались ли медиа файлы для этой записи
+            var remainingMedia = await _context.MediaData
+                .Where(m => m.AssociatedRecordId == associatedRecordId)
+                .ToListAsync();
+
+            if (remainingMedia.Any())
+            {
+                // Найти текущий IsPrime файл
+                var currentPrime = remainingMedia.FirstOrDefault(m => m.IsPrime);
+
+                // Если IsPrime отсутствует, установить его для первого в списке
+                if (currentPrime == null)
+                {
+                    var firstMedia = remainingMedia.First();
+                    firstMedia.IsPrime = true;
+                    _context.MediaData.Update(firstMedia);
+                    await _context.SaveChangesAsync();
+                }
+            }
+
             return true;
         }
+
 
         public async Task<MediaDataDTO?> GetPrimaryMediaAsync(Guid recordId)
         {
@@ -167,5 +201,28 @@ namespace MediaLib.Services
                 Base64Image = primaryMedia.Content != null ? Convert.ToBase64String(primaryMedia.Content) : null
             };
         }
+
+        public async Task SetPrimaryMediaAsync(Guid recordId, Guid primaryMediaId)
+        {
+            var mediaList = await _context.MediaData
+                .Where(m => m.AssociatedRecordId == recordId)
+                .ToListAsync();
+
+            // Сбрасываем флаг IsPrime у всех медиа
+            foreach (var media in mediaList)
+            {
+                media.IsPrime = false;
+            }
+
+            // Устанавливаем IsPrime для выбранного медиа
+            var primaryMedia = mediaList.FirstOrDefault(m => m.Id == primaryMediaId);
+            if (primaryMedia != null)
+            {
+                primaryMedia.IsPrime = true;
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
     }
 }

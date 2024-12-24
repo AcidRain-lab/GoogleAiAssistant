@@ -108,8 +108,15 @@ namespace WebObjectsBLL.Services
             }
         }
 
-        public async Task UpdateAsync(CardTypeDetailDTO cardTypeDto, AvatarDTO? avatar, List<MediaDataDTO>? mediaFiles, List<DocumentsDTO>? documents)
+        public async Task UpdateAsync(
+     CardTypeDetailDTO cardTypeDto,
+     AvatarDTO? avatar,
+     List<MediaDataDTO>? newMediaFiles,
+     List<DocumentsDTO>? newDocuments,
+     Guid? primaryMediaId,
+     List<Guid>? mediaToDelete)
         {
+            // Обновляем основные данные типа карты
             var cardType = await _context.CardTypes.FirstOrDefaultAsync(ct => ct.Id == cardTypeDto.Id);
             if (cardType == null)
                 throw new KeyNotFoundException("Card type not found");
@@ -117,30 +124,49 @@ namespace WebObjectsBLL.Services
             _mapper.Map(cardTypeDto, cardType);
             await _context.SaveChangesAsync();
 
+            // Обновляем аватар
             if (avatar != null)
             {
                 avatar.AssociatedRecordId = cardType.Id;
                 await _avatarService.SetAvatarAsync(avatar);
             }
 
-            if (mediaFiles != null)
+            // Удаляем указанные медиа
+            if (mediaToDelete != null && mediaToDelete.Any())
             {
-                foreach (var media in mediaFiles)
+                foreach (var mediaId in mediaToDelete)
+                {
+                    await _mediaGalleryService.RemoveMediaAsync(mediaId);
+                }
+            }
+
+            // Добавляем новые медиа
+            if (newMediaFiles != null)
+            {
+                foreach (var media in newMediaFiles)
                 {
                     media.AssociatedRecordId = cardType.Id;
                 }
-                await _mediaGalleryService.UpdateMediaAsync(mediaFiles);
+                await _mediaGalleryService.AddMediaAsync(newMediaFiles);
             }
 
-            if (documents != null)
+            // Обновляем существующие медиа: сброс IsPrime и установка нового PrimaryMedia
+            if (primaryMediaId.HasValue)
             {
-                foreach (var document in documents)
+                await _mediaGalleryService.SetPrimaryMediaAsync(cardType.Id, primaryMediaId.Value);
+            }
+
+            // Добавляем новые документы
+            if (newDocuments != null)
+            {
+                foreach (var document in newDocuments)
                 {
                     document.AssociatedRecordId = cardType.Id;
                 }
-                await _documentService.UpdateDocumentsAsync(documents);
+                await _documentService.AddDocumentsAsync(newDocuments);
             }
         }
+
 
         public async Task DeleteAsync(Guid id)
         {

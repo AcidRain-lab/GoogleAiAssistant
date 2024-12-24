@@ -64,14 +64,16 @@
                                 <a href="@Url.Action("DownloadMedia", "CardTypes", new { id = media.Id })">@media.Name</a>
                             </div>
                         }
-                        @if (Model.MediaFiles.Count > 1)
-                        {
-                            <div class="form-check mt-2">
-                                <input class="form-check-input" type="radio" name="IsPrimaryMediaId" value="@media.Id" @(media.IsPrime ? "checked" : "") />
-                                <label class="form-check-label">Установить как основное</label>
-                            </div>
-                        }
-                        <button type="button" class="btn btn-danger btn-sm mt-2" onclick="removeMedia('@media.Id')">Удалить</button>
+
+                        <div class="form-check mt-2">
+                            <input class="form-check-input" type="radio" name="PrimaryMediaId" value="@media.Id" @(media.IsPrime ? "checked" : "") />
+                            <label class="form-check-label">Установить как основное</label>
+                        </div>
+
+                        <div>
+                            <input type="checkbox" name="MediaToDelete" value="@media.Id" />
+                            <label>Удалить</label>
+                        </div>
                     </div>
                 }
             </div>
