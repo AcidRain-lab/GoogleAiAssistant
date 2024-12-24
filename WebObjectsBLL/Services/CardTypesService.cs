@@ -39,15 +39,26 @@ namespace WebObjectsBLL.Services
                 .Include(ct => ct.PaymentSystemType)
                 .ToListAsync();
 
-            return cardTypes.Select(ct => new CardTypeTableDTO
+            var result = new List<CardTypeTableDTO>();
+
+            foreach (var ct in cardTypes)
             {
-                Id = ct.Id,
-                Name = ct.Name,
-                Description = ct.Description,
-                PaymentSystemTypeName = ct.PaymentSystemType?.Name,
-                Avatar = _avatarService.GetAvatarAsync(ct.Id).Result
-            });
+                var primaryMedia = await _mediaGalleryService.GetPrimaryMediaAsync(ct.Id);
+
+                result.Add(new CardTypeTableDTO
+                {
+                    Id = ct.Id,
+                    Name = ct.Name,
+                    Description = ct.Description,
+                    PaymentSystemTypeName = ct.PaymentSystemType?.Name,
+                    Avatar = await _avatarService.GetAvatarAsync(ct.Id),
+                    PrimaryMedia = primaryMedia // Добавляем данные о главном медиа
+                });
+            }
+
+            return result;
         }
+
 
         public async Task<CardTypeDetailDTO> GetByIdWithDetailsAsync(Guid id)
         {

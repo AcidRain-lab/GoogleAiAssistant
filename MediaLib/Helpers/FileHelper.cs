@@ -1,9 +1,12 @@
-﻿using SixLabors.ImageSharp;
+﻿using MediaLib.DTO;
+using Microsoft.AspNetCore.Http;
+using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Processing;
-using Microsoft.AspNetCore.Http;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace MediaLib.Helpers
@@ -42,5 +45,60 @@ namespace MediaLib.Helpers
             var extension = Path.GetExtension(originalFileName);
             return $"{Guid.NewGuid()}{extension}";
         }
+
+        public static async Task<T?> CreateDTOFromUploadedFileAsync<T>(IFormFile file) where T : class, new()
+        {
+            if (file == null) return null;
+
+            var dto = new T();
+
+            if (dto is AvatarDTO avatar)
+            {
+                avatar.Content = await ConvertToByteArrayAsync(file);
+                avatar.Name = GenerateUniqueFileName(file.FileName);
+                avatar.Extension = Path.GetExtension(file.FileName);
+                avatar.UploadedFile = file; // Сохраняем ссылку на файл
+                return avatar as T;
+            }
+
+            if (dto is MediaDataDTO media)
+            {
+                media.Content = await ConvertToByteArrayAsync(file);
+                media.Name = file.FileName;
+                media.Extension = Path.GetExtension(file.FileName);
+                media.UploadedFile = file; // Сохраняем ссылку на файл
+                return media as T;
+            }
+
+            if (dto is DocumentsDTO document)
+            {
+                document.Content = await ConvertToByteArrayAsync(file);
+                document.Name = file.FileName;
+                document.Extension = Path.GetExtension(file.FileName);
+                document.UploadedFile = file; // Сохраняем ссылку на файл
+                return document as T;
+            }
+
+            return null;
+        }
+
+        public static async Task<List<T>> CreateDTOListFromUploadedFilesAsync<T>(List<IFormFile>? files) where T : class, new()
+        {
+            if (files == null || !files.Any()) return new List<T>();
+
+            var dtoList = new List<T>();
+
+            foreach (var file in files)
+            {
+                var dto = await CreateDTOFromUploadedFileAsync<T>(file);
+                if (dto != null)
+                {
+                    dtoList.Add(dto);
+                }
+            }
+
+            return dtoList;
+        }
+
     }
 }

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using WebObjectsBLL.DTO;
 using WebObjectsBLL.Services;
 using MediaLib.DTO;
+using MediaLib.Helpers;
 
 namespace WebSite.Controllers.MVC
 {
@@ -44,28 +45,9 @@ namespace WebSite.Controllers.MVC
             List<IFormFile>? mediaFiles,
             List<IFormFile>? documentFiles)
         {
-            AvatarDTO? avatar = null;
-
-            if (avatarFile != null)
-            {
-                avatar = new AvatarDTO
-                {
-                    UploadedFile = avatarFile,
-                    Name = avatarFile.FileName
-                };
-            }
-
-            var mediaDTOs = mediaFiles?.Select(file => new MediaDataDTO
-            {
-                UploadedFile = file,
-                Name = file.FileName
-            }).ToList();
-
-            var documentDTOs = documentFiles?.Select(file => new DocumentsDTO
-            {
-                UploadedFile = file,
-                Name = file.FileName
-            }).ToList();
+            var avatar = await FileHelper.CreateDTOFromUploadedFileAsync<AvatarDTO>(avatarFile);
+            var mediaDTOs = await FileHelper.CreateDTOListFromUploadedFilesAsync<MediaDataDTO>(mediaFiles);
+            var documentDTOs = await FileHelper.CreateDTOListFromUploadedFilesAsync<DocumentsDTO>(documentFiles);
 
             await _cardTypesService.AddAsync(cardTypeDto, avatar, mediaDTOs, documentDTOs);
             return RedirectToAction(nameof(Index));
@@ -90,28 +72,9 @@ namespace WebSite.Controllers.MVC
             List<IFormFile>? mediaFiles,
             List<IFormFile>? documentFiles)
         {
-            AvatarDTO? avatar = null;
-
-            if (avatarFile != null)
-            {
-                avatar = new AvatarDTO
-                {
-                    UploadedFile = avatarFile,
-                    Name = avatarFile.FileName
-                };
-            }
-
-            var mediaDTOs = mediaFiles?.Select(file => new MediaDataDTO
-            {
-                UploadedFile = file,
-                Name = file.FileName
-            }).ToList();
-
-            var documentDTOs = documentFiles?.Select(file => new DocumentsDTO
-            {
-                UploadedFile = file,
-                Name = file.FileName
-            }).ToList();
+            var avatar = await FileHelper.CreateDTOFromUploadedFileAsync<AvatarDTO>(avatarFile);
+            var mediaDTOs = await FileHelper.CreateDTOListFromUploadedFilesAsync<MediaDataDTO>(mediaFiles);
+            var documentDTOs = await FileHelper.CreateDTOListFromUploadedFilesAsync<DocumentsDTO>(documentFiles);
 
             await _cardTypesService.UpdateAsync(cardTypeDto, avatar, mediaDTOs, documentDTOs);
             return RedirectToAction(nameof(Index));

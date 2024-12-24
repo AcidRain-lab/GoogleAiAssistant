@@ -48,15 +48,33 @@
         <label>Существующие медиа файлы</label>
         @if (Model.MediaFiles != null && Model.MediaFiles.Any())
         {
-            <ul>
+            <div class="row">
                 @foreach (var media in Model.MediaFiles)
                 {
-                    <li>
-                        <a href="@Url.Action("DownloadMedia", "CardTypes", new { id = media.Id })">@media.Name</a>
-                        <button type="button" class="btn btn-danger btn-sm" onclick="removeMedia('@media.Id')">Удалить</button>
-                    </li>
+                    <div class="col-md-3 text-center mb-3">
+                        @if (!string.IsNullOrEmpty(media.Base64Image))
+                        {
+                            <div>
+                                <img src="data:image/jpeg;base64,@media.Base64Image" alt="@media.Name" style="max-width: 100%; max-height: 150px; border: 1px solid #ddd;" />
+                            </div>
+                        }
+                        else
+                        {
+                            <div>
+                                <a href="@Url.Action("DownloadMedia", "CardTypes", new { id = media.Id })">@media.Name</a>
+                            </div>
+                        }
+                        @if (Model.MediaFiles.Count > 1)
+                        {
+                            <div class="form-check mt-2">
+                                <input class="form-check-input" type="radio" name="IsPrimaryMediaId" value="@media.Id" @(media.IsPrime ? "checked" : "") />
+                                <label class="form-check-label">Установить как основное</label>
+                            </div>
+                        }
+                        <button type="button" class="btn btn-danger btn-sm mt-2" onclick="removeMedia('@media.Id')">Удалить</button>
+                    </div>
                 }
-            </ul>
+            </div>
         }
         else
         {

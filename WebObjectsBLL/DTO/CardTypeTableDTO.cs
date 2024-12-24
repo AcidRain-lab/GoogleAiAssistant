@@ -10,6 +10,8 @@ namespace WebObjectsBLL.DTO
         public string? Description { get; set; }
         public string PaymentSystemTypeName { get; set; } = string.Empty;
         public AvatarDTO? Avatar { get; set; }
+
+        public MediaDataDTO? PrimaryMedia { get; set; } // Поле для основного медиа
     }
 }
 
