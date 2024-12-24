@@ -1,62 +1,33 @@
 ﻿@model WebObjectsBLL.DTO.CardTypeDTO
 
-<h1>Добавить тип карты</h1>
+<h1>Add Card Type</h1>
 
-<form asp-action="Add" method="post">
+<form asp-action="Add" method="post" enctype="multipart/form-data">
+    @Html.AntiForgeryToken()
+
     <div class="form-group">
-        <label asp-for="Name" class="control-label">Название</label>
+        <label asp-for="Name" class="control-label">Name</label>
         <input asp-for="Name" class="form-control" />
         <span asp-validation-for="Name" class="text-danger"></span>
     </div>
 
     <div class="form-group">
-        <label asp-for="Description" class="control-label">Описание</label>
+        <label asp-for="Description" class="control-label">Description</label>
         <textarea asp-for="Description" class="form-control"></textarea>
         <span asp-validation-for="Description" class="text-danger"></span>
     </div>
 
     <div class="form-group">
-        <label asp-for="Caption1" class="control-label">Заголовок 1</label>
-        <input asp-for="Caption1" class="form-control" />
-        <span asp-validation-for="Caption1" class="text-danger"></span>
+        <label class="control-label">Avatar</label>
+        <input type="file" name="avatarFile" class="form-control" />
     </div>
 
     <div class="form-group">
-        <label asp-for="Value1" class="control-label">Значение 1</label>
-        <input asp-for="Value1" class="form-control" />
-        <span asp-validation-for="Value1" class="text-danger"></span>
-    </div>
-
-    <div class="form-group">
-        <label asp-for="Caption2" class="control-label">Заголовок 2</label>
-        <input asp-for="Caption2" class="form-control" />
-        <span asp-validation-for="Caption2" class="text-danger"></span>
-    </div>
-
-    <div class="form-group">
-        <label asp-for="Value2" class="control-label">Значение 2</label>
-        <input asp-for="Value2" class="form-control" />
-        <span asp-validation-for="Value2" class="text-danger"></span>
-    </div>
-
-    <div class="form-group">
-        <label asp-for="Caption3" class="control-label">Заголовок 3</label>
-        <input asp-for="Caption3" class="form-control" />
-        <span asp-validation-for="Caption3" class="text-danger"></span>
-    </div>
-
-    <div class="form-group">
-        <label asp-for="Value3" class="control-label">Значение 3</label>
-        <input asp-for="Value3" class="form-control" />
-        <span asp-validation-for="Value3" class="text-danger"></span>
-    </div>
-
-    <div class="form-group">
-        <label asp-for="PaymentSystemTypeId" class="control-label">Платежная система</label>
+        <label asp-for="PaymentSystemTypeId" class="control-label">Payment System</label>
         <select asp-for="PaymentSystemTypeId" class="form-control" asp-items="ViewBag.PaymentSystemTypes"></select>
         <span asp-validation-for="PaymentSystemTypeId" class="text-danger"></span>
     </div>
 
-    <button type="submit" class="btn btn-success">Сохранить</button>
-    <a asp-action="Index" class="btn btn-secondary">Отмена</a>
+    <button type="submit" class="btn btn-success">Save</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
 </form>

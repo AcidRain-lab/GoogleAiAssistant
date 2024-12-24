@@ -1,7 +1,7 @@
 ﻿
 using DAL.Models;
 
-namespace MediaLib.DTO.MediaData
+namespace MediaLib.DTO
 {
     public class MediaDataDTO
     {

@@ -15,6 +15,8 @@ namespace WebObjectsBLL.DTO
         public string? Caption3 { get; set; }
         public string? Value3 { get; set; }
         public string PaymentSystemTypeName { get; set; } = null!;
-    }
 
+        // Добавлено свойство для отображения аватара
+        public string? AvatarBase64 { get; set; }
+    }
 }

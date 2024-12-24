@@ -2,7 +2,7 @@
 
 <h1>Редактировать тип карты</h1>
 
-<form asp-action="Edit" method="post">
+<form asp-action="Edit" method="post" enctype="multipart/form-data">
     <input type="hidden" asp-for="Id" />
 
     <div class="form-group">
@@ -57,6 +57,23 @@
         <label asp-for="PaymentSystemTypeId" class="control-label">Платежная система</label>
         <select asp-for="PaymentSystemTypeId" class="form-control" asp-items="ViewBag.PaymentSystemTypes"></select>
         <span asp-validation-for="PaymentSystemTypeId" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label>Аватар</label>
+        @if (!string.IsNullOrEmpty(Model.AvatarBase64))
+        {
+            <div class="mb-3">
+                <img src="data:image/png;base64,@Model.AvatarBase64" alt="Avatar" style="max-width: 150px; max-height: 150px; border: 1px solid #ccc;" />
+            </div>
+        }
+        else
+        {
+            <p>Аватар не загружен.</p>
+        }
+
+        <label>Заменить аватар:</label>
+        <input type="file" name="avatarFile" class="form-control" accept="image/*" />
     </div>
 
     <button type="submit" class="btn btn-success">Сохранить</button>
