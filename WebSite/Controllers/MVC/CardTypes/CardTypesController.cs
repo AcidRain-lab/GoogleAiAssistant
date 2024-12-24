@@ -117,13 +117,14 @@ namespace WebSite.Controllers.MVC
             return RedirectToAction(nameof(Index));
         }
 
-        [HttpPost("Delete/{id}")]
+
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(Guid id)
         {
             await _cardTypesService.DeleteAsync(id);
             TempData["Message"] = $"Card Type with ID {id} deleted successfully.";
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction("Index");
         }
 
         [HttpGet("Details/{id}")]

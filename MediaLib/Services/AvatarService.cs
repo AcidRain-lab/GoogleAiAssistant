@@ -16,7 +16,7 @@ namespace MediaLib.Services
 
         public async Task<AvatarDTO?> GetAvatarAsync(Guid associatedRecordId)
         {
-            var avatar = await _context.Avatars.FirstOrDefaultAsync(m => m.AssociatedRecordId == associatedRecordId);
+            var avatar = await _context.Avatars.FirstOrDefaultAsync(a => a.AssociatedRecordId == associatedRecordId);
             if (avatar == null) return null;
 
             return new AvatarDTO
@@ -33,21 +33,23 @@ namespace MediaLib.Services
 
         public async Task<bool> SetAvatarAsync(AvatarDTO model)
         {
-            var avatar = await _context.Avatars.FirstOrDefaultAsync(a => a.AssociatedRecordId == model.AssociatedRecordId);
-
-            if (model.Content == null)
+            if (model.UploadedFile != null)
             {
-                return false; // Нельзя сохранить пустой аватар
+                model.Content = await FileHelper.ConvertToByteArrayAsync(model.UploadedFile);
+                model.Extension = Path.GetExtension(model.UploadedFile.FileName);
+                model.Name = FileHelper.GenerateUniqueFileName(model.UploadedFile.FileName);
             }
 
-            // Используем FileHelper для обработки
+            if (model.Content == null) return false;
+
             var optimizedContent = FileHelper.ResizeAndCompressImage(model.Content, 100, 100);
+            var avatar = await _context.Avatars.FirstOrDefaultAsync(a => a.AssociatedRecordId == model.AssociatedRecordId);
 
             if (avatar != null)
             {
                 avatar.Name = model.Name;
                 avatar.Content = optimizedContent;
-                avatar.Extension = ".png";
+                avatar.Extension = model.Extension;
                 _context.Avatars.Update(avatar);
             }
             else
@@ -56,7 +58,7 @@ namespace MediaLib.Services
                 {
                     AssociatedRecordId = model.AssociatedRecordId,
                     Name = model.Name,
-                    Extension = ".png",
+                    Extension = model.Extension,
                     Content = optimizedContent,
                     ObjectTypeId = model.ObjectTypeId
                 };

@@ -2,7 +2,6 @@
 using DAL.Models;
 using MediaLib.DTO;
 using MediaLib.Services;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -79,7 +78,7 @@ namespace WebObjectsBLL.Services
                 await _avatarService.SetAvatarAsync(avatar);
             }
 
-            if (mediaFiles != null && mediaFiles.Any())
+            if (mediaFiles != null)
             {
                 foreach (var media in mediaFiles)
                 {
@@ -88,7 +87,7 @@ namespace WebObjectsBLL.Services
                 await _mediaGalleryService.AddMediaAsync(mediaFiles);
             }
 
-            if (documents != null && documents.Any())
+            if (documents != null)
             {
                 foreach (var document in documents)
                 {
@@ -113,7 +112,7 @@ namespace WebObjectsBLL.Services
                 await _avatarService.SetAvatarAsync(avatar);
             }
 
-            if (mediaFiles != null && mediaFiles.Any())
+            if (mediaFiles != null)
             {
                 foreach (var media in mediaFiles)
                 {
@@ -122,7 +121,7 @@ namespace WebObjectsBLL.Services
                 await _mediaGalleryService.UpdateMediaAsync(mediaFiles);
             }
 
-            if (documents != null && documents.Any())
+            if (documents != null)
             {
                 foreach (var document in documents)
                 {
@@ -144,16 +143,6 @@ namespace WebObjectsBLL.Services
             await _avatarService.RemoveAvatarAsync(id);
             await _mediaGalleryService.RemoveMediaByRecordIdAsync(id);
             await _documentService.RemoveDocumentsByRecordIdAsync(id);
-        }
-
-        public async Task<bool> RemoveMediaAsync(Guid mediaId)
-        {
-            return await _mediaGalleryService.RemoveMediaAsync(mediaId);
-        }
-
-        public async Task<bool> RemoveDocumentAsync(Guid documentId)
-        {
-            return await _documentService.RemoveDocumentAsync(documentId);
         }
     }
 }
