@@ -54,7 +54,7 @@ namespace WebObjectsBLL.Services
                     Description = ct.Description,
                     PaymentSystemTypeName = ct.PaymentSystemType?.Name,
                     Avatar = await _avatarService.GetAvatarAsync(ct.Id),
-                    PrimaryMedia = primaryMedia // Добавляем данные о главном медиа
+                    PrimaryMedia = primaryMedia
                 });
             }
 
@@ -78,7 +78,11 @@ namespace WebObjectsBLL.Services
             return dto;
         }
 
-        public async Task AddAsync(CardTypeDetailDTO cardTypeDto, AvatarDTO? avatar, List<MediaDataDTO>? mediaFiles, List<DocumentsDTO>? documents)
+        public async Task AddAsync(
+            CardTypeDetailDTO cardTypeDto,
+            AvatarDTO? avatar,
+            List<MediaDataDTO>? mediaFiles,
+            List<DocumentsDTO>? documents)
         {
             var cardType = _mapper.Map<CardType>(cardTypeDto);
             _context.CardTypes.Add(cardType);
@@ -110,14 +114,15 @@ namespace WebObjectsBLL.Services
         }
 
         public async Task UpdateAsync(
-             CardTypeDetailDTO cardTypeDto,
-             AvatarDTO? avatar,
-             List<IFormFile>? newMediaFiles,
-             List<IFormFile>? newDocumentFiles,
-             Guid? primaryMediaId,
-             List<Guid>? mediaToDelete)
+            CardTypeDetailDTO cardTypeDto,
+            AvatarDTO? avatar,
+            List<IFormFile>? newMediaFiles,
+            List<IFormFile>? newDocumentFiles,
+            Guid? primaryMediaId,
+            List<Guid>? mediaToDelete,
+            Guid? primaryDocumentId,
+            List<Guid>? documentsToDelete)
         {
-            // Обновляем основные данные типа карты
             var cardType = await _context.CardTypes.FirstOrDefaultAsync(ct => ct.Id == cardTypeDto.Id);
             if (cardType == null)
                 throw new KeyNotFoundException("Card type not found");
@@ -125,32 +130,45 @@ namespace WebObjectsBLL.Services
             _mapper.Map(cardTypeDto, cardType);
             await _context.SaveChangesAsync();
 
-            // Обновляем аватар
             if (avatar != null)
             {
                 avatar.AssociatedRecordId = cardType.Id;
                 await _avatarService.SetAvatarAsync(avatar);
             }
 
-            // Обновляем медиа-файлы через универсальный метод
             await _mediaGalleryService.ManageMediaAsync(
                 cardType.Id,
                 newMediaFiles,
                 mediaToDelete,
-                primaryMediaId
-            );
+                primaryMediaId);
 
-            // Добавляем новые документы
-            if (newDocumentFiles != null)
+            await _documentService.ManageDocumentsAsync(
+                cardType.Id,
+                newDocumentFiles,
+                documentsToDelete,
+                primaryDocumentId); // Добавлен аргумент primaryDocumentId
+
+            if (primaryDocumentId.HasValue)
             {
-                var newDocuments = await FileHelper.CreateDTOListFromUploadedFilesAsync<DocumentsDTO>(newDocumentFiles);
-                foreach (var document in newDocuments)
+                var document = await _context.DocumentsData
+                    .FirstOrDefaultAsync(d => d.Id == primaryDocumentId.Value && d.AssociatedRecordId == cardType.Id);
+                if (document != null)
                 {
-                    document.AssociatedRecordId = cardType.Id;
+                    document.IsPrime = true;
+                    _context.DocumentsData.Update(document);
                 }
-                await _documentService.AddDocumentsAsync(newDocuments);
+
+                var otherDocuments = await _context.DocumentsData
+                    .Where(d => d.AssociatedRecordId == cardType.Id && d.Id != primaryDocumentId.Value)
+                    .ToListAsync();
+                foreach (var doc in otherDocuments)
+                {
+                    doc.IsPrime = false;
+                }
+                await _context.SaveChangesAsync();
             }
         }
+
 
         public async Task DeleteAsync(Guid id)
         {
@@ -164,6 +182,16 @@ namespace WebObjectsBLL.Services
             await _avatarService.RemoveAvatarAsync(id);
             await _mediaGalleryService.RemoveMediaByRecordIdAsync(id);
             await _documentService.RemoveDocumentsByRecordIdAsync(id);
+        }
+
+        public async Task DeleteMediaAsync(Guid mediaId)
+        {
+            await _mediaGalleryService.RemoveMediaAsync(mediaId);
+        }
+
+        public async Task DeleteDocumentAsync(Guid documentId)
+        {
+            await _documentService.RemoveDocumentAsync(documentId);
         }
     }
 }
