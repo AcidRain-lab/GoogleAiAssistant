@@ -37,6 +37,8 @@ public partial class BankContext : DbContext
 
     public virtual DbSet<Credit> Credits { get; set; }
 
+    public virtual DbSet<CreditType> CreditTypes { get; set; }
+
     public virtual DbSet<Deposit> Deposits { get; set; }
 
     public virtual DbSet<DocumentsDatum> DocumentsData { get; set; }
@@ -73,7 +75,7 @@ public partial class BankContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
-    /*protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+   /* protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
         => optionsBuilder.UseSqlServer("Server=DESKTOP-A1DDL4K\\SQLEXPRESS;Database=bank;Trusted_Connection=True;Encrypt=False;");
 */
@@ -271,6 +273,21 @@ public partial class BankContext : DbContext
             entity.HasOne(d => d.Client).WithMany(p => p.Credits)
                 .HasForeignKey(d => d.ClientId)
                 .HasConstraintName("FK__Credits__ClientI__0A93743A");
+
+            entity.HasOne(d => d.CreditType).WithMany(p => p.Credits)
+                .HasForeignKey(d => d.CreditTypeId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Credits_CreditTypes");
+        });
+
+        modelBuilder.Entity<CreditType>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__CreditTy__3214EC0752844FDB");
+
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.CreditAmount).HasMaxLength(50);
+            entity.Property(e => e.CreditName).HasMaxLength(100);
+            entity.Property(e => e.CreditTerm).HasMaxLength(50);
         });
 
         modelBuilder.Entity<Deposit>(entity =>

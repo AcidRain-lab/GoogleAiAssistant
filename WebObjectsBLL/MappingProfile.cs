@@ -43,7 +43,12 @@ namespace WebObjectsBLL
                 .ForMember(dest => dest.EndDate, opt => opt.MapFrom(src => src.EndDate.ToDateTime(TimeOnly.MinValue)))
                 .ReverseMap()
                 .ForMember(dest => dest.StartDate, opt => opt.MapFrom(src => DateOnly.FromDateTime(src.StartDate)))
-                .ForMember(dest => dest.EndDate, opt => opt.MapFrom(src => DateOnly.FromDateTime(src.EndDate)));
+                .ForMember(dest => dest.EndDate, opt => opt.MapFrom(src => DateOnly.FromDateTime(src.EndDate)))
+                .ForMember(dest => dest.CreditType, opt => opt.Ignore()); // Исключение связи с CreditType
+
+            // Маппинг для CreditType
+            CreateMap<CreditType, CreditTypeDTO>().ReverseMap();
+            CreateMap<CreditType, CreditTypeDTO>().ReverseMap();
 
             // Маппинг для NestedSubTerm
             CreateMap<NestedSubTerm, NestedSubTermDto>().ReverseMap();

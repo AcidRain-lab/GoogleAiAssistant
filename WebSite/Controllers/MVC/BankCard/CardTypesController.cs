@@ -7,7 +7,7 @@ using MediaLib.DTO;
 using MediaLib.Helpers;
 using MediaLib.Services;
 
-namespace WebSite.Controllers.MVC
+namespace WebSite.Controllers.MVC.BankCard
 {
     [Authorize]
     [Route("CardTypes")]
