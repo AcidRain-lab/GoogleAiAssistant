@@ -5,6 +5,7 @@ using WebObjectsBLL.DTO;
 using WebObjectsBLL.Services;
 using MediaLib.DTO;
 using MediaLib.Helpers;
+using MediaLib.Services;
 
 namespace WebSite.Controllers.MVC
 {
@@ -14,13 +15,16 @@ namespace WebSite.Controllers.MVC
     {
         private readonly CardTypesService _cardTypesService;
         private readonly PaymentSystemService _paymentSystemService;
+        private readonly DocumentService _documentService; // Добавляем поле для DocumentService
 
         public CardTypesController(
             CardTypesService cardTypesService,
-            PaymentSystemService paymentSystemService)
+            PaymentSystemService paymentSystemService,
+            DocumentService documentService) // Внедряем зависимость DocumentService
         {
             _cardTypesService = cardTypesService;
             _paymentSystemService = paymentSystemService;
+            _documentService = documentService;
         }
 
         [HttpGet("")]
@@ -70,16 +74,26 @@ namespace WebSite.Controllers.MVC
             CardTypeDetailDTO cardTypeDto,
             IFormFile? avatarFile,
             List<IFormFile>? mediaFiles,
-            List<IFormFile>? documentFiles)
+            List<IFormFile>? documentFiles,
+            Guid? PrimaryMediaId,
+            List<Guid>? MediaToDelete,
+            Guid? PrimaryDocumentId,
+            List<Guid>? DocumentsToDelete)
         {
             var avatar = await FileHelper.CreateDTOFromUploadedFileAsync<AvatarDTO>(avatarFile);
-            var mediaDTOs = await FileHelper.CreateDTOListFromUploadedFilesAsync<MediaDataDTO>(mediaFiles);
-            var documentDTOs = await FileHelper.CreateDTOListFromUploadedFilesAsync<DocumentsDTO>(documentFiles);
 
-            await _cardTypesService.UpdateAsync(cardTypeDto, avatar, mediaDTOs, documentDTOs);
+            await _cardTypesService.UpdateAsync(
+                cardTypeDto,
+                avatar,
+                mediaFiles,
+                documentFiles,
+                PrimaryMediaId,
+                MediaToDelete,
+                PrimaryDocumentId,
+                DocumentsToDelete);
+
             return RedirectToAction(nameof(Index));
         }
-
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -98,6 +112,23 @@ namespace WebSite.Controllers.MVC
                 return NotFound();
 
             return View(cardType);
+        }
+
+        [HttpGet("DownloadDocument/{id}")]
+        public async Task<IActionResult> DownloadDocument(Guid id)
+        {
+            var document = await _documentService.GetDocumentByIdAsync(id);
+            if (document == null)
+            {
+                return NotFound("Document not found.");
+            }
+
+            if (document.Content == null)
+            {
+                return BadRequest("Document content is empty.");
+            }
+
+            return File(document.Content, "application/octet-stream", document.Name + document.Extension);
         }
     }
 }
