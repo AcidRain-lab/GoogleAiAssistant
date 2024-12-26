@@ -11,8 +11,10 @@ namespace WebObjectsBLL.DTO
         public DateTime ExpirationDate { get; set; }
         public string PinCode { get; set; } = null!;
         public string CardTypeName { get; set; } = null!;
+        public Guid CardTypeId { get; set; } // Добавлено свойство
         public decimal CreditLimit { get; set; }
         public bool IsPrimary { get; set; }
         public bool AllowExternalTransfers { get; set; }
     }
+
 }

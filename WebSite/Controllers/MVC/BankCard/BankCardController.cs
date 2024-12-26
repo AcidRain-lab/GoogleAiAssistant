@@ -1,56 +1,61 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 using WebObjectsBLL.DTO;
 using WebObjectsBLL.Services;
 
-namespace WebSite.Controllers
+public class BankCardController : Controller
 {
-    public class BankCardController : Controller
+    private readonly BankCardService _bankCardService;
+    private readonly CardTypesService _cardTypeService;
+
+    public BankCardController(BankCardService bankCardService, CardTypesService cardTypeService)
     {
-        private readonly BankCardService _bankCardService;
-        private readonly BankAccountService _bankAccountService;
+        _bankCardService = bankCardService;
+        _cardTypeService = cardTypeService;
+    }
 
-        public BankCardController(BankCardService bankCardService, BankAccountService bankAccountService)
+    public async Task<IActionResult> Index(Guid clientId)
+    {
+        if (clientId == Guid.Empty)
+            return BadRequest("Client ID is required.");
+
+        var cards = await _bankCardService.GetByClientIdAsync(clientId);
+        ViewBag.ClientId = clientId;
+        return View(cards);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Add(Guid clientId)
+    {
+        if (clientId == Guid.Empty)
+            return BadRequest("Client ID is required.");
+
+        var cardTypes = await _cardTypeService.GetAllWithAvatarsAsync();
+        ViewBag.CardTypes = cardTypes;
+        ViewBag.ClientId = clientId;
+
+        var newCard = new BankCardDTO
         {
-            _bankCardService = bankCardService;
-            _bankAccountService = bankAccountService;
-        }
+            CardNumber = GenerateCardNumber(),
+            CardHolderName = "Default Name",
+            ExpirationDate = DateTime.Now.AddYears(3)
+        };
 
-        public async Task<IActionResult> Index()
-        {
-            // Получение ID текущего клиента через User.Identity
-            var clientId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(clientId))
-                return Unauthorized(); // Если клиент не залогинен, возвращаем ошибку
+        return View(newCard);
+    }
 
-            var accounts = await _bankAccountService.GetByClientIdAsync(Guid.Parse(clientId));
-            var cards = new List<BankCardDTO>();
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Add(Guid clientId, Guid cardTypeId, string cardHolderName)
+    {
+        if (clientId == Guid.Empty)
+            return BadRequest("Client ID is required.");
 
-            foreach (var account in accounts)
-            {
-                var accountCards = await _bankCardService.GetByBankAccountIdAsync(account.Id);
-                cards.AddRange(accountCards);
-            }
+        await _bankCardService.CreateAsync(clientId, cardTypeId, cardHolderName);
+        return RedirectToAction(nameof(Index), new { clientId });
+    }
 
-            return View(cards);
-        }
-
-        [HttpGet]
-        public IActionResult Add()
-        {
-            return View();
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Add(Guid accountId, Guid cardTypeId, string cardHolderName)
-        {
-            if (!ModelState.IsValid)
-                return View();
-
-            await _bankCardService.CreateAsync(accountId, cardTypeId, cardHolderName);
-            return RedirectToAction(nameof(Index));
-        }
-
+    private string GenerateCardNumber()
+    {
+        return $"4000{new Random().Next(100000000, 999999999)}";
     }
 }

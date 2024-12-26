@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿// BankAccountService.cs
+using AutoMapper;
 using DAL.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -41,15 +42,6 @@ namespace WebObjectsBLL.Services
             return _mapper.Map<BankAccountDTO>(account);
         }
 
-        public async Task CreateAsync(BankAccountDTO accountDto)
-        {
-            var account = _mapper.Map<BankAccount>(accountDto);
-            account.Id = Guid.NewGuid();
-            account.OpenedDate = DateOnly.FromDateTime(DateTime.Now);
-
-            _context.BankAccounts.Add(account);
-            await _context.SaveChangesAsync();
-        }
         public async Task<BankAccountDTO> CreateForClientAsync(Guid clientId, int bankAccountTypeId, int currencyId, string accountName)
         {
             // Генерация уникального номера счета
@@ -77,7 +69,6 @@ namespace WebObjectsBLL.Services
             return _mapper.Map<BankAccountDTO>(newAccount);
         }
 
-
         public async Task UpdateAsync(BankAccountDTO accountDto)
         {
             var account = await _context.BankAccounts.FirstOrDefaultAsync(a => a.Id == accountDto.Id);
@@ -101,6 +92,12 @@ namespace WebObjectsBLL.Services
         private string GenerateAccountNumber()
         {
             return $"UA{new Random().Next(100000000, 999999999)}";
+        }
+
+        public async Task<string> GetClientNameAsync(Guid clientId)
+        {
+            var client = await _context.Clients.FirstOrDefaultAsync(c => c.Id == clientId);
+            return client != null ? $"{client.FirstName} {client.LastName}" : "Unknown Client";
         }
     }
 }

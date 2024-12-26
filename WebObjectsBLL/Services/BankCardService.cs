@@ -43,19 +43,37 @@ namespace WebObjectsBLL.Services
             return _mapper.Map<BankCardDTO>(card);
         }
 
-        public async Task CreateAsync(Guid accountId, Guid cardTypeId, string cardHolderName)
+        public async Task CreateAsync(Guid clientId, Guid cardTypeId, string cardHolderName)
         {
+            // Создаем новый банковский аккаунт для клиента
+            var newAccount = new BankAccount
+            {
+                Id = Guid.NewGuid(),
+                AccountNumber = GenerateAccountNumber(),
+                AccountName = $"{cardHolderName}'s Account",
+                ClientId = clientId,
+                OpenedDate = DateOnly.FromDateTime(DateTime.Now),
+                Balance = 0m,
+                BankAccountTypeId = 1, // Тип аккаунта (обычный)
+                BankCurrencyId = 1,    // Валюта (например, USD)
+                IsFop = false          // Указать, если не для предпринимателя
+            };
+
+            await _context.BankAccounts.AddAsync(newAccount);
+            await _context.SaveChangesAsync();
+
+            // Создаем новую карту, привязанную к созданному аккаунту
             var newCard = new BankCard
             {
                 Id = Guid.NewGuid(),
-                BankAccountId = accountId,
+                BankAccountId = newAccount.Id,
                 CardTypeId = cardTypeId,
                 CardHolderName = cardHolderName,
                 CardNumber = GenerateCardNumber(),
                 ExpirationDate = DateOnly.FromDateTime(DateTime.Now.AddYears(3)),
                 PinCode = GeneratePinCode(),
-                IsActive = true,
                 Cvv = GenerateCvv(),
+                IsActive = true,
                 IsPrimary = false
             };
 
@@ -73,6 +91,11 @@ namespace WebObjectsBLL.Services
             await _context.SaveChangesAsync();
         }
 
+        private string GenerateAccountNumber()
+        {
+            return $"UA{new Random().Next(100000000, 999999999)}";
+        }
+
         private string GenerateCardNumber()
         {
             return $"4000{new Random().Next(100000000, 999999999)}";
@@ -87,6 +110,7 @@ namespace WebObjectsBLL.Services
         {
             return new Random().Next(100, 999).ToString();
         }
+
         public async Task<IEnumerable<BankCardDTO>> GetByBankAccountIdAsync(Guid bankAccountId)
         {
             var cards = await _context.BankCards
@@ -96,6 +120,5 @@ namespace WebObjectsBLL.Services
 
             return _mapper.Map<IEnumerable<BankCardDTO>>(cards);
         }
-
     }
 }

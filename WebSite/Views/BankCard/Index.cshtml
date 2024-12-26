@@ -1,23 +1,21 @@
 ﻿@model IEnumerable<WebObjectsBLL.DTO.BankCardDTO>
 
 @{
-    ViewData["Title"] = "My Bank Cards";
+    ViewData["Title"] = "Bank Cards";
 }
 
 <h2>@ViewData["Title"]</h2>
 
 <p>
-    <a asp-action="Add" class="btn btn-primary">Add New Bank Card</a>
+    <a asp-action="Add" asp-route-clientId="@ViewBag.ClientId" class="btn btn-primary">Add New Card</a>
 </p>
 
 <table class="table table-bordered">
     <thead>
         <tr>
             <th>Card Number</th>
-            <th>Card Holder</th>
+            <th>Holder Name</th>
             <th>Expiration Date</th>
-            <th>Credit Limit</th>
-            <th>Is Primary</th>
             <th>Actions</th>
         </tr>
     </thead>
@@ -28,22 +26,14 @@
                 <td>@card.CardNumber</td>
                 <td>@card.CardHolderName</td>
                 <td>@card.ExpirationDate.ToShortDateString()</td>
-                <td>@card.CreditLimit</td>
-                <td>@(card.IsPrimary ? "Yes" : "No")</td>
                 <td>
-                    <a asp-action="Details" asp-route-id="@card.Id" class="btn btn-sm btn-info">Details</a>
-                    <a asp-action="Edit" asp-route-id="@card.Id" class="btn btn-sm btn-warning">Edit</a>
-                    <button class="btn btn-sm btn-danger" onclick="showDeleteModal('@card.Id')">Delete</button>
+                    <!-- Пример кнопок для редактирования и удаления -->
+                    <a asp-action="Edit" asp-route-id="@card.Id" class="btn btn-warning">Edit</a>
+                    <form asp-action="Delete" asp-route-id="@card.Id" method="post" style="display:inline;">
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
                 </td>
             </tr>
         }
     </tbody>
 </table>
-
-<script>
-    function showDeleteModal(id) {
-        document.getElementById('deleteId').value = id;
-        const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
-        deleteModal.show();
-    }
-</script>
