@@ -19,17 +19,13 @@ namespace MediaLib.Services
             _context = context;
         }
 
-        /// <summary>
-        /// Универсальный метод для управления документами.
-        /// </summary>
         public async Task ManageDocumentsAsync(
             Guid recordId,
             List<IFormFile>? newFiles,
             List<Guid>? documentsToDelete,
             Guid? primaryDocumentId,
-            ObjectType? objectType = null)
+            ObjectType objectType)
         {
-            // Удаляем указанные документы
             if (documentsToDelete != null && documentsToDelete.Any())
             {
                 foreach (var documentId in documentsToDelete)
@@ -38,19 +34,17 @@ namespace MediaLib.Services
                 }
             }
 
-            // Добавляем новые документы
             if (newFiles != null && newFiles.Any())
             {
                 var newDocuments = await FileHelper.CreateDTOListFromUploadedFilesAsync<DocumentsDTO>(newFiles);
                 foreach (var document in newDocuments)
                 {
                     document.AssociatedRecordId = recordId;
-                    document.ObjectTypeId = objectType.HasValue ? (int)objectType : 0;
+                    document.ObjectTypeId = (int)objectType;
                 }
                 await AddDocumentsAsync(newDocuments);
             }
 
-            // Обновляем PrimaryDocument только после добавления и удаления файлов
             var remainingDocuments = await GetDocumentsListAsync(recordId);
             if (primaryDocumentId.HasValue)
             {
@@ -195,6 +189,5 @@ namespace MediaLib.Services
                 IsPrime = document.IsPrime
             };
         }
-
     }
 }

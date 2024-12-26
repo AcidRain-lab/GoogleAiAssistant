@@ -54,11 +54,12 @@ namespace WebObjectsBLL.Services
 
             if (documents != null)
             {
-                foreach (var document in documents)
-                {
-                    document.AssociatedRecordId = creditType.Id;
-                }
-                await _documentService.AddDocumentsAsync(documents);
+                await _documentService.ManageDocumentsAsync(
+                    creditType.Id,
+                    null,
+                    null,
+                    null,
+                    MediaLib.ObjectType.CreditType);
             }
         }
 
@@ -79,7 +80,8 @@ namespace WebObjectsBLL.Services
                 creditType.Id,
                 newDocumentFiles,
                 documentsToDelete,
-                primaryDocumentId);
+                primaryDocumentId,
+                MediaLib.ObjectType.CreditType);
         }
 
         public async Task DeleteAsync(Guid id)
@@ -93,10 +95,15 @@ namespace WebObjectsBLL.Services
 
             await _documentService.RemoveDocumentsByRecordIdAsync(id);
         }
-
         public async Task DeleteDocumentAsync(Guid documentId)
         {
-            await _documentService.RemoveDocumentAsync(documentId);
+            // Call the DocumentService to delete the document
+            var success = await _documentService.RemoveDocumentAsync(documentId);
+
+            if (!success)
+            {
+                throw new KeyNotFoundException($"Document with ID {documentId} not found.");
+            }
         }
     }
 }

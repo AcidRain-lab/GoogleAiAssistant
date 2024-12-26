@@ -1,8 +1,4 @@
-﻿
-
-
-
-using DAL.Models;
+﻿using DAL.Models;
 using MediaLib.DTO;
 using MediaLib.Helpers;
 using Microsoft.AspNetCore.Http;
@@ -23,17 +19,13 @@ namespace MediaLib.Services
             _context = context;
         }
 
-        /// <summary>
-        /// Универсальный метод для управления медиа-данными.
-        /// </summary>
         public async Task ManageMediaAsync(
             Guid recordId,
             List<IFormFile>? newFiles,
             List<Guid>? mediaToDelete,
             Guid? primaryMediaId,
-            ObjectType? objectType = null)
+            ObjectType objectType)
         {
-            // Удаляем указанные медиа
             if (mediaToDelete != null && mediaToDelete.Any())
             {
                 foreach (var mediaId in mediaToDelete)
@@ -42,19 +34,17 @@ namespace MediaLib.Services
                 }
             }
 
-            // Добавляем новые медиа
             if (newFiles != null && newFiles.Any())
             {
                 var newMediaFiles = await FileHelper.CreateDTOListFromUploadedFilesAsync<MediaDataDTO>(newFiles);
                 foreach (var media in newMediaFiles)
                 {
                     media.AssociatedRecordId = recordId;
-                    media.ObjectTypeId = objectType.HasValue ? (int)objectType : 0;
+                    media.ObjectTypeId = (int)objectType;
                 }
                 await AddMediaAsync(newMediaFiles);
             }
 
-            // Обновляем PrimaryMedia только после добавления и удаления файлов
             var remainingMedia = await GetMediaDataListAsync(recordId);
             if (primaryMediaId.HasValue)
             {
@@ -93,6 +83,27 @@ namespace MediaLib.Services
                 IsPrime = m.IsPrime,
                 Base64Image = m.Content != null ? FileHelper.ToBase64(m.Content) : null
             }).ToList();
+        }
+
+        public async Task<MediaDataDTO?> GetPrimaryMediaAsync(Guid recordId)
+        {
+            var primaryMedia = await _context.MediaData
+                .Where(m => m.AssociatedRecordId == recordId && m.IsPrime)
+                .FirstOrDefaultAsync();
+
+            if (primaryMedia == null) return null;
+
+            return new MediaDataDTO
+            {
+                Id = primaryMedia.Id,
+                Name = primaryMedia.Name,
+                Extension = primaryMedia.Extension,
+                Content = primaryMedia.Content,
+                AssociatedRecordId = primaryMedia.AssociatedRecordId,
+                ObjectTypeId = primaryMedia.ObjectTypeId,
+                IsPrime = primaryMedia.IsPrime,
+                Base64Image = primaryMedia.Content != null ? Convert.ToBase64String(primaryMedia.Content) : null
+            };
         }
 
         public async Task AddMediaAsync(List<MediaDataDTO> mediaFiles)
@@ -148,27 +159,6 @@ namespace MediaLib.Services
             }
 
             return true;
-        }
-
-        public async Task<MediaDataDTO?> GetPrimaryMediaAsync(Guid recordId)
-        {
-            var primaryMedia = await _context.MediaData
-                .Where(m => m.AssociatedRecordId == recordId && m.IsPrime)
-                .FirstOrDefaultAsync();
-
-            if (primaryMedia == null) return null;
-
-            return new MediaDataDTO
-            {
-                Id = primaryMedia.Id,
-                Name = primaryMedia.Name,
-                Extension = primaryMedia.Extension,
-                Content = primaryMedia.Content,
-                AssociatedRecordId = primaryMedia.AssociatedRecordId,
-                ObjectTypeId = primaryMedia.ObjectTypeId,
-                IsPrime = primaryMedia.IsPrime,
-                Base64Image = primaryMedia.Content != null ? Convert.ToBase64String(primaryMedia.Content) : null
-            };
         }
 
         public async Task SetPrimaryMediaAsync(Guid recordId, Guid primaryMediaId)

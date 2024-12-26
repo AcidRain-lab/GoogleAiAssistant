@@ -96,20 +96,22 @@ namespace WebObjectsBLL.Services
 
             if (mediaFiles != null)
             {
-                foreach (var media in mediaFiles)
-                {
-                    media.AssociatedRecordId = cardType.Id;
-                }
-                await _mediaGalleryService.AddMediaAsync(mediaFiles);
+                await _mediaGalleryService.ManageMediaAsync(
+                    cardType.Id,
+                    null,
+                    null,
+                    null,
+                    MediaLib.ObjectType.CardType);
             }
 
             if (documents != null)
             {
-                foreach (var document in documents)
-                {
-                    document.AssociatedRecordId = cardType.Id;
-                }
-                await _documentService.AddDocumentsAsync(documents);
+                await _documentService.ManageDocumentsAsync(
+                    cardType.Id,
+                    null,
+                    null,
+                    null,
+                    MediaLib.ObjectType.CardType);
             }
         }
 
@@ -140,35 +142,16 @@ namespace WebObjectsBLL.Services
                 cardType.Id,
                 newMediaFiles,
                 mediaToDelete,
-                primaryMediaId);
+                primaryMediaId,
+                MediaLib.ObjectType.CardType);
 
             await _documentService.ManageDocumentsAsync(
                 cardType.Id,
                 newDocumentFiles,
                 documentsToDelete,
-                primaryDocumentId); // Добавлен аргумент primaryDocumentId
-
-            if (primaryDocumentId.HasValue)
-            {
-                var document = await _context.DocumentsData
-                    .FirstOrDefaultAsync(d => d.Id == primaryDocumentId.Value && d.AssociatedRecordId == cardType.Id);
-                if (document != null)
-                {
-                    document.IsPrime = true;
-                    _context.DocumentsData.Update(document);
-                }
-
-                var otherDocuments = await _context.DocumentsData
-                    .Where(d => d.AssociatedRecordId == cardType.Id && d.Id != primaryDocumentId.Value)
-                    .ToListAsync();
-                foreach (var doc in otherDocuments)
-                {
-                    doc.IsPrime = false;
-                }
-                await _context.SaveChangesAsync();
-            }
+                primaryDocumentId,
+                MediaLib.ObjectType.CardType);
         }
-
 
         public async Task DeleteAsync(Guid id)
         {
