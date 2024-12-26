@@ -1,0 +1,95 @@
+﻿@model IEnumerable<WebObjectsBLL.DTO.DepositTypeDTO>
+
+@{
+    ViewData["Title"] = "Deposit Types";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<p>
+    <a asp-action="Add" class="btn btn-primary">Add New Deposit Type</a>
+</p>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Minimum Amount</th>
+            <th>Maximum Amount</th>
+            <th>Primary Document</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var depositType in Model)
+        {
+            <tr>
+                <td>@depositType.DepositName</td>
+                <td>@depositType.MinimumAmount</td>
+                <td>@depositType.MaximumAmount</td>
+                <td>
+                    @if (depositType.Documents != null && depositType.Documents.Any(doc => doc.IsPrime))
+                    {
+                        var primaryDocument = depositType.Documents.First(doc => doc.IsPrime);
+                        <a href="@Url.Action("DownloadDocument", "DepositTypes", new { id = primaryDocument.Id })">@primaryDocument.Name</a>
+                    }
+                    else
+                    {
+                        <span>No Primary Document</span>
+                    }
+                </td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@depositType.Id" class="btn btn-sm btn-info">Details</a>
+                    <a asp-action="Edit" asp-route-id="@depositType.Id" class="btn btn-sm btn-warning">Edit</a>
+                    <form asp-action="Delete" method="post" style="display:inline;">
+                        <input type="hidden" name="id" value="@depositType.Id" />
+                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+@* @model IEnumerable<WebObjectsBLL.DTO.DepositTypeDTO>
+
+@{
+    ViewData["Title"] = "Депозит «Online»";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<ul>
+    <li>Оформлення в abank24</li>
+    <li>Максимальна сума поповнення в місяць за вкладами (окрім Online на 15 міс.) дорівнює стартовій сумі вкладу або сумі на дату лонгації, але не більше ніж 100 тис. грн (5 тис. дол. США / євро)</li>
+    <li>Поповнення для вкладів строком 15 міс. не передбачено</li>
+</ul>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Термін (місяців)</th>
+            <th>Гривня</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var depositType in Model)
+        {
+            @* Assuming each DepositType has a list of DepositTerms 
+            @foreach (var term in depositType.DepositTerms)
+            {
+                <tr>
+                    <td>@term.TermMonths місяців</td>
+                    <td>@term.InterestRate %</td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+<p>"Можливість поповнення вкладів строком 15 міс. не передбачено"</p>
+<p>"При автоматичній пролонгації депозитів "Online" терміном на 6, 12 та 15 місяців діє надбавка + 0.75 % річних"</p>
+
+<h3>Додаткова інформація</h3>
+<ul>
+    <li><a href="#">Інформація про істотні характеристики вкладу «Online»</a></li>
+</ul> *@

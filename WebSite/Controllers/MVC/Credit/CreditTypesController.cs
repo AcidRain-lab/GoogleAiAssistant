@@ -5,14 +5,11 @@ using WebObjectsBLL.Services;
 using MediaLib.DTO;
 using MediaLib.Helpers;
 using MediaLib.Services;
-using Microsoft.AspNetCore.Authorization;
 
 namespace WebSite.Controllers.MVC
 {
 
-    [Authorize(Policy = "CookiePolicy")]
-    [AuthorizeRoles("Admin", "User")]
-    [Controller]
+
     public class CreditTypesController : Controller
     {
         private readonly CreditTypeService _creditTypeService;

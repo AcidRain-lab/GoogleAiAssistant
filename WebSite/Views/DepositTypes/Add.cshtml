@@ -1,0 +1,33 @@
+﻿@model WebObjectsBLL.DTO.DepositTypeDTO
+
+<h1>Add Deposit Type</h1>
+
+<form asp-action="Add" method="post" enctype="multipart/form-data">
+    @Html.AntiForgeryToken()
+
+    <div class="form-group">
+        <label asp-for="DepositName" class="control-label">Name</label>
+        <input asp-for="DepositName" class="form-control" />
+        <span asp-validation-for="DepositName" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="MinimumAmount" class="control-label">Minimum Amount</label>
+        <input asp-for="MinimumAmount" class="form-control" />
+        <span asp-validation-for="MinimumAmount" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="MaximumAmount" class="control-label">Maximum Amount</label>
+        <input asp-for="MaximumAmount" class="form-control" />
+        <span asp-validation-for="MaximumAmount" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label>Upload Documents</label>
+        <input type="file" name="newDocumentFiles" class="form-control" multiple />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>
