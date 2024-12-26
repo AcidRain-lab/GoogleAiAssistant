@@ -10,7 +10,7 @@ namespace MediaLib
     {
         CardType = 1,
         Client = 2,
-        Transaction = 3
+        CreditType = 3
       
     }
 

@@ -1,8 +1,9 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using MediaLib.DTO;
+using System;
 
 namespace WebObjectsBLL.DTO
 {
+
     public class CreditDTO
     {
         public Guid Id { get; set; }
@@ -13,6 +14,7 @@ namespace WebObjectsBLL.DTO
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public bool IsActive { get; set; }
+        public Guid CreditTypeId { get; set; } // Добавлено поле
     }
 
 }

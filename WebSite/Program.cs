@@ -44,7 +44,7 @@ builder.Services.AddScoped<RegularPaymentService>();
 builder.Services.AddScoped<CreditService>();
 builder.Services.AddScoped<BankCardService>();
 builder.Services.AddScoped<BankAccountService>();
-
+builder.Services.AddScoped<CreditTypeService>();
 // Регистрация сервисов для работы с типами карт и платежными системами
 builder.Services.AddScoped<CardTypesService>();
 builder.Services.AddScoped<PaymentSystemService>();
