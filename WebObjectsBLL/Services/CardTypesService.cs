@@ -1,13 +1,11 @@
 ﻿using AutoMapper;
 using DAL.Models;
 using MediaLib.DTO;
-using MediaLib.Helpers;
 using MediaLib.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using WebObjectsBLL.DTO;
 
@@ -82,7 +80,8 @@ namespace WebObjectsBLL.Services
             CardTypeDetailDTO cardTypeDto,
             AvatarDTO? avatar,
             List<MediaDataDTO>? mediaFiles,
-            List<DocumentsDTO>? documents)
+            List<DocumentsDTO>? documents,
+            Guid ownerId)
         {
             var cardType = _mapper.Map<CardType>(cardTypeDto);
             _context.CardTypes.Add(cardType);
@@ -91,27 +90,30 @@ namespace WebObjectsBLL.Services
             if (avatar != null)
             {
                 avatar.AssociatedRecordId = cardType.Id;
+                avatar.ObjectTypeId = (int)MediaLib.ObjectType.CardType;
                 await _avatarService.SetAvatarAsync(avatar);
             }
 
             if (mediaFiles != null)
             {
-                await _mediaGalleryService.ManageMediaAsync(
-                    cardType.Id,
-                    null,
-                    null,
-                    null,
-                    MediaLib.ObjectType.CardType);
+                foreach (var media in mediaFiles)
+                {
+                    media.AssociatedRecordId = cardType.Id;
+                    media.ObjectTypeId = (int)MediaLib.ObjectType.CardType;
+                    media.OwnerId = ownerId;
+                }
+                await _mediaGalleryService.AddMediaAsync(mediaFiles);
             }
 
             if (documents != null)
             {
-                await _documentService.ManageDocumentsAsync(
-                    cardType.Id,
-                    null,
-                    null,
-                    null,
-                    MediaLib.ObjectType.CardType);
+                foreach (var document in documents)
+                {
+                    document.AssociatedRecordId = cardType.Id;
+                    document.ObjectTypeId = (int)MediaLib.ObjectType.CardType;
+                    document.OwnerId = ownerId;
+                }
+                await _documentService.AddDocumentsAsync(documents);
             }
         }
 
@@ -123,7 +125,8 @@ namespace WebObjectsBLL.Services
             Guid? primaryMediaId,
             List<Guid>? mediaToDelete,
             Guid? primaryDocumentId,
-            List<Guid>? documentsToDelete)
+            List<Guid>? documentsToDelete,
+            Guid ownerId)
         {
             var cardType = await _context.CardTypes.FirstOrDefaultAsync(ct => ct.Id == cardTypeDto.Id);
             if (cardType == null)
@@ -135,6 +138,7 @@ namespace WebObjectsBLL.Services
             if (avatar != null)
             {
                 avatar.AssociatedRecordId = cardType.Id;
+                avatar.ObjectTypeId = (int)MediaLib.ObjectType.CardType;
                 await _avatarService.SetAvatarAsync(avatar);
             }
 
@@ -143,14 +147,16 @@ namespace WebObjectsBLL.Services
                 newMediaFiles,
                 mediaToDelete,
                 primaryMediaId,
-                MediaLib.ObjectType.CardType);
+                MediaLib.ObjectType.CardType,
+                ownerId);
 
             await _documentService.ManageDocumentsAsync(
                 cardType.Id,
                 newDocumentFiles,
                 documentsToDelete,
                 primaryDocumentId,
-                MediaLib.ObjectType.CardType);
+                MediaLib.ObjectType.CardType,
+                ownerId);
         }
 
         public async Task DeleteAsync(Guid id)
@@ -165,16 +171,6 @@ namespace WebObjectsBLL.Services
             await _avatarService.RemoveAvatarAsync(id);
             await _mediaGalleryService.RemoveMediaByRecordIdAsync(id);
             await _documentService.RemoveDocumentsByRecordIdAsync(id);
-        }
-
-        public async Task DeleteMediaAsync(Guid mediaId)
-        {
-            await _mediaGalleryService.RemoveMediaAsync(mediaId);
-        }
-
-        public async Task DeleteDocumentAsync(Guid documentId)
-        {
-            await _documentService.RemoveDocumentAsync(documentId);
         }
     }
 }

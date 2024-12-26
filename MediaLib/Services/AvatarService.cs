@@ -50,6 +50,8 @@ namespace MediaLib.Services
                 avatar.Name = model.Name;
                 avatar.Content = optimizedContent;
                 avatar.Extension = model.Extension;
+                avatar.ObjectTypeId = model.ObjectTypeId;
+               
                 _context.Avatars.Update(avatar);
             }
             else
@@ -60,7 +62,8 @@ namespace MediaLib.Services
                     Name = model.Name,
                     Extension = model.Extension,
                     Content = optimizedContent,
-                    ObjectTypeId = model.ObjectTypeId
+                    ObjectTypeId = model.ObjectTypeId,
+                  
                 };
                 _context.Avatars.Add(newAvatar);
             }
