@@ -3,10 +3,6 @@ using MediaLib.DTO;
 using MediaLib.Helpers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace MediaLib.Services
 {
@@ -24,7 +20,8 @@ namespace MediaLib.Services
             List<IFormFile>? newFiles,
             List<Guid>? mediaToDelete,
             Guid? primaryMediaId,
-            ObjectType objectType)
+            ObjectType objectType,
+            Guid ownerId)
         {
             if (mediaToDelete != null && mediaToDelete.Any())
             {
@@ -41,6 +38,7 @@ namespace MediaLib.Services
                 {
                     media.AssociatedRecordId = recordId;
                     media.ObjectTypeId = (int)objectType;
+                    media.OwnerId = ownerId;
                 }
                 await AddMediaAsync(newMediaFiles);
             }
@@ -59,11 +57,6 @@ namespace MediaLib.Services
                     await SetPrimaryMediaAsync(recordId, firstMedia.Id);
                 }
             }
-            else if (remainingMedia.Any())
-            {
-                var firstMedia = remainingMedia.First();
-                await SetPrimaryMediaAsync(recordId, firstMedia.Id);
-            }
         }
 
         public async Task<List<MediaDataDTO>> GetMediaDataListAsync(Guid recordId)
@@ -80,6 +73,7 @@ namespace MediaLib.Services
                 Content = m.Content,
                 AssociatedRecordId = m.AssociatedRecordId,
                 ObjectTypeId = m.ObjectTypeId,
+                OwnerId = m.OwnerId,
                 IsPrime = m.IsPrime,
                 Base64Image = m.Content != null ? FileHelper.ToBase64(m.Content) : null
             }).ToList();
@@ -101,8 +95,9 @@ namespace MediaLib.Services
                 Content = primaryMedia.Content,
                 AssociatedRecordId = primaryMedia.AssociatedRecordId,
                 ObjectTypeId = primaryMedia.ObjectTypeId,
+                OwnerId = primaryMedia.OwnerId,
                 IsPrime = primaryMedia.IsPrime,
-                Base64Image = primaryMedia.Content != null ? Convert.ToBase64String(primaryMedia.Content) : null
+                Base64Image = primaryMedia.Content != null ? FileHelper.ToBase64(primaryMedia.Content) : null
             };
         }
 
@@ -125,6 +120,7 @@ namespace MediaLib.Services
                     Content = media.Content,
                     AssociatedRecordId = media.AssociatedRecordId,
                     ObjectTypeId = media.ObjectTypeId,
+                    OwnerId = media.OwnerId,
                     IsPrime = media.IsPrime
                 };
                 await _context.MediaData.AddAsync(newMedia);
@@ -138,26 +134,8 @@ namespace MediaLib.Services
             var media = await _context.MediaData.FindAsync(mediaId);
             if (media == null) return false;
 
-            var associatedRecordId = media.AssociatedRecordId;
             _context.MediaData.Remove(media);
             await _context.SaveChangesAsync();
-
-            var remainingMedia = await _context.MediaData
-                .Where(m => m.AssociatedRecordId == associatedRecordId)
-                .ToListAsync();
-
-            if (remainingMedia.Any())
-            {
-                var currentPrime = remainingMedia.FirstOrDefault(m => m.IsPrime);
-                if (currentPrime == null)
-                {
-                    var firstMedia = remainingMedia.First();
-                    firstMedia.IsPrime = true;
-                    _context.MediaData.Update(firstMedia);
-                    await _context.SaveChangesAsync();
-                }
-            }
-
             return true;
         }
 
@@ -187,12 +165,10 @@ namespace MediaLib.Services
                 .Where(m => m.AssociatedRecordId == recordId)
                 .ToListAsync();
 
-            if (!mediaFiles.Any())
-                return false;
+            if (!mediaFiles.Any()) return false;
 
             _context.MediaData.RemoveRange(mediaFiles);
             await _context.SaveChangesAsync();
-
             return true;
         }
     }

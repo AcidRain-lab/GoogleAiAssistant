@@ -5,11 +5,14 @@ using WebObjectsBLL.Services;
 using MediaLib.DTO;
 using MediaLib.Helpers;
 using MediaLib.Services;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace WebSite.Controllers.MVC
 {
-
-
+    [Authorize(Policy = "CookiePolicy")]
+    [AuthorizeRoles("Admin", "User")]
+    [Controller]
     public class CreditTypesController : Controller
     {
         private readonly CreditTypeService _creditTypeService;
@@ -21,6 +24,11 @@ namespace WebSite.Controllers.MVC
         {
             _creditTypeService = creditTypeService;
             _documentService = documentService;
+        }
+
+        private Guid GetOwnerId()
+        {
+            return Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value!);
         }
 
         [HttpGet]
@@ -44,7 +52,9 @@ namespace WebSite.Controllers.MVC
                 return View(creditTypeDto);
 
             var documents = await FileHelper.CreateDTOListFromUploadedFilesAsync<DocumentsDTO>(documentFiles);
-            await _creditTypeService.AddAsync(creditTypeDto, documents);
+            var ownerId = GetOwnerId();
+
+            await _creditTypeService.AddAsync(creditTypeDto, documents, ownerId);
 
             return RedirectToAction(nameof(Index));
         }
@@ -70,11 +80,14 @@ namespace WebSite.Controllers.MVC
             if (!ModelState.IsValid)
                 return View(creditTypeDto);
 
+            var ownerId = GetOwnerId();
+
             await _creditTypeService.UpdateAsync(
                 creditTypeDto,
                 newDocumentFiles,
                 documentsToDelete,
-                primaryDocumentId);
+                primaryDocumentId,
+                ownerId);
 
             return RedirectToAction(nameof(Index));
         }

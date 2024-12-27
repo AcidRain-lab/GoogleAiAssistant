@@ -1,12 +1,13 @@
 ﻿using AutoMapper;
 using DAL.Models;
 using MediaLib.DTO;
-using MediaLib.Helpers;
 using MediaLib.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using WebObjectsBLL.DTO;
+using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using WebObjectsBLL.DTO;
 
 namespace WebObjectsBLL.Services
 {
@@ -14,27 +15,70 @@ namespace WebObjectsBLL.Services
     {
         private readonly BankContext _context;
         private readonly IMapper _mapper;
+        private readonly AvatarService _avatarService;
+        private readonly MediaGalleryService _mediaGalleryService;
         private readonly DocumentService _documentService;
 
         public DepositTypeService(
             BankContext context,
             IMapper mapper,
+            AvatarService avatarService,
+            MediaGalleryService mediaGalleryService,
             DocumentService documentService)
         {
             _context = context;
             _mapper = mapper;
+            _avatarService = avatarService;
+            _mediaGalleryService = mediaGalleryService;
             _documentService = documentService;
         }
 
-        public async Task<IEnumerable<DepositTypeDTO>> GetAllAsync()
+        public async Task<IEnumerable<DepositTypeTableDTO>> GetAllWithAvatarsAsync()
         {
             var depositTypes = await _context.DepositTypes
                 .Include(dt => dt.DepositTerms)
                 .ToListAsync();
-            return _mapper.Map<IEnumerable<DepositTypeDTO>>(depositTypes);
+
+            var result = new List<DepositTypeTableDTO>();
+
+            foreach (var dt in depositTypes)
+            {
+                var primaryMedia = await _mediaGalleryService.GetPrimaryMediaAsync(dt.Id);
+
+                result.Add(new DepositTypeTableDTO
+                {
+                    Id = dt.Id,
+                    DepositName = dt.DepositName,
+                    Description = dt.Description,
+                    Avatar = await _avatarService.GetAvatarAsync(dt.Id),
+                    PrimaryMedia = primaryMedia
+                });
+            }
+
+            return result;
+        }
+        public async Task<IEnumerable<DepositTypeDetailDTO>> GetAllWithDetailsAsync()
+        {
+            var depositTypes = await _context.DepositTypes
+                .Include(dt => dt.DepositTerms)
+                .ToListAsync();
+
+            var result = new List<DepositTypeDetailDTO>();
+
+            foreach (var dt in depositTypes)
+            {
+                var dto = _mapper.Map<DepositTypeDetailDTO>(dt);
+                dto.Avatar = await _avatarService.GetAvatarAsync(dt.Id);
+                dto.MediaFiles = await _mediaGalleryService.GetMediaDataListAsync(dt.Id);
+                dto.Documents = await _documentService.GetDocumentsListAsync(dt.Id);
+
+                result.Add(dto);
+            }
+
+            return result;
         }
 
-        public async Task<DepositTypeDTO> GetByIdWithDetailsAsync(Guid id)
+        /*public async Task<DepositTypeDetailDTO> GetByIdWithDetailsAsync(Guid id)
         {
             var depositType = await _context.DepositTypes
                 .Include(dt => dt.DepositTerms)
@@ -43,37 +87,81 @@ namespace WebObjectsBLL.Services
             if (depositType == null)
                 throw new KeyNotFoundException("Deposit type not found");
 
-            var dto = _mapper.Map<DepositTypeDTO>(depositType);
+            var dto = _mapper.Map<DepositTypeDetailDTO>(depositType);
+            dto.Avatar = await _avatarService.GetAvatarAsync(id);
+            dto.MediaFiles = await _mediaGalleryService.GetMediaDataListAsync(id);
+            dto.Documents = await _documentService.GetDocumentsListAsync(id);
+
+            return dto;
+        }*/
+        public async Task<DepositTypeDetailDTO> GetByIdWithDetailsAsync(Guid id)
+        {
+            var depositType = await _context.DepositTypes
+                .Include(dt => dt.DepositTerms)
+                .FirstOrDefaultAsync(dt => dt.Id == id);
+
+            if (depositType == null)
+                throw new KeyNotFoundException("Deposit type not found");
+
+            var dto = _mapper.Map<DepositTypeDetailDTO>(depositType);
+            dto.Avatar = await _avatarService.GetAvatarAsync(id);
+            dto.MediaFiles = await _mediaGalleryService.GetMediaDataListAsync(id);
             dto.Documents = await _documentService.GetDocumentsListAsync(id);
 
             return dto;
         }
 
         public async Task AddAsync(
-            DepositTypeDTO depositTypeDto,
-            List<DocumentsDTO>? documents)
+            DepositTypeDetailDTO depositTypeDto,
+            AvatarDTO? avatar,
+            List<MediaDataDTO>? mediaFiles,
+            List<DocumentsDTO>? documents,
+            Guid ownerId)
         {
             var depositType = _mapper.Map<DepositType>(depositTypeDto);
-            depositType.Id = Guid.NewGuid();
             _context.DepositTypes.Add(depositType);
             await _context.SaveChangesAsync();
 
+            if (avatar != null)
+            {
+                avatar.AssociatedRecordId = depositType.Id;
+                avatar.ObjectTypeId = (int)MediaLib.ObjectType.DepositType;
+                await _avatarService.SetAvatarAsync(avatar);
+            }
+
+            if (mediaFiles != null)
+            {
+                foreach (var media in mediaFiles)
+                {
+                    media.AssociatedRecordId = depositType.Id;
+                    media.ObjectTypeId = (int)MediaLib.ObjectType.DepositType;
+                    media.OwnerId = ownerId;
+                }
+                await _mediaGalleryService.AddMediaAsync(mediaFiles);
+            }
+
             if (documents != null)
             {
-                await _documentService.ManageDocumentsAsync(
-                    depositType.Id,
-                    null,
-                    null,
-                    null,
-                    MediaLib.ObjectType.DepositType);
+                foreach (var document in documents)
+                {
+                    document.AssociatedRecordId = depositType.Id;
+                    document.ObjectTypeId = (int)MediaLib.ObjectType.DepositType;
+                    document.OwnerId = ownerId;
+                }
+                await _documentService.AddDocumentsAsync(documents);
             }
         }
 
         public async Task UpdateAsync(
-            DepositTypeDTO depositTypeDto,
+            DepositTypeDetailDTO depositTypeDto,
+            AvatarDTO? avatar,
+            List<IFormFile>? newMediaFiles,
             List<IFormFile>? newDocumentFiles,
+            Guid? primaryMediaId,
+            List<Guid>? mediaToDelete,
+            Guid? primaryDocumentId,
             List<Guid>? documentsToDelete,
-            Guid? primaryDocumentId)
+            Guid ownerId)
         {
             var depositType = await _context.DepositTypes.FirstOrDefaultAsync(dt => dt.Id == depositTypeDto.Id);
             if (depositType == null)
@@ -82,12 +170,28 @@ namespace WebObjectsBLL.Services
             _mapper.Map(depositTypeDto, depositType);
             await _context.SaveChangesAsync();
 
+            if (avatar != null)
+            {
+                avatar.AssociatedRecordId = depositType.Id;
+                avatar.ObjectTypeId = (int)MediaLib.ObjectType.DepositType;
+                await _avatarService.SetAvatarAsync(avatar);
+            }
+
+            await _mediaGalleryService.ManageMediaAsync(
+                depositType.Id,
+                newMediaFiles,
+                mediaToDelete,
+                primaryMediaId,
+                MediaLib.ObjectType.DepositType,
+                ownerId);
+
             await _documentService.ManageDocumentsAsync(
                 depositType.Id,
                 newDocumentFiles,
                 documentsToDelete,
                 primaryDocumentId,
-                MediaLib.ObjectType.DepositType);
+                MediaLib.ObjectType.DepositType,
+                ownerId);
         }
 
         public async Task DeleteAsync(Guid id)
@@ -99,31 +203,9 @@ namespace WebObjectsBLL.Services
             _context.DepositTypes.Remove(depositType);
             await _context.SaveChangesAsync();
 
+            await _avatarService.RemoveAvatarAsync(id);
+            await _mediaGalleryService.RemoveMediaByRecordIdAsync(id);
             await _documentService.RemoveDocumentsByRecordIdAsync(id);
-        }
-
-        public async Task DeleteDocumentAsync(Guid documentId)
-        {
-            var success = await _documentService.RemoveDocumentAsync(documentId);
-
-            if (!success)
-            {
-                throw new KeyNotFoundException($"Document with ID {documentId} not found.");
-            }
-        }
-
-        public async Task<List<DepositTypeDTO>> GetDepositTypesAsync()
-        {
-            var depositTypes = await _context.DepositTypes
-                         .Include(dt => dt.DepositTerms)
-                         .ToListAsync();
-
-            foreach (var depositType in depositTypes)
-            {
-                
-            }
-
-            return _mapper.Map<List<DepositTypeDTO>>(depositTypes);
         }
     }
 }

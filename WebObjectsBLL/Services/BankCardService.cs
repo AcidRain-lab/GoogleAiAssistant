@@ -35,6 +35,7 @@ namespace WebObjectsBLL.Services
         {
             var card = await _context.BankCards
                 .Include(c => c.CardType)
+                .Include(c => c.BankAccount)
                 .FirstOrDefaultAsync(c => c.Id == id);
 
             if (card == null)
@@ -45,28 +46,32 @@ namespace WebObjectsBLL.Services
 
         public async Task CreateAsync(Guid clientId, Guid cardTypeId, string cardHolderName)
         {
-            // Создаем новый банковский аккаунт для клиента
-            var newAccount = new BankAccount
+            var existingAccount = await _context.BankAccounts
+                .FirstOrDefaultAsync(a => a.ClientId == clientId);
+
+            if (existingAccount == null)
             {
-                Id = Guid.NewGuid(),
-                AccountNumber = GenerateAccountNumber(),
-                AccountName = $"{cardHolderName}'s Account",
-                ClientId = clientId,
-                OpenedDate = DateOnly.FromDateTime(DateTime.Now),
-                Balance = 0m,
-                BankAccountTypeId = 1, // Тип аккаунта (обычный)
-                BankCurrencyId = 1,    // Валюта (например, USD)
-                IsFop = false          // Указать, если не для предпринимателя
-            };
+                existingAccount = new BankAccount
+                {
+                    Id = Guid.NewGuid(),
+                    AccountNumber = GenerateAccountNumber(),
+                    AccountName = $"{cardHolderName}'s Account",
+                    ClientId = clientId,
+                    OpenedDate = DateOnly.FromDateTime(DateTime.Now),
+                    Balance = 0m,
+                    BankAccountTypeId = 1,
+                    BankCurrencyId = 1,
+                    IsFop = false
+                };
 
-            await _context.BankAccounts.AddAsync(newAccount);
-            await _context.SaveChangesAsync();
+                await _context.BankAccounts.AddAsync(existingAccount);
+                await _context.SaveChangesAsync();
+            }
 
-            // Создаем новую карту, привязанную к созданному аккаунту
             var newCard = new BankCard
             {
                 Id = Guid.NewGuid(),
-                BankAccountId = newAccount.Id,
+                BankAccountId = existingAccount.Id,
                 CardTypeId = cardTypeId,
                 CardHolderName = cardHolderName,
                 CardNumber = GenerateCardNumber(),
@@ -91,6 +96,16 @@ namespace WebObjectsBLL.Services
             await _context.SaveChangesAsync();
         }
 
+        public async Task<IEnumerable<BankCardDTO>> GetByBankAccountIdAsync(Guid bankAccountId)
+        {
+            var cards = await _context.BankCards
+                .Include(c => c.CardType)
+                .Where(c => c.BankAccountId == bankAccountId)
+                .ToListAsync();
+
+            return _mapper.Map<IEnumerable<BankCardDTO>>(cards);
+        }
+
         private string GenerateAccountNumber()
         {
             return $"UA{new Random().Next(100000000, 999999999)}";
@@ -109,16 +124,6 @@ namespace WebObjectsBLL.Services
         private string GenerateCvv()
         {
             return new Random().Next(100, 999).ToString();
-        }
-
-        public async Task<IEnumerable<BankCardDTO>> GetByBankAccountIdAsync(Guid bankAccountId)
-        {
-            var cards = await _context.BankCards
-                .Include(c => c.CardType)
-                .Where(c => c.BankAccountId == bankAccountId)
-                .ToListAsync();
-
-            return _mapper.Map<IEnumerable<BankCardDTO>>(cards);
         }
     }
 }

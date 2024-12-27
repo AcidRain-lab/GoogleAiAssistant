@@ -1,16 +1,17 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using WebObjectsBLL.DTO;
-using WebObjectsBLL.Services;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using MediaLib.DTO;
 using MediaLib.Helpers;
-using Microsoft.AspNetCore.Authorization;
 using MediaLib.Services;
+using WebObjectsBLL.DTO;
+using WebObjectsBLL.Services;
+using System.Security.Claims;
 
-namespace WebSite.Controllers.MVC
+namespace WebSite.Controllers.MVC.DepositType
 {
-    [Authorize(Policy = "CookiePolicy")]
-    [AuthorizeRoles("Admin", "User")]
-    [Controller]
+    [Authorize]
+    [Route("DepositTypes")]
     public class DepositTypesController : Controller
     {
         private readonly DepositTypeService _depositTypeService;
@@ -24,33 +25,49 @@ namespace WebSite.Controllers.MVC
             _documentService = documentService;
         }
 
-        [HttpGet]
+        private Guid GetOwnerId()
+        {
+            return Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value!);
+        }
+
+        [HttpGet("")]
         public async Task<IActionResult> Index()
         {
-            var depositTypes = await _depositTypeService.GetDepositTypesAsync();
+            var depositTypes = await _depositTypeService.GetAllWithDetailsAsync(); // Используем метод, который возвращает детальную информацию
             return View(depositTypes);
         }
 
-        [HttpGet]
-        public IActionResult Add()
+
+        [HttpGet("Add")]
+        public async Task<IActionResult> Add()
         {
             return View();
         }
 
-        [HttpPost]
+        [HttpPost("Add")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Add(DepositTypeDTO depositTypeDto, List<IFormFile>? documentFiles)
+        public async Task<IActionResult> Add(
+            DepositTypeDetailDTO depositTypeDto,
+            IFormFile? avatarFile,
+            List<IFormFile>? mediaFiles,
+            List<IFormFile>? documentFiles)
         {
             if (!ModelState.IsValid)
+            {
                 return View(depositTypeDto);
+            }
 
-            var documents = await FileHelper.CreateDTOListFromUploadedFilesAsync<DocumentsDTO>(documentFiles);
-            await _depositTypeService.AddAsync(depositTypeDto, documents);
+            var ownerId = GetOwnerId();
 
+            var avatar = await FileHelper.CreateDTOFromUploadedFileAsync<AvatarDTO>(avatarFile);
+            var mediaDTOs = await FileHelper.CreateDTOListFromUploadedFilesAsync<MediaDataDTO>(mediaFiles);
+            var documentDTOs = await FileHelper.CreateDTOListFromUploadedFilesAsync<DocumentsDTO>(documentFiles);
+
+            await _depositTypeService.AddAsync(depositTypeDto, avatar, mediaDTOs, documentDTOs, ownerId);
             return RedirectToAction(nameof(Index));
         }
 
-        [HttpGet]
+        [HttpGet("Edit/{id}")]
         public async Task<IActionResult> Edit(Guid id)
         {
             var depositType = await _depositTypeService.GetByIdWithDetailsAsync(id);
@@ -60,37 +77,39 @@ namespace WebSite.Controllers.MVC
             return View(depositType);
         }
 
-        [HttpPost]
+        [HttpPost("Edit/{id}")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(
-    DepositTypeDTO depositTypeDto,
-    List<IFormFile>? newDocumentFiles,
-    List<Guid>? documentsToDelete,
-    Guid? primaryDocumentId)
+            DepositTypeDetailDTO depositTypeDto,
+            IFormFile? avatarFile,
+            List<IFormFile>? mediaFiles,
+            List<IFormFile>? documentFiles,
+            Guid? PrimaryMediaId,
+            List<Guid>? MediaToDelete,
+            Guid? PrimaryDocumentId,
+            List<Guid>? DocumentsToDelete)
         {
             if (!ModelState.IsValid)
-                return View(depositTypeDto);
-
-            try
             {
-                await _depositTypeService.UpdateAsync(
-                    depositTypeDto,
-                    newDocumentFiles,
-                    documentsToDelete,
-                    primaryDocumentId);
-
-                return RedirectToAction(nameof(Index));
-            }
-            catch (Exception ex)
-            {
-                // Логирование ошибки
-                Console.WriteLine($"Ошибка при обновлении типа депозита: {ex.Message}");
-
-                // Добавление сообщения об ошибке в ModelState
-                ModelState.AddModelError(string.Empty, "Виникла помилка при збереженні змін.");
-
                 return View(depositTypeDto);
             }
+
+            var ownerId = GetOwnerId();
+
+            var avatar = await FileHelper.CreateDTOFromUploadedFileAsync<AvatarDTO>(avatarFile);
+
+            await _depositTypeService.UpdateAsync(
+                depositTypeDto,
+                avatar,
+                mediaFiles,
+                documentFiles,
+                PrimaryMediaId,
+                MediaToDelete,
+                PrimaryDocumentId,
+                DocumentsToDelete,
+                ownerId);
+
+            return RedirectToAction(nameof(Index));
         }
 
         [HttpPost]
@@ -98,10 +117,11 @@ namespace WebSite.Controllers.MVC
         public async Task<IActionResult> Delete(Guid id)
         {
             await _depositTypeService.DeleteAsync(id);
-            return RedirectToAction(nameof(Index));
+            TempData["Message"] = $"Deposit Type with ID {id} deleted successfully.";
+            return RedirectToAction("Index");
         }
 
-        [HttpGet]
+        [HttpGet("Details/{id}")]
         public async Task<IActionResult> Details(Guid id)
         {
             var depositType = await _depositTypeService.GetByIdWithDetailsAsync(id);
@@ -111,12 +131,21 @@ namespace WebSite.Controllers.MVC
             return View(depositType);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> DeleteDocument(Guid documentId)
+        [HttpGet("DownloadDocument/{id}")]
+        public async Task<IActionResult> DownloadDocument(Guid id)
         {
-            await _depositTypeService.DeleteDocumentAsync(documentId);
-            TempData["Message"] = $"Document with ID {documentId} deleted successfully.";
-            return RedirectToAction(nameof(Index));
+            var document = await _documentService.GetDocumentByIdAsync(id);
+            if (document == null)
+            {
+                return NotFound("Document not found.");
+            }
+
+            if (document.Content == null)
+            {
+                return BadRequest("Document content is empty.");
+            }
+
+            return File(document.Content, "application/octet-stream", document.Name + document.Extension);
         }
     }
 }

@@ -12,6 +12,7 @@ namespace MediaLib.DTO
         public Guid AssociatedRecordId { get; set; }
         public int ObjectTypeId { get; set; }
         public bool IsPrime { get; set; }
+        public Guid? OwnerId { get; set; } // Новый параметр
         public string? Base64Image { get; set; }
         public IFormFile? UploadedFile { get; set; }
     }

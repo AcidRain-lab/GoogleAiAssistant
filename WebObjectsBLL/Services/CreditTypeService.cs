@@ -27,7 +27,7 @@ namespace WebObjectsBLL.Services
 
         public async Task<IEnumerable<CreditTypeDTO>> GetAllAsync()
         {
-            var creditTypes = await _context.CreditTypes.ToListAsync();
+            var creditTypes = await _context.Credits.ToListAsync();
             return _mapper.Map<IEnumerable<CreditTypeDTO>>(creditTypes);
         }
 
@@ -44,8 +44,9 @@ namespace WebObjectsBLL.Services
         }
 
         public async Task AddAsync(
-            CreditTypeDTO creditTypeDto,
-            List<DocumentsDTO>? documents)
+             CreditTypeDTO creditTypeDto,
+             List<DocumentsDTO>? documents,
+             Guid ownerId) // Новый параметр
         {
             var creditType = _mapper.Map<CreditType>(creditTypeDto);
             creditType.Id = Guid.NewGuid();
@@ -59,7 +60,8 @@ namespace WebObjectsBLL.Services
                     null,
                     null,
                     null,
-                    MediaLib.ObjectType.CreditType);
+                    MediaLib.ObjectType.CreditType,
+                    ownerId); // Передаем ownerId
             }
         }
 
@@ -67,7 +69,8 @@ namespace WebObjectsBLL.Services
             CreditTypeDTO creditTypeDto,
             List<IFormFile>? newDocumentFiles,
             List<Guid>? documentsToDelete,
-            Guid? primaryDocumentId)
+            Guid? primaryDocumentId,
+            Guid ownerId) // Новый параметр
         {
             var creditType = await _context.CreditTypes.FirstOrDefaultAsync(ct => ct.Id == creditTypeDto.Id);
             if (creditType == null)
@@ -81,7 +84,8 @@ namespace WebObjectsBLL.Services
                 newDocumentFiles,
                 documentsToDelete,
                 primaryDocumentId,
-                MediaLib.ObjectType.CreditType);
+                MediaLib.ObjectType.CreditType,
+                ownerId); // Передаем ownerId
         }
 
         public async Task DeleteAsync(Guid id)

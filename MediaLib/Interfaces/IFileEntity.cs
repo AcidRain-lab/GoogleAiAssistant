@@ -11,6 +11,7 @@ namespace MediaLib.Interfaces
         Guid AssociatedRecordId { get; set; }
         int ObjectTypeId { get; set; }
         bool IsPrime { get; set; }
+ 
         string? Base64Image { get; set; }
         IFormFile? UploadedFile { get; set; }
     }
