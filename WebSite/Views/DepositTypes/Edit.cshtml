@@ -1,0 +1,88 @@
+﻿@model WebObjectsBLL.DTO.DepositTypeDTO
+
+@{
+    ViewData["Title"] = "Редагувати депозит";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<form asp-action="Edit" method="post" enctype="multipart/form-data">
+    <input type="hidden" asp-for="Id" />
+    <div class="form-group">
+        <label asp-for="DepositName" class="control-label"></label>
+        <input asp-for="DepositName" class="form-control" />
+        <span asp-validation-for="DepositName" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Description" class="control-label"></label>
+        <textarea asp-for="Description" class="form-control"></textarea>
+        <span asp-validation-for="Description" class="text-danger"></span>
+    </div>
+
+    <h3>Терміни депозиту</h3>
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Термін (місяців)</th>
+                @foreach (var currency in Model.DepositTerms.Select(t => t.Currency).Distinct())
+                {
+                    <th>@currency</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var term in Model.DepositTerms.Select(t => t.TermMonths).Distinct().OrderBy(t => t))
+            {
+                <tr>
+                    <td>@term</td>
+                    @foreach (var currency in Model.DepositTerms.Select(t => t.Currency).Distinct())
+                    {
+                        var depositTerm = Model.DepositTerms.FirstOrDefault(dt => dt.TermMonths == term && dt.Currency == currency);
+                        <td>
+                            <input type="hidden" asp-for="DepositTerms[Model.DepositTerms.IndexOf(depositTerm)].Id" />
+                            <input type="number" class="form-control" asp-for="DepositTerms[Model.DepositTerms.IndexOf(depositTerm)].InterestRate" step="0.01" />
+                        </td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="form-group">
+        <label>Завантажити нові документи</label>
+        <input type="file" name="newDocumentFiles" class="form-control" multiple />
+    </div>
+
+    @* Добавьте отображение и управление существующими документами *@
+
+    <div class="form-group">
+        <input type="submit" value="Зберегти" class="btn btn-primary" />
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        function addDepositTerm() {
+            var container = document.getElementById('depositTermsContainer');
+            var index = container.childElementCount;
+
+            var div = document.createElement('div');
+            div.className = 'form-group';
+            div.innerHTML = `
+                <label for="DepositTerms_${index}__TermMonths">Термін (місяців):</label>
+                <input type="number" class="form-control" id="DepositTerms_${index}__TermMonths" name="DepositTerms[${index}].TermMonths" />
+                <label for="DepositTerms_${index}__InterestRate">Процентна ставка:</label>
+                <input type="number" class="form-control" id="DepositTerms_${index}__InterestRate" name="DepositTerms[${index}].InterestRate" />
+                <label for="DepositTerms_${index}__Currency">Валюта:</label>
+                <input type="text" class="form-control" id="DepositTerms_${index}__Currency" name="DepositTerms[${index}].Currency" />
+            `;
+            container.appendChild(div);
+        }
+
+        function removeDepositTerm(button) {
+            var formGroup = button.parentNode; 
+            formGroup.remove(); 
+        }
+    </script>
+}

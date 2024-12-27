@@ -48,6 +48,11 @@ namespace WebObjectsBLL
 
             // Mapping for CreditType
             CreateMap<CreditType, CreditTypeDTO>().ReverseMap();
+            CreateMap<DepositType, DepositTypeDTO>()
+                .ForMember(dest => dest.DepositTerms, opt => opt.MapFrom(src => src.DepositTerms))
+                .ReverseMap();
+
+            CreateMap<DepositTerm, DepositTermDTO>().ReverseMap();
 
             // Mapping for NestedSubTerm
             CreateMap<NestedSubTerm, NestedSubTermDto>().ReverseMap();
