@@ -66,6 +66,53 @@ public class ClientController : Controller
             return View(clientDetailDto);
         }
     }
+    [HttpGet]
+    public async Task<IActionResult> Edit(Guid id)
+    {
+        try
+        {
+            var client = await _clientService.GetDetailByIdAsync(id);
+            if (client == null)
+            {
+                TempData["Error"] = "Client not found.";
+                return RedirectToAction(nameof(Index));
+            }
+            return View(client);
+        }
+        catch (Exception ex)
+        {
+            TempData["Error"] = $"An unexpected error occurred: {ex.Message}";
+            return RedirectToAction(nameof(Index));
+        }
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(ClientDetailDTO clientDetailDto)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(clientDetailDto);
+        }
+
+        try
+        {
+            await _clientService.UpdateAsync(clientDetailDto);
+            TempData["Message"] = "Client updated successfully.";
+            return RedirectToAction(nameof(Index));
+        }
+        catch (KeyNotFoundException)
+        {
+            TempData["Error"] = "Client not found.";
+            return RedirectToAction(nameof(Index));
+        }
+        catch (Exception ex)
+        {
+            ModelState.AddModelError("", $"An unexpected error occurred: {ex.Message}");
+            return View(clientDetailDto);
+        }
+    }
+
 
     [HttpPost]
     [ValidateAntiForgeryToken]

@@ -70,6 +70,7 @@ namespace WebObjectsBLL.Services
             await _context.SaveChangesAsync();
         }
 
+
         public async Task DeleteAsync(Guid id)
         {
             var client = await _context.Clients.FirstOrDefaultAsync(c => c.Id == id);
