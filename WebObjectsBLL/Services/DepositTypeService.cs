@@ -112,16 +112,25 @@ namespace WebObjectsBLL.Services
         }
 
         public async Task AddAsync(
-            DepositTypeDetailDTO depositTypeDto,
-            AvatarDTO? avatar,
-            List<MediaDataDTO>? mediaFiles,
-            List<DocumentsDTO>? documents,
-            Guid ownerId)
+     DepositTypeDetailDTO depositTypeDto,
+     AvatarDTO? avatar,
+     List<MediaDataDTO>? mediaFiles,
+     List<DocumentsDTO>? documents,
+     Guid ownerId)
         {
             var depositType = _mapper.Map<DepositType>(depositTypeDto);
+
+            // Добавляем коллекцию терминов
+            foreach (var termDto in depositTypeDto.DepositTerms)
+            {
+                var term = _mapper.Map<DepositTerm>(termDto);
+                depositType.DepositTerms.Add(term);
+            }
+
             _context.DepositTypes.Add(depositType);
             await _context.SaveChangesAsync();
 
+            // Управление аватаром
             if (avatar != null)
             {
                 avatar.AssociatedRecordId = depositType.Id;
@@ -129,6 +138,7 @@ namespace WebObjectsBLL.Services
                 await _avatarService.SetAvatarAsync(avatar);
             }
 
+            // Добавляем медиа-файлы
             if (mediaFiles != null)
             {
                 foreach (var media in mediaFiles)
@@ -140,6 +150,7 @@ namespace WebObjectsBLL.Services
                 await _mediaGalleryService.AddMediaAsync(mediaFiles);
             }
 
+            // Добавляем документы
             if (documents != null)
             {
                 foreach (var document in documents)
@@ -152,24 +163,38 @@ namespace WebObjectsBLL.Services
             }
         }
 
+
         public async Task UpdateAsync(
-            DepositTypeDetailDTO depositTypeDto,
-            AvatarDTO? avatar,
-            List<IFormFile>? newMediaFiles,
-            List<IFormFile>? newDocumentFiles,
-            Guid? primaryMediaId,
-            List<Guid>? mediaToDelete,
-            Guid? primaryDocumentId,
-            List<Guid>? documentsToDelete,
-            Guid ownerId)
+     DepositTypeDetailDTO depositTypeDto,
+     AvatarDTO? avatar,
+     List<IFormFile>? newMediaFiles,
+     List<IFormFile>? newDocumentFiles,
+     Guid? primaryMediaId,
+     List<Guid>? mediaToDelete,
+     Guid? primaryDocumentId,
+     List<Guid>? documentsToDelete,
+     Guid ownerId)
         {
-            var depositType = await _context.DepositTypes.FirstOrDefaultAsync(dt => dt.Id == depositTypeDto.Id);
+            // Получаем существующую запись
+            var depositType = await _context.DepositTypes
+                .Include(dt => dt.DepositTerms) // Подгружаем связанные коллекции
+                .FirstOrDefaultAsync(dt => dt.Id == depositTypeDto.Id);
             if (depositType == null)
                 throw new KeyNotFoundException("Deposit type not found");
 
+            // Маппинг DTO в модель
             _mapper.Map(depositTypeDto, depositType);
+
+            // Обновляем коллекцию DepositTerms
+            depositType.DepositTerms.Clear();
+            foreach (var term in depositTypeDto.DepositTerms)
+            {
+                depositType.DepositTerms.Add(_mapper.Map<DepositTerm>(term));
+            }
+
             await _context.SaveChangesAsync();
 
+            // Управление аватаром
             if (avatar != null)
             {
                 avatar.AssociatedRecordId = depositType.Id;
@@ -177,6 +202,7 @@ namespace WebObjectsBLL.Services
                 await _avatarService.SetAvatarAsync(avatar);
             }
 
+            // Управление медиа-файлами
             await _mediaGalleryService.ManageMediaAsync(
                 depositType.Id,
                 newMediaFiles,
@@ -185,6 +211,7 @@ namespace WebObjectsBLL.Services
                 MediaLib.ObjectType.DepositType,
                 ownerId);
 
+            // Управление документами
             await _documentService.ManageDocumentsAsync(
                 depositType.Id,
                 newDocumentFiles,
@@ -193,6 +220,7 @@ namespace WebObjectsBLL.Services
                 MediaLib.ObjectType.DepositType,
                 ownerId);
         }
+
 
         public async Task DeleteAsync(Guid id)
         {

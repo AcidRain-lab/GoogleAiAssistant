@@ -24,4 +24,6 @@ public partial class Deposit
     public string? Status { get; set; }
 
     public virtual Client Client { get; set; } = null!;
+
+    public virtual DepositType DepositType { get; set; } = null!;
 }

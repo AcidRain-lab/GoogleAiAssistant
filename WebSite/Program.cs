@@ -49,6 +49,8 @@ builder.Services.AddScoped<DepositTypeService>();
 // Регистрация сервисов для работы с типами карт и платежными системами
 builder.Services.AddScoped<CardTypesService>();
 builder.Services.AddScoped<PaymentSystemService>();
+builder.Services.AddScoped<DepositTermService>();
+
 
 
 
