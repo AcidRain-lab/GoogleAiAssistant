@@ -185,12 +185,12 @@ namespace WebObjectsBLL.Services
             // Маппинг DTO в модель
             _mapper.Map(depositTypeDto, depositType);
 
-            // Обновляем коллекцию DepositTerms
-            depositType.DepositTerms.Clear();
-            foreach (var term in depositTypeDto.DepositTerms)
-            {
-                depositType.DepositTerms.Add(_mapper.Map<DepositTerm>(term));
-            }
+            //// Обновляем коллекцию DepositTerms
+            //depositType.DepositTerms.Clear();
+            //foreach (var term in depositTypeDto.DepositTerms)
+            //{
+            //    depositType.DepositTerms.Add(_mapper.Map<DepositTerm>(term));
+            //}
 
             await _context.SaveChangesAsync();
 
