@@ -20,11 +20,12 @@ namespace WebObjectsBLL.Services
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<BankCardDTO>> GetByBankAccountIdAsync(Guid bankAccountId)
+        public async Task<IEnumerable<BankCardDTO>> GetByClientIdAsync(Guid clientId)
         {
             var cards = await _context.BankCards
                 .Include(c => c.CardType)
-                .Where(c => c.BankAccountId == bankAccountId)
+                .Include(c => c.BankAccount)
+                .Where(c => c.BankAccount.ClientId == clientId)
                 .ToListAsync();
 
             return _mapper.Map<IEnumerable<BankCardDTO>>(cards);
@@ -42,21 +43,41 @@ namespace WebObjectsBLL.Services
             return _mapper.Map<BankCardDTO>(card);
         }
 
-        public async Task CreateAsync(BankCardDTO cardDto)
+        public async Task CreateAsync(Guid clientId, Guid cardTypeId, string cardHolderName)
         {
-            var card = _mapper.Map<BankCard>(cardDto);
-            card.Id = Guid.NewGuid(); // Ensure the ID is generated for new records
-            _context.BankCards.Add(card);
+            // Создаем новый банковский аккаунт для клиента
+            var newAccount = new BankAccount
+            {
+                Id = Guid.NewGuid(),
+                AccountNumber = GenerateAccountNumber(),
+                AccountName = $"{cardHolderName}'s Account",
+                ClientId = clientId,
+                OpenedDate = DateOnly.FromDateTime(DateTime.Now),
+                Balance = 0m,
+                BankAccountTypeId = 1, // Тип аккаунта (обычный)
+                BankCurrencyId = 1,    // Валюта (например, USD)
+                IsFop = false          // Указать, если не для предпринимателя
+            };
+
+            await _context.BankAccounts.AddAsync(newAccount);
             await _context.SaveChangesAsync();
-        }
 
-        public async Task UpdateAsync(BankCardDTO cardDto)
-        {
-            var card = await _context.BankCards.FirstOrDefaultAsync(c => c.Id == cardDto.Id);
-            if (card == null)
-                throw new KeyNotFoundException("BankCard not found");
+            // Создаем новую карту, привязанную к созданному аккаунту
+            var newCard = new BankCard
+            {
+                Id = Guid.NewGuid(),
+                BankAccountId = newAccount.Id,
+                CardTypeId = cardTypeId,
+                CardHolderName = cardHolderName,
+                CardNumber = GenerateCardNumber(),
+                ExpirationDate = DateOnly.FromDateTime(DateTime.Now.AddYears(3)),
+                PinCode = GeneratePinCode(),
+                Cvv = GenerateCvv(),
+                IsActive = true,
+                IsPrimary = false
+            };
 
-            _mapper.Map(cardDto, card);
+            await _context.BankCards.AddAsync(newCard);
             await _context.SaveChangesAsync();
         }
 
@@ -68,6 +89,36 @@ namespace WebObjectsBLL.Services
 
             _context.BankCards.Remove(card);
             await _context.SaveChangesAsync();
+        }
+
+        private string GenerateAccountNumber()
+        {
+            return $"UA{new Random().Next(100000000, 999999999)}";
+        }
+
+        private string GenerateCardNumber()
+        {
+            return $"4000{new Random().Next(100000000, 999999999)}";
+        }
+
+        private string GeneratePinCode()
+        {
+            return new Random().Next(1000, 9999).ToString();
+        }
+
+        private string GenerateCvv()
+        {
+            return new Random().Next(100, 999).ToString();
+        }
+
+        public async Task<IEnumerable<BankCardDTO>> GetByBankAccountIdAsync(Guid bankAccountId)
+        {
+            var cards = await _context.BankCards
+                .Include(c => c.CardType)
+                .Where(c => c.BankAccountId == bankAccountId)
+                .ToListAsync();
+
+            return _mapper.Map<IEnumerable<BankCardDTO>>(cards);
         }
     }
 }

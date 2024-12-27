@@ -22,9 +22,18 @@ builder.WebHost.ConfigureKestrel(options =>
 });
 
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
+
+// Регистрация сервисов MediaLib
+builder.Services.AddScoped<MediaLib.Services.MediaGalleryService>();
+builder.Services.AddScoped<MediaLib.Services.AvatarService>();
+builder.Services.AddScoped<MediaLib.Services.DocumentService>();
+
+// Регистрация сервисов Auth и Users
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<RoleService>();
+
+// Регистрация бизнес-логики
 builder.Services.AddScoped<TransactionService>();
 builder.Services.AddScoped<ClientService>();
 builder.Services.AddScoped<TermsAndRulesService>();
@@ -35,8 +44,14 @@ builder.Services.AddScoped<RegularPaymentService>();
 builder.Services.AddScoped<CreditService>();
 builder.Services.AddScoped<BankCardService>();
 builder.Services.AddScoped<BankAccountService>();
+builder.Services.AddScoped<CreditTypeService>();
+builder.Services.AddScoped<DepositTypeService>();
+// Регистрация сервисов для работы с типами карт и платежными системами
 builder.Services.AddScoped<CardTypesService>();
 builder.Services.AddScoped<PaymentSystemService>();
+
+
+
 
 
 

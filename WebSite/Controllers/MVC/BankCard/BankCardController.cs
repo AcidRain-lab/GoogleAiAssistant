@@ -1,79 +1,61 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using WebObjectsBLL.DTO;
 using WebObjectsBLL.Services;
 
-namespace WebSite.Controllers.MVC.BankCard
+public class BankCardController : Controller
 {
-    [Authorize]
-    public class CardTypesController : Controller
+    private readonly BankCardService _bankCardService;
+    private readonly CardTypesService _cardTypeService;
+
+    public BankCardController(BankCardService bankCardService, CardTypesService cardTypeService)
     {
-        private readonly BankCardService _bankCardService;
-
-        public CardTypesController(BankCardService bankCardService)
-        {
-            _bankCardService = bankCardService;
-        }
-
-        public async Task<IActionResult> Index(Guid bankAccountId)
-        {
-            var cards = await _bankCardService.GetByBankAccountIdAsync(bankAccountId);
-            ViewBag.BankAccountId = bankAccountId;
-            return View(cards);
-        }
-
-        public IActionResult Add(Guid bankAccountId)
-        {
-            var card = new BankCardDTO
-            {
-                BankAccountId = bankAccountId,
-                ExpirationDate = DateTime.Now.AddYears(3) // Устанавливаем дату по умолчанию
-            };
-            return View(card);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Add(BankCardDTO cardDto)
-        {
-            if (!ModelState.IsValid)
-                return View(cardDto);
-
-            await _bankCardService.CreateAsync(cardDto);
-            return RedirectToAction(nameof(Index), new { bankAccountId = cardDto.BankAccountId });
-        }
-
-        public async Task<IActionResult> Edit(Guid id)
-        {
-            var card = await _bankCardService.GetByIdAsync(id);
-            return View(card);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(BankCardDTO cardDto)
-        {
-            if (!ModelState.IsValid)
-                return View(cardDto);
-
-            await _bankCardService.UpdateAsync(cardDto);
-            return RedirectToAction(nameof(Index), new { bankAccountId = cardDto.BankAccountId });
-        }
-        [HttpGet]
-        public async Task<IActionResult> Delete(Guid id)
-        {
-            var card = await _bankCardService.GetByIdAsync(id);
-            return View(card);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(Guid id, Guid bankAccountId)
-        {
-            await _bankCardService.DeleteAsync(id);
-            return RedirectToAction(nameof(Index), new { bankAccountId });
-        }
-
+        _bankCardService = bankCardService;
+        _cardTypeService = cardTypeService;
     }
 
+    public async Task<IActionResult> Index(Guid clientId)
+    {
+        if (clientId == Guid.Empty)
+            return BadRequest("Client ID is required.");
+
+        var cards = await _bankCardService.GetByClientIdAsync(clientId);
+        ViewBag.ClientId = clientId;
+        return View(cards);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Add(Guid clientId)
+    {
+        if (clientId == Guid.Empty)
+            return BadRequest("Client ID is required.");
+
+        var cardTypes = await _cardTypeService.GetAllWithAvatarsAsync();
+        ViewBag.CardTypes = cardTypes;
+        ViewBag.ClientId = clientId;
+
+        var newCard = new BankCardDTO
+        {
+            CardNumber = GenerateCardNumber(),
+            CardHolderName = "Default Name",
+            ExpirationDate = DateTime.Now.AddYears(3)
+        };
+
+        return View(newCard);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Add(Guid clientId, Guid cardTypeId, string cardHolderName)
+    {
+        if (clientId == Guid.Empty)
+            return BadRequest("Client ID is required.");
+
+        await _bankCardService.CreateAsync(clientId, cardTypeId, cardHolderName);
+        return RedirectToAction(nameof(Index), new { clientId });
+    }
+
+    private string GenerateCardNumber()
+    {
+        return $"4000{new Random().Next(100000000, 999999999)}";
+    }
 }

@@ -1,0 +1,52 @@
+﻿@model IEnumerable<WebObjectsBLL.DTO.CreditTypeDTO>
+
+@{
+    ViewData["Title"] = "Credit Types";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<p>
+    <a asp-action="Add" class="btn btn-primary">Add New Credit Type</a>
+</p>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Amount</th>
+            <th>Term</th>
+            <th>Primary Document</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var creditType in Model)
+        {
+            <tr>
+                <td>@creditType.CreditName</td>
+                <td>@creditType.CreditAmount</td>
+                <td>@creditType.CreditTerm</td>
+                <td>
+                    @if (creditType.Documents != null && creditType.Documents.Any(doc => doc.IsPrime))
+                    {
+                        var primaryDocument = creditType.Documents.First(doc => doc.IsPrime);
+                        <a href="@Url.Action("DownloadDocument", "CreditTypes", new { id = primaryDocument.Id })">@primaryDocument.Name</a>
+                    }
+                    else
+                    {
+                        <span>No Primary Document</span>
+                    }
+                </td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@creditType.Id" class="btn btn-sm btn-info">Details</a>
+                    <a asp-action="Edit" asp-route-id="@creditType.Id" class="btn btn-sm btn-warning">Edit</a>
+                    <form asp-action="Delete" method="post" style="display:inline;">
+                        <input type="hidden" name="id" value="@creditType.Id" />
+                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

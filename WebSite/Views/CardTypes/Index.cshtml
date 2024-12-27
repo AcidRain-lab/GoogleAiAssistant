@@ -1,10 +1,10 @@
-﻿@model IEnumerable<WebObjectsBLL.DTO.CardTypeDTO>
+﻿@model IEnumerable<WebObjectsBLL.DTO.CardTypeTableDTO>
 
 @{
     ViewData["Title"] = "Card Types";
 }
 
-<h2>Card Types</h2>
+<h2>@ViewData["Title"]</h2>
 
 <p>
     <a asp-action="Add" class="btn btn-primary">Add New Card Type</a>
@@ -13,7 +13,8 @@
 <table class="table table-bordered">
     <thead>
         <tr>
-            <th>ID</th>
+            <th>Avatar</th>
+            <th>Primary Media</th> <!-- Новая колонка -->
             <th>Name</th>
             <th>Description</th>
             <th>Payment System</th>
@@ -24,41 +25,42 @@
         @foreach (var cardType in Model)
         {
             <tr>
-                <td>@cardType.Id</td>
+                <td style="width: 160px; height: 120px; text-align: center;">
+                    @if (cardType.Avatar != null && cardType.Avatar.Content != null)
+                    {
+                        <img src="data:image/png;base64,@Convert.ToBase64String(cardType.Avatar.Content)" alt="Avatar" style="width: 100%; height: 100%; object-fit: contain; border: 1px solid #ddd;" />
+                    }
+                    else
+                    {
+                        <div style="width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; border: 1px solid #ddd; background-color: #f9f9f9;">
+                            <span>No Avatar</span>
+                        </div>
+                    }
+                </td>
+                <td style="width: 160px; height: 120px; text-align: center;">
+                    @if (cardType.PrimaryMedia != null && cardType.PrimaryMedia.Content != null)
+                    {
+                        <img src="data:image/jpeg;base64,@cardType.PrimaryMedia.Base64Image" alt="Primary Media" style="width: 100%; height: 100%; object-fit: contain; border: 1px solid #ddd;" />
+                    }
+                    else
+                    {
+                        <div style="width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; border: 1px solid #ddd; background-color: #f9f9f9;">
+                            <span>No Primary Media</span>
+                        </div>
+                    }
+                </td>
                 <td>@cardType.Name</td>
                 <td>@cardType.Description</td>
                 <td>@cardType.PaymentSystemTypeName</td>
                 <td>
                     <a asp-action="Details" asp-route-id="@cardType.Id" class="btn btn-sm btn-info">Details</a>
                     <a asp-action="Edit" asp-route-id="@cardType.Id" class="btn btn-sm btn-warning">Edit</a>
-                    <button class="btn btn-sm btn-danger" onclick="showDeleteModal(@cardType.Id)">Delete</button>
+                    <button class="btn btn-sm btn-danger" onclick="showDeleteModal('@cardType.Id')">Delete</button>
                 </td>
             </tr>
         }
     </tbody>
 </table>
-
-<!-- Delete Modal -->
-<div id="deleteModal" class="modal fade" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Confirm Delete</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p>Are you sure you want to delete this card type?</p>
-            </div>
-            <div class="modal-footer">
-                <form asp-action="Delete" method="post">
-                    <input type="hidden" id="deleteId" name="id" />
-                    <button type="submit" class="btn btn-danger">Delete</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
 
 <script>
     function showDeleteModal(id) {

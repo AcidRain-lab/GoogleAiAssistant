@@ -21,5 +21,9 @@ public partial class Credit
 
     public bool IsActive { get; set; }
 
+    public Guid CreditTypeId { get; set; }
+
     public virtual Client Client { get; set; } = null!;
+
+    public virtual CreditType CreditType { get; set; } = null!;
 }

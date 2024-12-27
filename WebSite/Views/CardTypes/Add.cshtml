@@ -1,8 +1,10 @@
-﻿@model WebObjectsBLL.DTO.CardTypeDTO
+﻿@model WebObjectsBLL.DTO.CardTypeDetailDTO
 
 <h1>Добавить тип карты</h1>
 
-<form asp-action="Add" method="post">
+<form asp-action="Add" method="post" enctype="multipart/form-data">
+    @Html.AntiForgeryToken()
+
     <div class="form-group">
         <label asp-for="Name" class="control-label">Название</label>
         <input asp-for="Name" class="form-control" />
@@ -16,39 +18,18 @@
     </div>
 
     <div class="form-group">
-        <label asp-for="Caption1" class="control-label">Заголовок 1</label>
-        <input asp-for="Caption1" class="form-control" />
-        <span asp-validation-for="Caption1" class="text-danger"></span>
+        <label class="control-label">Аватар</label>
+        <input type="file" name="avatarFile" class="form-control" />
     </div>
 
     <div class="form-group">
-        <label asp-for="Value1" class="control-label">Значение 1</label>
-        <input asp-for="Value1" class="form-control" />
-        <span asp-validation-for="Value1" class="text-danger"></span>
+        <label class="control-label">Медиафайлы</label>
+        <input type="file" name="mediaFiles" class="form-control" multiple />
     </div>
 
     <div class="form-group">
-        <label asp-for="Caption2" class="control-label">Заголовок 2</label>
-        <input asp-for="Caption2" class="form-control" />
-        <span asp-validation-for="Caption2" class="text-danger"></span>
-    </div>
-
-    <div class="form-group">
-        <label asp-for="Value2" class="control-label">Значение 2</label>
-        <input asp-for="Value2" class="form-control" />
-        <span asp-validation-for="Value2" class="text-danger"></span>
-    </div>
-
-    <div class="form-group">
-        <label asp-for="Caption3" class="control-label">Заголовок 3</label>
-        <input asp-for="Caption3" class="form-control" />
-        <span asp-validation-for="Caption3" class="text-danger"></span>
-    </div>
-
-    <div class="form-group">
-        <label asp-for="Value3" class="control-label">Значение 3</label>
-        <input asp-for="Value3" class="form-control" />
-        <span asp-validation-for="Value3" class="text-danger"></span>
+        <label class="control-label">Документы</label>
+        <input type="file" name="documentFiles" class="form-control" multiple />
     </div>
 
     <div class="form-group">

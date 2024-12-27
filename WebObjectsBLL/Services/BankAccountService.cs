@@ -1,8 +1,10 @@
-﻿using AutoMapper;
+﻿// BankAccountService.cs
+using AutoMapper;
 using DAL.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using WebObjectsBLL.DTO;
 
@@ -40,14 +42,31 @@ namespace WebObjectsBLL.Services
             return _mapper.Map<BankAccountDTO>(account);
         }
 
-        public async Task CreateAsync(BankAccountDTO accountDto)
+        public async Task<BankAccountDTO> CreateForClientAsync(Guid clientId, int bankAccountTypeId, int currencyId, string accountName)
         {
-            var account = _mapper.Map<BankAccount>(accountDto);
-            account.Id = Guid.NewGuid();
-            account.OpenedDate = DateOnly.FromDateTime(DateTime.Now); // Преобразование
+            // Генерация уникального номера счета
+            var accountNumber = GenerateAccountNumber();
 
-            _context.BankAccounts.Add(account);
+            // Создание объекта BankAccount
+            var newAccount = new BankAccount
+            {
+                Id = Guid.NewGuid(),
+                ClientId = clientId,
+                BankAccountTypeId = bankAccountTypeId,
+                BankCurrencyId = currencyId,
+                AccountName = accountName,
+                AccountNumber = accountNumber,
+                OpenedDate = DateOnly.FromDateTime(DateTime.Now),
+                Balance = 0, // Начальный баланс
+                IsFop = false // Укажите FOP, если необходимо
+            };
+
+            // Добавление счета в базу данных
+            _context.BankAccounts.Add(newAccount);
             await _context.SaveChangesAsync();
+
+            // Возврат созданного объекта в виде DTO
+            return _mapper.Map<BankAccountDTO>(newAccount);
         }
 
         public async Task UpdateAsync(BankAccountDTO accountDto)
@@ -68,6 +87,17 @@ namespace WebObjectsBLL.Services
 
             _context.BankAccounts.Remove(account);
             await _context.SaveChangesAsync();
+        }
+
+        private string GenerateAccountNumber()
+        {
+            return $"UA{new Random().Next(100000000, 999999999)}";
+        }
+
+        public async Task<string> GetClientNameAsync(Guid clientId)
+        {
+            var client = await _context.Clients.FirstOrDefaultAsync(c => c.Id == clientId);
+            return client != null ? $"{client.FirstName} {client.LastName}" : "Unknown Client";
         }
     }
 }
