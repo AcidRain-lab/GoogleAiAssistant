@@ -41,6 +41,10 @@ public partial class BankContext : DbContext
 
     public virtual DbSet<Deposit> Deposits { get; set; }
 
+    public virtual DbSet<DepositTerm> DepositTerms { get; set; }
+
+    public virtual DbSet<DepositType> DepositTypes { get; set; }
+
     public virtual DbSet<DocumentsDatum> DocumentsData { get; set; }
 
     public virtual DbSet<Language> Languages { get; set; }
@@ -77,8 +81,8 @@ public partial class BankContext : DbContext
 
    /* protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Server=DESKTOP-A1DDL4K\\SQLEXPRESS;Database=bank;Trusted_Connection=True;Encrypt=False;");
-*/
+        => optionsBuilder.UseSqlServer("Server=DESKTOP-A1DDL4K\\SQLEXPRESS;Database=bank;Trusted_Connection=True;Encrypt=False;");*/
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.UseCollation("Ukrainian_CI_AS");
@@ -292,15 +296,44 @@ public partial class BankContext : DbContext
 
         modelBuilder.Entity<Deposit>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Deposits__3214EC07F7192BEF");
+            entity.HasKey(e => e.Id).HasName("PK__Deposits__3214EC071ACCF911");
 
             entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
             entity.Property(e => e.Currency).HasMaxLength(10);
             entity.Property(e => e.DepositAmount).HasColumnType("money");
+            entity.Property(e => e.InterestRate).HasColumnType("decimal(5, 2)");
+            entity.Property(e => e.Status)
+                .HasMaxLength(50)
+                .HasDefaultValue("Active");
 
             entity.HasOne(d => d.Client).WithMany(p => p.Deposits)
                 .HasForeignKey(d => d.ClientId)
                 .HasConstraintName("FK_Deposits_Clients");
+        });
+
+        modelBuilder.Entity<DepositTerm>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__DepositT__3214EC0782C06667");
+
+            entity.ToTable("DepositTerm");
+
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.Currency).HasMaxLength(3);
+            entity.Property(e => e.InterestRate).HasColumnType("decimal(18, 2)");
+
+            entity.HasOne(d => d.DepositType).WithMany(p => p.DepositTerms)
+                .HasForeignKey(d => d.DepositTypeId)
+                .HasConstraintName("FK__DepositTe__Depos__16C440F5");
+        });
+
+        modelBuilder.Entity<DepositType>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__DepositT__3214EC07AEC2CB29");
+
+            entity.ToTable("DepositType");
+
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.DepositName).HasMaxLength(255);
         });
 
         modelBuilder.Entity<DocumentsDatum>(entity =>

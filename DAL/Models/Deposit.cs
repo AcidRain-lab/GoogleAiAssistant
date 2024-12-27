@@ -9,13 +9,19 @@ public partial class Deposit
 
     public Guid ClientId { get; set; }
 
+    public Guid DepositTypeId { get; set; }
+
     public decimal DepositAmount { get; set; }
 
     public string Currency { get; set; } = null!;
 
-    public double InterestRate { get; set; }
+    public decimal InterestRate { get; set; }
+
+    public DateOnly StartDate { get; set; }
 
     public DateOnly MaturityDate { get; set; }
+
+    public string? Status { get; set; }
 
     public virtual Client Client { get; set; } = null!;
 }

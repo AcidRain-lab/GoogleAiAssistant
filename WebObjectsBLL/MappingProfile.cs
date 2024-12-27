@@ -48,6 +48,18 @@ namespace WebObjectsBLL
 
             // Mapping for CreditType
             CreateMap<CreditType, CreditTypeDTO>().ReverseMap();
+            /*CreateMap<DepositType, DepositTypeDetailDTO>()
+    .ForMember(dest => dest.DepositTerms, opt => opt.MapFrom(src => src.DepositTerms))
+    .ForMember(dest => dest.Avatar, opt => opt.Ignore()) // Исключаем обработку аватарки
+    .ForMember(dest => dest.MediaFiles, opt => opt.Ignore()) // Исключаем обработку медиафайлов
+    .ForMember(dest => dest.Documents, opt => opt.Ignore()) // Исключаем обработку документов
+    .ReverseMap();*/
+            CreateMap<DepositType, DepositTypeDetailDTO>()
+    .ForMember(dest => dest.Avatar, opt => opt.Ignore())
+    .ForMember(dest => dest.MediaFiles, opt => opt.Ignore())
+    .ForMember(dest => dest.Documents, opt => opt.Ignore());
+
+            CreateMap<DepositTerm, DepositTermDTO>().ReverseMap();
 
             // Mapping for NestedSubTerm
             CreateMap<NestedSubTerm, NestedSubTermDto>().ReverseMap();

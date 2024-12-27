@@ -1,0 +1,72 @@
+﻿@model List<WebObjectsBLL.DTO.DepositTypeDetailDTO>
+
+@{
+    ViewData["Title"] = "Deposit Types";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+@foreach (var depositType in Model)
+{
+    <div class="deposit-type">
+        <h3>
+            @if (depositType.Avatar != null && !string.IsNullOrEmpty(depositType.Avatar.Base64Image))
+            {
+                <img src="data:image/png;base64,@depositType.Avatar.Base64Image" alt="@depositType.DepositName" class="avatar" />
+            }
+            @depositType.DepositName
+        </h3>
+
+        <p>@depositType.Description</p>
+
+        @if (depositType.MediaFiles != null && depositType.MediaFiles.Any())
+        {
+            <div class="media-gallery">
+                @foreach (var media in depositType.MediaFiles)
+                {
+                    <img src="data:image/png;base64,@media.Base64Image" alt="@media.Name" class="media-img" />
+                }
+            </div>
+        }
+
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Term (Months)</th>
+                    <th>Currency</th>
+                    <th>Interest Rate (%)</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var term in depositType.DepositTerms)
+                {
+                    <tr>
+                        <td>@term.TermMonths</td>
+                        <td>@term.Currency</td>
+                        <td>@term.InterestRate</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        @if (depositType.Documents != null && depositType.Documents.Any())
+        {
+            <div class="documents-list">
+                <h4>Attached Documents:</h4>
+                @foreach (var document in depositType.Documents)
+                {
+                    <a href="@Url.Action("DownloadDocument", "DepositTypes", new { id = document.Id })" class="btn btn-link">
+                        @document.Name
+                    </a>
+                }
+            </div>
+        }
+
+        <div class="actions">
+            <a asp-action="Edit" asp-route-id="@depositType.Id" class="btn btn-warning">Edit</a>
+            <form asp-action="Delete" asp-route-id="@depositType.Id" method="post" class="d-inline">
+                <button type="submit" class="btn btn-danger">Delete</button>
+            </form>
+        </div>
+    </div>
+}
