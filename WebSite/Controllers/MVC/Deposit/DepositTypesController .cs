@@ -63,23 +63,34 @@ namespace WebSite.Controllers.MVC
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(
-            DepositTypeDTO depositTypeDto, // Убрали параметр id
-            List<IFormFile>? newDocumentFiles,
-            List<Guid>? documentsToDelete,
-            Guid? primaryDocumentId)
+    DepositTypeDTO depositTypeDto,
+    List<IFormFile>? newDocumentFiles,
+    List<Guid>? documentsToDelete,
+    Guid? primaryDocumentId)
         {
             if (!ModelState.IsValid)
                 return View(depositTypeDto);
 
-            // Убрали проверку id
+            try
+            {
+                await _depositTypeService.UpdateAsync(
+                    depositTypeDto,
+                    newDocumentFiles,
+                    documentsToDelete,
+                    primaryDocumentId);
 
-            await _depositTypeService.UpdateAsync(
-                depositTypeDto,
-                newDocumentFiles,
-                documentsToDelete,
-                primaryDocumentId);
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                // Логирование ошибки
+                Console.WriteLine($"Ошибка при обновлении типа депозита: {ex.Message}");
 
-            return RedirectToAction(nameof(Index));
+                // Добавление сообщения об ошибке в ModelState
+                ModelState.AddModelError(string.Empty, "Виникла помилка при збереженні змін.");
+
+                return View(depositTypeDto);
+            }
         }
 
         [HttpPost]

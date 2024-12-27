@@ -23,7 +23,7 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var term in depositType.DepositTerms.Select(t => t.TermMonths).Distinct())
+            @foreach (var term in depositType.DepositTerms.Select(t => t.TermMonths).Distinct().OrderBy(t => t))
             {
                 <tr>
                     <td>@term</td>
@@ -43,4 +43,3 @@
         <button type="submit" class="btn btn-sm btn-danger">Видалити</button>
     </form>
 }
-

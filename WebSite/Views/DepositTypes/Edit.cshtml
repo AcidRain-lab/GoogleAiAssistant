@@ -20,22 +20,34 @@
     </div>
 
     <h3>Терміни депозиту</h3>
-    <div id="depositTermsContainer">
-        @for (int i = 0; i < Model.DepositTerms.Count; i++)
-        {
-            <div class="form-group">
-                <input type="hidden" asp-for="DepositTerms[i].Id" />
-                <label asp-for="DepositTerms[i].TermMonths">Термін (місяців):</label>
-                <input type="number" class="form-control" asp-for="DepositTerms[i].TermMonths" />
-                <label asp-for="DepositTerms[i].InterestRate">Процентна ставка:</label>
-                <input type="number" class="form-control" asp-for="DepositTerms[i].InterestRate" />
-                <label asp-for="DepositTerms[i].Currency">Валюта:</label>
-                <input type="text" class="form-control" asp-for="DepositTerms[i].Currency" />
-                <button type="button" class="btn btn-danger btn-sm" onclick="removeDepositTerm(this)">Видалити термін</button>
-            </div>
-        }
-    </div>
-    <button type="button" class="btn btn-secondary" onclick="addDepositTerm()">Додати термін</button>
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Термін (місяців)</th>
+                @foreach (var currency in Model.DepositTerms.Select(t => t.Currency).Distinct())
+                {
+                    <th>@currency</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var term in Model.DepositTerms.Select(t => t.TermMonths).Distinct().OrderBy(t => t))
+            {
+                <tr>
+                    <td>@term</td>
+                    @foreach (var currency in Model.DepositTerms.Select(t => t.Currency).Distinct())
+                    {
+                        var depositTerm = Model.DepositTerms.FirstOrDefault(dt => dt.TermMonths == term && dt.Currency == currency);
+                        <td>
+                            <input type="hidden" asp-for="DepositTerms[Model.DepositTerms.IndexOf(depositTerm)].Id" />
+                            <input type="number" class="form-control" asp-for="DepositTerms[Model.DepositTerms.IndexOf(depositTerm)].InterestRate" step="0.01" />
+                        </td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
 
     <div class="form-group">
         <label>Завантажити нові документи</label>
