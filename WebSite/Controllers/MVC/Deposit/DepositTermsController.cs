@@ -1,69 +1,80 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using WebObjectsBLL.DTO;
 using WebObjectsBLL.Services;
 
-namespace WebSite.Controllers.MVC.DepositTerm
+[Authorize]
+[Route("DepositTerms")]
+[Controller]
+public class DepositTermsController : Controller
 {
-    [Authorize]
-    [Route("DepositTerms")]
-    public class DepositTermsController : Controller
+    private readonly DepositTermService _depositTermService;
+
+    public DepositTermsController(DepositTermService depositTermService)
     {
-        private readonly DepositTermService _depositTermService;
+        _depositTermService = depositTermService;
+    }
 
-        public DepositTermsController(DepositTermService depositTermService)
+    // GET: Add
+    [HttpGet("Add/{depositTypeId}")]
+    public IActionResult Add(Guid depositTypeId, string? returnUrl)
+    {
+        var term = new DepositTermDTO { DepositTypeId = depositTypeId };
+        ViewBag.ReturnUrl = returnUrl;
+        return View(term);
+    }
+
+    // POST: Add
+    [HttpPost("Add/{depositTypeId}")]
+    public async Task<IActionResult> Add(Guid depositTypeId, [FromForm] DepositTermDTO termDto, [FromQuery] string? returnUrl)
+    {
+        termDto.DepositTypeId = depositTypeId;
+
+        if (!ModelState.IsValid)
         {
-            _depositTermService = depositTermService;
+            ViewBag.ReturnUrl = returnUrl;
+            return View(termDto);
         }
 
-        [HttpGet("Index/{depositTypeId}")]
-        public async Task<IActionResult> Index(Guid depositTypeId)
+        await _depositTermService.AddAsync(termDto);
+        return Redirect(returnUrl ?? Url.Action("Edit", "DepositTypes", new { id = termDto.DepositTypeId }));
+    }
+
+    [HttpGet("Edit/{id}")]
+    public async Task<IActionResult> Edit(Guid id, Guid depositTypeId, string? returnUrl)
+    {
+        var term = await _depositTermService.GetByIdAsync(id);
+        if (term == null)
+            return NotFound();
+
+        term.DepositTypeId = depositTypeId;
+        ViewBag.ReturnUrl = returnUrl;
+        return View(term);
+    }
+
+    [HttpPost("Edit/{id}")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(Guid id, Guid depositTypeId, [FromForm] DepositTermDTO termDto, [FromQuery] string? returnUrl)
+    {
+        if (!ModelState.IsValid)
         {
-            var terms = await _depositTermService.GetByDepositTypeIdAsync(depositTypeId);
-            ViewBag.DepositTypeId = depositTypeId;
-            return View(terms);
+            ViewBag.ReturnUrl = returnUrl;
+            return View(termDto);
         }
 
-        [HttpGet("Add/{depositTypeId}")]
-        public IActionResult Add(Guid depositTypeId)
-        {
-            var term = new DepositTermDTO { DepositTypeId = depositTypeId };
-            return View(term);
-        }
+        termDto.DepositTypeId = depositTypeId;
+        await _depositTermService.UpdateAsync(termDto);
 
-        [HttpPost("Add")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Add(DepositTermDTO termDto)
-        {
-            if (!ModelState.IsValid) return View(termDto);
-            await _depositTermService.AddAsync(termDto);
-            return RedirectToAction(nameof(Index), new { depositTypeId = termDto.DepositTypeId });
-        }
+        return Redirect(returnUrl ?? Url.Action("Edit", "DepositTypes", new { id = depositTypeId }));
+    }
 
-        [HttpGet("Edit/{id}/{depositTypeId}")]
-        public async Task<IActionResult> Edit(Guid id, Guid depositTypeId)
-        {
-            var term = await _depositTermService.GetByIdAsync(id);
-            if (term == null) return NotFound();
-            ViewBag.DepositTypeId = depositTypeId;
-            return View(term);
-        }
-
-        [HttpPost("Edit")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(DepositTermDTO termDto)
-        {
-            if (!ModelState.IsValid) return View(termDto);
-            await _depositTermService.UpdateAsync(termDto);
-            return RedirectToAction(nameof(Index), new { depositTypeId = termDto.DepositTypeId });
-        }
-
-        [HttpPost("Delete/{id}/{depositTypeId}")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Delete(Guid id, Guid depositTypeId)
-        {
-            await _depositTermService.DeleteAsync(id);
-            return RedirectToAction(nameof(Index), new { depositTypeId });
-        }
+    [HttpPost("Delete/{id}")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Delete(Guid id, Guid depositTypeId, string? returnUrl)
+    {
+        await _depositTermService.DeleteAsync(id);
+        TempData["Message"] = "Deposit term deleted successfully.";
+        return Redirect(returnUrl ?? Url.Action("Edit", "DepositTypes", new { id = depositTypeId }));
     }
 }
