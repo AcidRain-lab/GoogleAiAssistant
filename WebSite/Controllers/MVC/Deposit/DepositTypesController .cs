@@ -27,7 +27,7 @@ namespace WebSite.Controllers.MVC
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            var depositTypes = await _depositTypeService.GetAllAsync();
+            var depositTypes = await _depositTypeService.GetDepositTypesAsync();
             return View(depositTypes);
         }
 
@@ -63,8 +63,7 @@ namespace WebSite.Controllers.MVC
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(
-            Guid id,
-            DepositTypeDTO depositTypeDto,
+            DepositTypeDTO depositTypeDto, // Убрали параметр id
             List<IFormFile>? newDocumentFiles,
             List<Guid>? documentsToDelete,
             Guid? primaryDocumentId)
@@ -72,8 +71,7 @@ namespace WebSite.Controllers.MVC
             if (!ModelState.IsValid)
                 return View(depositTypeDto);
 
-            if (id != depositTypeDto.Id)
-                return BadRequest();
+            // Убрали проверку id
 
             await _depositTypeService.UpdateAsync(
                 depositTypeDto,

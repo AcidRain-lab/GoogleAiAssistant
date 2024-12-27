@@ -6,6 +6,7 @@ using MediaLib.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using WebObjectsBLL.DTO;
+using System.Collections.Generic;
 
 namespace WebObjectsBLL.Services
 {
@@ -27,7 +28,9 @@ namespace WebObjectsBLL.Services
 
         public async Task<IEnumerable<DepositTypeDTO>> GetAllAsync()
         {
-            var depositTypes = await _context.DepositTypes.ToListAsync();
+            var depositTypes = await _context.DepositTypes
+                .Include(dt => dt.DepositTerms)
+                .ToListAsync();
             return _mapper.Map<IEnumerable<DepositTypeDTO>>(depositTypes);
         }
 
@@ -107,6 +110,20 @@ namespace WebObjectsBLL.Services
             {
                 throw new KeyNotFoundException($"Document with ID {documentId} not found.");
             }
+        }
+
+        public async Task<List<DepositTypeDTO>> GetDepositTypesAsync()
+        {
+            var depositTypes = await _context.DepositTypes
+                         .Include(dt => dt.DepositTerms)
+                         .ToListAsync();
+
+            foreach (var depositType in depositTypes)
+            {
+                
+            }
+
+            return _mapper.Map<List<DepositTypeDTO>>(depositTypes);
         }
     }
 }

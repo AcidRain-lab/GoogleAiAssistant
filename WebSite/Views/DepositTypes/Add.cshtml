@@ -1,33 +1,57 @@
 ﻿@model WebObjectsBLL.DTO.DepositTypeDTO
 
-<h1>Add Deposit Type</h1>
+@{
+    ViewData["Title"] = "Додати депозит";
+}
+
+<h2>@ViewData["Title"]</h2>
 
 <form asp-action="Add" method="post" enctype="multipart/form-data">
-    @Html.AntiForgeryToken()
-
     <div class="form-group">
-        <label asp-for="DepositName" class="control-label">Name</label>
+        <label asp-for="DepositName" class="control-label"></label>
         <input asp-for="DepositName" class="form-control" />
         <span asp-validation-for="DepositName" class="text-danger"></span>
     </div>
+    <div class="form-group">
+        <label asp-for="Description" class="control-label"></label>
+        <textarea asp-for="Description" class="form-control"></textarea>
+        <span asp-validation-for="Description" class="text-danger"></span>
+    </div>
+
+    @* Добавьте поля для сроков депозита (DepositTerms) *@
+    <h3>Терміни депозиту</h3>
+    <div id="depositTermsContainer">
+        @* Здесь будут динамически добавляться поля для сроков *@
+    </div>
+    <button type="button" class="btn btn-secondary" onclick="addDepositTerm()">Додати термін</button>
 
     <div class="form-group">
-        <label asp-for="MinimumAmount" class="control-label">Minimum Amount</label>
-        <input asp-for="MinimumAmount" class="form-control" />
-        <span asp-validation-for="MinimumAmount" class="text-danger"></span>
+        <label>Завантажити документи</label>
+        <input type="file" name="documentFiles" class="form-control" multiple />
     </div>
 
     <div class="form-group">
-        <label asp-for="MaximumAmount" class="control-label">Maximum Amount</label>
-        <input asp-for="MaximumAmount" class="form-control" />
-        <span asp-validation-for="MaximumAmount" class="text-danger"></span>
+        <input type="submit" value="Додати" class="btn btn-primary" />
     </div>
-
-    <div class="form-group">
-        <label>Upload Documents</label>
-        <input type="file" name="newDocumentFiles" class="form-control" multiple />
-    </div>
-
-    <button type="submit" class="btn btn-primary">Save</button>
-    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
 </form>
+
+@section Scripts {
+    <script>
+        function addDepositTerm() {
+            var container = document.getElementById('depositTermsContainer');
+            var index = container.childElementCount;
+
+            var div = document.createElement('div');
+            div.className = 'form-group';
+            div.innerHTML = `
+                <label for="DepositTerms_${index}__TermMonths">Термін (місяців):</label>
+                <input type="number" class="form-control" id="DepositTerms_${index}__TermMonths" name="DepositTerms[${index}].TermMonths" />
+                <label for="DepositTerms_${index}__InterestRate">Процентна ставка:</label>
+                <input type="number" class="form-control" id="DepositTerms_${index}__InterestRate" name="DepositTerms[${index}].InterestRate" />
+                <label for="DepositTerms_${index}__Currency">Валюта:</label>
+                <input type="text" class="form-control" id="DepositTerms_${index}__Currency" name="DepositTerms[${index}].Currency" />
+            `;
+            container.appendChild(div);
+        }
+    </script>
+}
