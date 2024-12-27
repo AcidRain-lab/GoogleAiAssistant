@@ -4,12 +4,13 @@
     ViewData["Title"] = "Edit Deposit Term";
 }
 
-<h2>@ViewData["Title"]</h2>
+<h2>Edit Deposit Term</h2>
 
-<form asp-action="Edit" method="post">
+<form asp-action="Edit" asp-route-id="@Model.Id" asp-route-depositTypeId="@Model.DepositTypeId" method="post">
     @Html.AntiForgeryToken()
     <input type="hidden" asp-for="Id" />
     <input type="hidden" asp-for="DepositTypeId" />
+    <input type="hidden" name="returnUrl" value="@ViewBag.ReturnUrl" />
 
     <div class="form-group">
         <label asp-for="TermMonths" class="control-label">Term (Months)</label>
@@ -34,5 +35,5 @@
     </div>
 
     <button type="submit" class="btn btn-success">Save</button>
-    <a asp-action="Index" asp-route-depositTypeId="@Model.DepositTypeId" class="btn btn-secondary">Cancel</a>
+    <a asp-action="Edit" asp-controller="DepositTypes" asp-route-id="@Model.DepositTypeId" class="btn btn-secondary">Cancel</a>
 </form>
