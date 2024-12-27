@@ -1,6 +1,7 @@
 ﻿using MediaLib.DTO;
 using System;
 using System.Collections.Generic;
+using WebObjectsBLL.DTO;
 
 namespace WebObjectsBLL.DTO
 {
@@ -17,3 +18,4 @@ namespace WebObjectsBLL.DTO
         public List<DocumentsDTO>? Documents { get; set; }
     }
 }
+

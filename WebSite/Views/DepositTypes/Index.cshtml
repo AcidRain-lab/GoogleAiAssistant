@@ -33,17 +33,23 @@
             <thead>
                 <tr>
                     <th>Term (Months)</th>
-                    <th>Currency</th>
-                    <th>Interest Rate (%)</th>
+                    @foreach (var currency in depositType.DepositTerms.Select(t => t.Currency).Distinct())
+                    {
+                        <th>@currency</th>
+                    }
                 </tr>
             </thead>
             <tbody>
-                @foreach (var term in depositType.DepositTerms)
+                @foreach (var term in depositType.DepositTerms.Select(t => t.TermMonths).Distinct().OrderBy(t => t))
                 {
                     <tr>
-                        <td>@term.TermMonths</td>
-                        <td>@term.Currency</td>
-                        <td>@term.InterestRate</td>
+                        <td>@term</td>
+                        @foreach (var currency in depositType.DepositTerms.Select(t => t.Currency).Distinct())
+                        {
+                            var rate = depositType.DepositTerms
+                            .FirstOrDefault(t => t.TermMonths == term && t.Currency == currency)?.InterestRate ?? 0;
+                            <td>@rate %</td>
+                        }
                     </tr>
                 }
             </tbody>
@@ -55,7 +61,8 @@
                 <h4>Attached Documents:</h4>
                 @foreach (var document in depositType.Documents)
                 {
-                    <a href="@Url.Action("DownloadDocument", "DepositTypes", new { id = document.Id })" class="btn btn-link">
+                    <a href="@Url.Action("DownloadDocument", "DepositTypes", new { id = document.Id })" class="btn btn-link" title="@document.Name">
+                        <img src="/images/pdf-icon.png" alt="PDF" style="width: 24px; height: 24px; margin-right: 5px;" />
                         @document.Name
                     </a>
                 }
