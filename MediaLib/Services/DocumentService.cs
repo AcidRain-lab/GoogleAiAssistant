@@ -3,10 +3,6 @@ using MediaLib.DTO;
 using MediaLib.Helpers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace MediaLib.Services
 {
@@ -24,7 +20,8 @@ namespace MediaLib.Services
             List<IFormFile>? newFiles,
             List<Guid>? documentsToDelete,
             Guid? primaryDocumentId,
-            ObjectType objectType)
+            ObjectType objectType,
+            Guid ownerId)
         {
             if (documentsToDelete != null && documentsToDelete.Any())
             {
@@ -41,6 +38,7 @@ namespace MediaLib.Services
                 {
                     document.AssociatedRecordId = recordId;
                     document.ObjectTypeId = (int)objectType;
+                    document.OwnerId = ownerId;
                 }
                 await AddDocumentsAsync(newDocuments);
             }
@@ -59,11 +57,6 @@ namespace MediaLib.Services
                     await SetPrimaryDocumentAsync(recordId, firstDocument.Id);
                 }
             }
-            else if (remainingDocuments.Any())
-            {
-                var firstDocument = remainingDocuments.First();
-                await SetPrimaryDocumentAsync(recordId, firstDocument.Id);
-            }
         }
 
         public async Task<List<DocumentsDTO>> GetDocumentsListAsync(Guid recordId)
@@ -80,6 +73,7 @@ namespace MediaLib.Services
                 Content = d.Content,
                 AssociatedRecordId = d.AssociatedRecordId,
                 ObjectTypeId = d.ObjectTypeId,
+                OwnerId = d.OwnerId,
                 IsPrime = d.IsPrime,
                 Base64Image = d.Content != null ? Convert.ToBase64String(d.Content) : null
             }).ToList();
@@ -104,6 +98,7 @@ namespace MediaLib.Services
                     Content = document.Content,
                     AssociatedRecordId = document.AssociatedRecordId,
                     ObjectTypeId = document.ObjectTypeId,
+                    OwnerId = document.OwnerId,
                     IsPrime = document.IsPrime
                 };
                 await _context.DocumentsData.AddAsync(newDocument);
@@ -117,26 +112,8 @@ namespace MediaLib.Services
             var document = await _context.DocumentsData.FindAsync(documentId);
             if (document == null) return false;
 
-            var associatedRecordId = document.AssociatedRecordId;
             _context.DocumentsData.Remove(document);
             await _context.SaveChangesAsync();
-
-            var remainingDocuments = await _context.DocumentsData
-                .Where(d => d.AssociatedRecordId == associatedRecordId)
-                .ToListAsync();
-
-            if (remainingDocuments.Any())
-            {
-                var currentPrime = remainingDocuments.FirstOrDefault(d => d.IsPrime);
-                if (currentPrime == null)
-                {
-                    var firstDocument = remainingDocuments.First();
-                    firstDocument.IsPrime = true;
-                    _context.DocumentsData.Update(firstDocument);
-                    await _context.SaveChangesAsync();
-                }
-            }
-
             return true;
         }
 
@@ -186,6 +163,7 @@ namespace MediaLib.Services
                 Content = document.Content,
                 AssociatedRecordId = document.AssociatedRecordId,
                 ObjectTypeId = document.ObjectTypeId,
+                OwnerId = document.OwnerId,
                 IsPrime = document.IsPrime
             };
         }

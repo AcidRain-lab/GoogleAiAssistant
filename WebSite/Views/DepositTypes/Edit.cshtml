@@ -1,88 +1,153 @@
-﻿@model WebObjectsBLL.DTO.DepositTypeDTO
+﻿@model WebObjectsBLL.DTO.DepositTypeDetailDTO
 
-@{
-    ViewData["Title"] = "Редагувати депозит";
-}
-
-<h2>@ViewData["Title"]</h2>
+<h1>Редактировать тип депозита</h1>
 
 <form asp-action="Edit" method="post" enctype="multipart/form-data">
+    @Html.AntiForgeryToken()
     <input type="hidden" asp-for="Id" />
+
     <div class="form-group">
-        <label asp-for="DepositName" class="control-label"></label>
+        <label asp-for="DepositName" class="control-label">Название</label>
         <input asp-for="DepositName" class="form-control" />
         <span asp-validation-for="DepositName" class="text-danger"></span>
     </div>
+
     <div class="form-group">
-        <label asp-for="Description" class="control-label"></label>
+        <label asp-for="Description" class="control-label">Описание</label>
         <textarea asp-for="Description" class="form-control"></textarea>
         <span asp-validation-for="Description" class="text-danger"></span>
     </div>
 
-    <h3>Терміни депозиту</h3>
+    <div class="form-group">
+        <label>Текущий аватар</label>
+        @if (Model.Avatar != null && !string.IsNullOrEmpty(Model.Avatar.Base64Image))
+        {
+            <div class="mb-3">
+                <img src="data:image/png;base64,@Model.Avatar.Base64Image" alt="Avatar" style="max-width: 150px; max-height: 150px; border: 1px solid #ccc;" />
+            </div>
+        }
+        else
+        {
+            <p>Аватар не загружен.</p>
+        }
+        <input type="file" name="avatarFile" class="form-control" />
+    </div>
 
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>Термін (місяців)</th>
-                @foreach (var currency in Model.DepositTerms.Select(t => t.Currency).Distinct())
+    <div class="form-group">
+        <label>Добавить медиа файлы</label>
+        <input type="file" name="mediaFiles" class="form-control" multiple />
+    </div>
+
+    <div class="form-group">
+        <label>Существующие медиа файлы</label>
+        @if (Model.MediaFiles != null && Model.MediaFiles.Any())
+        {
+            <div class="row">
+                @foreach (var media in Model.MediaFiles)
                 {
-                    <th>@currency</th>
+                    <div class="col-md-3 text-center mb-3">
+                        @if (!string.IsNullOrEmpty(media.Base64Image))
+                        {
+                            <div>
+                                <img src="data:image/png;base64,@media.Base64Image" alt="@media.Name" style="max-width: 100%; max-height: 150px; border: 1px solid #ddd;" />
+                            </div>
+                        }
+                        else
+                        {
+                            <div>
+                                <a href="@Url.Action("DownloadMedia", "DepositTypes", new { id = media.Id })">@media.Name</a>
+                            </div>
+                        }
+
+                        <div class="form-check mt-2">
+                            <input class="form-check-input" type="radio" name="PrimaryMediaId" value="@media.Id" @(media.IsPrime ? "checked" : "") />
+                            <label class="form-check-label">Установить как основное</label>
+                        </div>
+
+                        <div>
+                            <input type="checkbox" name="MediaToDelete" value="@media.Id" />
+                            <label>Удалить</label>
+                        </div>
+                    </div>
                 }
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var term in Model.DepositTerms.Select(t => t.TermMonths).Distinct().OrderBy(t => t))
+            </div>
+        }
+        else
+        {
+            <p>Нет прикрепленных медиа файлов.</p>
+        }
+    </div>
+
+    <div class="form-group">
+        <label>Добавить документы</label>
+        <input type="file" name="documentFiles" class="form-control" multiple />
+    </div>
+
+    <div class="form-group">
+        <label>Существующие документы</label>
+        @if (Model.Documents != null && Model.Documents.Any())
+        {
+            <div class="row">
+                @foreach (var document in Model.Documents)
+                {
+                    <div class="col-md-3 text-center mb-3">
+                        <div>
+                            <a href="@Url.Action("DownloadDocument", "DepositTypes", new { id = document.Id })">@document.Name</a>
+                        </div>
+
+                        <div class="form-check mt-2">
+                            <input class="form-check-input" type="radio" name="PrimaryDocumentId" value="@document.Id" @(document.IsPrime ? "checked" : "") />
+                            <label class="form-check-label">Установить как основное</label>
+                        </div>
+
+                        <div>
+                            <input type="checkbox" name="DocumentsToDelete" value="@document.Id" />
+                            <label>Удалить</label>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <p>Нет прикрепленных документов.</p>
+        }
+    </div>
+
+    <div class="form-group">
+        <label>Условия депозита</label>
+        @if (Model.DepositTerms != null && Model.DepositTerms.Any())
+        {
+            var groupedTerms = Model.DepositTerms.GroupBy(t => t.Currency);
+
+            foreach (var group in groupedTerms)
             {
-                <tr>
-                    <td>@term</td>
-                    @foreach (var currency in Model.DepositTerms.Select(t => t.Currency).Distinct())
-                    {
-                        var depositTerm = Model.DepositTerms.FirstOrDefault(dt => dt.TermMonths == term && dt.Currency == currency);
-                        <td>
-                            <input type="hidden" asp-for="DepositTerms[Model.DepositTerms.IndexOf(depositTerm)].Id" />
-                            <input type="number" class="form-control" asp-for="DepositTerms[Model.DepositTerms.IndexOf(depositTerm)].InterestRate" step="0.01" />
-                        </td>
-                    }
-                </tr>
+                <h4>Валюта: @group.Key</h4>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Срок (месяцев)</th>
+                            <th>Процентная ставка (%)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var term in group.OrderBy(t => t.TermMonths))
+                        {
+                            <tr>
+                                <td>@term.TermMonths</td>
+                                <td>@term.InterestRate</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
             }
-        </tbody>
-    </table>
-
-    <div class="form-group">
-        <label>Завантажити нові документи</label>
-        <input type="file" name="newDocumentFiles" class="form-control" multiple />
+        }
+        else
+        {
+            <p>Нет доступных условий депозита.</p>
+        }
     </div>
 
-    @* Добавьте отображение и управление существующими документами *@
-
-    <div class="form-group">
-        <input type="submit" value="Зберегти" class="btn btn-primary" />
-    </div>
+    <button type="submit" class="btn btn-success">Сохранить</button>
+    <a asp-action="Index" class="btn btn-secondary">Отмена</a>
 </form>
-
-@section Scripts {
-    <script>
-        function addDepositTerm() {
-            var container = document.getElementById('depositTermsContainer');
-            var index = container.childElementCount;
-
-            var div = document.createElement('div');
-            div.className = 'form-group';
-            div.innerHTML = `
-                <label for="DepositTerms_${index}__TermMonths">Термін (місяців):</label>
-                <input type="number" class="form-control" id="DepositTerms_${index}__TermMonths" name="DepositTerms[${index}].TermMonths" />
-                <label for="DepositTerms_${index}__InterestRate">Процентна ставка:</label>
-                <input type="number" class="form-control" id="DepositTerms_${index}__InterestRate" name="DepositTerms[${index}].InterestRate" />
-                <label for="DepositTerms_${index}__Currency">Валюта:</label>
-                <input type="text" class="form-control" id="DepositTerms_${index}__Currency" name="DepositTerms[${index}].Currency" />
-            `;
-            container.appendChild(div);
-        }
-
-        function removeDepositTerm(button) {
-            var formGroup = button.parentNode; 
-            formGroup.remove(); 
-        }
-    </script>
-}

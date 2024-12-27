@@ -6,25 +6,30 @@ using WebObjectsBLL.Services;
 using MediaLib.DTO;
 using MediaLib.Helpers;
 using MediaLib.Services;
+using System.Security.Claims;
 
-namespace WebSite.Controllers.MVC.BankCard
-{
+
     [Authorize]
     [Route("CardTypes")]
     public class CardTypesController : Controller
     {
         private readonly CardTypesService _cardTypesService;
         private readonly PaymentSystemService _paymentSystemService;
-        private readonly DocumentService _documentService; // Добавляем поле для DocumentService
+        private readonly DocumentService _documentService;
 
         public CardTypesController(
             CardTypesService cardTypesService,
             PaymentSystemService paymentSystemService,
-            DocumentService documentService) // Внедряем зависимость DocumentService
+            DocumentService documentService)
         {
             _cardTypesService = cardTypesService;
             _paymentSystemService = paymentSystemService;
             _documentService = documentService;
+        }
+
+        private Guid GetOwnerId()
+        {
+            return Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value!);
         }
 
         [HttpGet("")]
@@ -49,11 +54,19 @@ namespace WebSite.Controllers.MVC.BankCard
             List<IFormFile>? mediaFiles,
             List<IFormFile>? documentFiles)
         {
+            if (!ModelState.IsValid)
+            {
+                ViewBag.PaymentSystemTypes = new SelectList(await _paymentSystemService.GetAllAsync(), "Id", "Name");
+                return View(cardTypeDto);
+            }
+
+            var ownerId = GetOwnerId();
+
             var avatar = await FileHelper.CreateDTOFromUploadedFileAsync<AvatarDTO>(avatarFile);
             var mediaDTOs = await FileHelper.CreateDTOListFromUploadedFilesAsync<MediaDataDTO>(mediaFiles);
             var documentDTOs = await FileHelper.CreateDTOListFromUploadedFilesAsync<DocumentsDTO>(documentFiles);
 
-            await _cardTypesService.AddAsync(cardTypeDto, avatar, mediaDTOs, documentDTOs);
+            await _cardTypesService.AddAsync(cardTypeDto, avatar, mediaDTOs, documentDTOs, ownerId);
             return RedirectToAction(nameof(Index));
         }
 
@@ -80,6 +93,14 @@ namespace WebSite.Controllers.MVC.BankCard
             Guid? PrimaryDocumentId,
             List<Guid>? DocumentsToDelete)
         {
+            if (!ModelState.IsValid)
+            {
+                ViewBag.PaymentSystemTypes = new SelectList(await _paymentSystemService.GetAllAsync(), "Id", "Name");
+                return View(cardTypeDto);
+            }
+
+            var ownerId = GetOwnerId();
+
             var avatar = await FileHelper.CreateDTOFromUploadedFileAsync<AvatarDTO>(avatarFile);
 
             await _cardTypesService.UpdateAsync(
@@ -90,7 +111,8 @@ namespace WebSite.Controllers.MVC.BankCard
                 PrimaryMediaId,
                 MediaToDelete,
                 PrimaryDocumentId,
-                DocumentsToDelete);
+                DocumentsToDelete,
+                ownerId);
 
             return RedirectToAction(nameof(Index));
         }
@@ -131,4 +153,4 @@ namespace WebSite.Controllers.MVC.BankCard
             return File(document.Content, "application/octet-stream", document.Name + document.Extension);
         }
     }
-}
+

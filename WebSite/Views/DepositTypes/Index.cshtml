@@ -1,45 +1,79 @@
-﻿@model List<WebObjectsBLL.DTO.DepositTypeDTO>
+﻿@model List<WebObjectsBLL.DTO.DepositTypeDetailDTO>
 
 @{
-    ViewData["Title"] = "Депозити";
+    ViewData["Title"] = "Deposit Types";
 }
 
 <h2>@ViewData["Title"]</h2>
-<a asp-action="Add" class="btn btn-sm btn-success">Додати депозит</a>
 
 @foreach (var depositType in Model)
 {
-    <h3>@depositType.DepositName</h3>
-    <p>@depositType.Description</p>
-
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>Срок (місяців)</th>
-                @foreach (var currency in depositType.DepositTerms.Select(t => t.Currency).Distinct())
-                {
-                    <th>@currency</th>
-                }
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var term in depositType.DepositTerms.Select(t => t.TermMonths).Distinct().OrderBy(t => t))
+    <div class="deposit-type">
+        <h3>
+            @if (depositType.Avatar != null && !string.IsNullOrEmpty(depositType.Avatar.Base64Image))
             {
+                <img src="data:image/png;base64,@depositType.Avatar.Base64Image" alt="@depositType.DepositName" class="avatar" />
+            }
+            @depositType.DepositName
+        </h3>
+
+        <p>@depositType.Description</p>
+
+        @if (depositType.MediaFiles != null && depositType.MediaFiles.Any())
+        {
+            <div class="media-gallery">
+                @foreach (var media in depositType.MediaFiles)
+                {
+                    <img src="data:image/png;base64,@media.Base64Image" alt="@media.Name" class="media-img" />
+                }
+            </div>
+        }
+
+        <table class="table table-bordered">
+            <thead>
                 <tr>
-                    <td>@term</td>
+                    <th>Term (Months)</th>
                     @foreach (var currency in depositType.DepositTerms.Select(t => t.Currency).Distinct())
                     {
-                        var rate = depositType.DepositTerms
-                        .FirstOrDefault(t => t.TermMonths == term && t.Currency == currency)?.InterestRate ?? 0;
-                        <td>@rate %</td>
+                        <th>@currency</th>
                     }
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach (var term in depositType.DepositTerms.Select(t => t.TermMonths).Distinct().OrderBy(t => t))
+                {
+                    <tr>
+                        <td>@term</td>
+                        @foreach (var currency in depositType.DepositTerms.Select(t => t.Currency).Distinct())
+                        {
+                            var rate = depositType.DepositTerms
+                            .FirstOrDefault(t => t.TermMonths == term && t.Currency == currency)?.InterestRate ?? 0;
+                            <td>@rate %</td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
 
-    <a asp-action="Edit" asp-route-id="@depositType.Id" class="btn btn-sm btn-warning">Редагувати</a>
-    <form asp-action="Delete" asp-route-id="@depositType.Id" method="post" style="display: inline;">
-        <button type="submit" class="btn btn-sm btn-danger">Видалити</button>
-    </form>
+        @if (depositType.Documents != null && depositType.Documents.Any())
+        {
+            <div class="documents-list">
+                <h4>Attached Documents:</h4>
+                @foreach (var document in depositType.Documents)
+                {
+                    <a href="@Url.Action("DownloadDocument", "DepositTypes", new { id = document.Id })" class="btn btn-link" title="@document.Name">
+                        <img src="/images/pdf-icon.png" alt="PDF" style="width: 24px; height: 24px; margin-right: 5px;" />
+                        @document.Name
+                    </a>
+                }
+            </div>
+        }
+
+        <div class="actions">
+            <a asp-action="Edit" asp-route-id="@depositType.Id" class="btn btn-warning">Edit</a>
+            <form asp-action="Delete" asp-route-id="@depositType.Id" method="post" class="d-inline">
+                <button type="submit" class="btn btn-danger">Delete</button>
+            </form>
+        </div>
+    </div>
 }
