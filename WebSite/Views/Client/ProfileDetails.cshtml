@@ -1,0 +1,139 @@
+﻿@model WebObjectsBLL.DTO.ClientProfileDTO
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 bg-secondary text-white p-3">
+            <h4>@Model.FullName</h4>
+            <nav class="nav flex-column">
+                <a class="nav-link text-white" href="#bankCards">Bank Cards</a>
+                <a class="nav-link text-white" href="#credits">Active Credits</a>
+                <a class="nav-link text-white" href="#deposits">Active Deposits</a>
+                <a class="nav-link text-white" href="#cashbacks">Cashback</a>
+                <a class="nav-link text-white" href="#payments">Regular Payments</a>
+                <a class="nav-link text-white" href="#messages">Messages</a>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9 p-3">
+            <h3>Client Details</h3>
+            <ul>
+                <li>Email: @Model.Email</li>
+                <li>Phone: @Model.Phone</li>
+                <li>Birth Date: @(Model.BirthDate.HasValue ? Model.BirthDate.Value.ToShortDateString() : "N/A")</li>
+                <li>Passport Data: @Model.PassportData</li>
+                <li>Tax ID: @Model.TaxId</li>
+                <li>Is Active: @(Model.IsActive ? "Yes" : "No")</li>
+            </ul>
+
+            <hr />
+            <section id="bankCards">
+                <h4>Bank Cards</h4>
+                @if (Model.BankCards != null && Model.BankCards.Any())
+                {
+                    <ul>
+                        @foreach (var card in Model.BankCards)
+                        {
+                            <li>@card.CardHolderName - @card.CardNumber</li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p>No Bank Cards</p>
+                }
+            </section>
+
+            <hr />
+            <section id="credits">
+                <h4>Active Credits</h4>
+                @if (Model.Credits != null && Model.Credits.Any())
+                {
+                    <ul>
+                        @foreach (var credit in Model.Credits)
+                        {
+                            <li>Credit ID: @credit.Id, Amount: @credit.CreditAmount</li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p>No Active Credits</p>
+                }
+            </section>
+
+            <hr />
+            <section id="deposits">
+                <h4>Active Deposits</h4>
+                @if (Model.Deposits != null && Model.Deposits.Any())
+                {
+                    <ul>
+                        @foreach (var deposit in Model.Deposits)
+                        {
+                            <li>Deposit ID: @deposit.Id, Amount: @deposit.DepositAmount</li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p>No Active Deposits</p>
+                }
+            </section>
+
+            <hr />
+            <section id="cashbacks">
+                <h4>Cashback</h4>
+                @if (Model.Cashbacks != null && Model.Cashbacks.Any())
+                {
+                    <ul>
+                        @foreach (var cashback in Model.Cashbacks)
+                        {
+                            <li>Cashback ID: @cashback.Id, Amount: @cashback.Amount</li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p>No Cashback</p>
+                }
+            </section>
+
+            <hr />
+            <section id="payments">
+                <h4>Regular Payments</h4>
+                @if (Model.RegularPayments != null && Model.RegularPayments.Any())
+                {
+                    <ul>
+                        @foreach (var payment in Model.RegularPayments)
+                        {
+                            <li>Payment ID: @payment.Id, Amount: @payment.PaymentDetails</li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p>No Regular Payments</p>
+                }
+            </section>
+
+            <hr />
+            <section id="messages">
+                <h4>Messages</h4>
+                @if (Model.Messages != null && Model.Messages.Any())
+                {
+                    <ul>
+                        @foreach (var message in Model.Messages)
+                        {
+                            <li>Message ID: @message.Id, Content: @message.Content</li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p>No Messages</p>
+                }
+            </section>
+        </div>
+    </div>
+</div>

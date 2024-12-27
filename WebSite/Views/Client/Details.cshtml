@@ -2,35 +2,97 @@
 
 @{
     ViewData["Title"] = "Client Details";
+    string activeSection = ViewData["ActiveSection"] as string ?? "PaymentAccounts";
 }
 
-<h2>Client Details</h2>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar for Navigation -->
+        <div class="col-md-3 bg-light border-end">
+            <nav class="nav flex-column p-3">
+                <a asp-action="Index" asp-controller="BankCard" asp-route-clientId="@Model.Id"
+                   class="nav-link @(activeSection == "BankCards" ? "active bg-primary text-white" : "")">Bank Cards</a>
+                <a asp-action="Index" asp-controller="Credit" asp-route-clientId="@Model.Id"
+                   class="nav-link @(activeSection == "Credits" ? "active bg-primary text-white" : "")">Active Credits</a>
+                <a asp-action="Index" asp-controller="Deposit" asp-route-clientId="@Model.Id"
+                   class="nav-link @(activeSection == "Deposits" ? "active bg-primary text-white" : "")">Active Deposits</a>
+                <a asp-action="Index" asp-controller="Cashback" asp-route-clientId="@Model.Id"
+                   class="nav-link @(activeSection == "Cashback" ? "active bg-primary text-white" : "")">Cashback</a>
+                <a asp-action="Index" asp-controller="RegularPayment" asp-route-clientId="@Model.Id"
+                   class="nav-link @(activeSection == "RegularPayments" ? "active bg-primary text-white" : "")">Regular Payments</a>
+                <a asp-action="Index" asp-controller="Message" asp-route-clientId="@Model.Id"
+                   class="nav-link @(activeSection == "Messages" ? "active bg-primary text-white" : "")">Messages</a>
+            </nav>
+        </div>
 
-<div class="card">
-    <div class="card-header bg-primary text-white">
-        <h4>@Model.FirstName @Model.LastName</h4>
+        <!-- Main Content Area -->
+        <div class="col-md-6">
+            <div class="p-3">
+                <h3>@Model.FirstName @Model.LastName</h3>
+                <hr />
+
+                @switch (activeSection)
+                {
+                    case "BankCards":
+                        <h5>My Bank Cards</h5>
+                        <p>Dynamic content related to bank cards will appear here.</p>
+                        break;
+
+                    case "Credits":
+                        <h5>My Active Credits</h5>
+                        <p>Dynamic content related to active credits will appear here.</p>
+                        break;
+
+                    case "Deposits":
+                        <h5>My Active Deposits</h5>
+                        <p>Dynamic content related to deposits will appear here.</p>
+                        break;
+
+                    case "Cashback":
+                        <h5>My Cashback</h5>
+                        <p>Dynamic content related to cashback will appear here.</p>
+                        break;
+
+                    case "RegularPayments":
+                        <h5>My Regular Payments</h5>
+                        <p>Dynamic content related to regular payments will appear here.</p>
+                        break;
+
+                    case "Messages":
+                        <h5>My Messages</h5>
+                        <p>Dynamic content related to messages will appear here.</p>
+                        break;
+
+                    default:
+                        <h5>My Payment Accounts</h5>
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h6 class="card-title">Volodymyr Stetsiuk</h6>
+                                <p class="card-text">NL48 ABNA 0112 2309 81</p>
+                                <p class="card-text text-muted">€1,035.99</p>
+                            </div>
+                        </div>
+                        <button class="btn btn-outline-success">New Payment Account</button>
+                        break;
+                }
+            </div>
+        </div>
+
+        <!-- Client Details Section -->
+        <div class="col-md-3 bg-light border-start">
+            <div class="p-3">
+                <h5>Client Details</h5>
+                <p><strong>Email:</strong> @Model.Email</p>
+                <p><strong>Phone:</strong> @Model.Phone</p>
+                <p><strong>Birth Date:</strong> @(Model.BirthDate.HasValue ? Model.BirthDate.Value.ToShortDateString() : "N/A")</p>
+                <p><strong>Passport Data:</strong> @(string.IsNullOrWhiteSpace(Model.PassportData) ? "N/A" : Model.PassportData)</p>
+                <p><strong>Tax ID:</strong> @(string.IsNullOrWhiteSpace(Model.TaxId) ? "N/A" : Model.TaxId)</p>
+                <p><strong>Is Active:</strong> @(Model.IsActive ? "Yes" : "No")</p>
+                <div class="mt-3">
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary btn-sm">Edit</a>
+                    <a asp-action="Index" class="btn btn-secondary btn-sm">Back to List</a>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="card-body">
-        <p><strong>Email:</strong> @Model.Email</p>
-        <p><strong>Phone:</strong> @Model.Phone</p>
-        <p><strong>Birth Date:</strong> @(Model.BirthDate.HasValue ? Model.BirthDate.Value.ToShortDateString() : "N/A")</p>
-        <p><strong>Passport Data:</strong> @(string.IsNullOrWhiteSpace(Model.PassportData) ? "N/A" : Model.PassportData)</p>
-        <p><strong>Tax ID:</strong> @(string.IsNullOrWhiteSpace(Model.TaxId) ? "N/A" : Model.TaxId)</p>
-        <p><strong>Is Active:</strong> @(Model.IsActive ? "Yes" : "No")</p>
-    </div>
-</div>
-
-<div class="mt-3 d-flex flex-column">
-    <a asp-controller="BankCard" asp-action="Index" asp-route-clientId="@Model.Id" class="btn btn-secondary mb-2">Bank Cards</a>
-    <a asp-controller="Credit" asp-action="Index" asp-route-clientId="@Model.Id" class="btn btn-secondary mb-2">Active Credits</a>
-    <a asp-controller="Deposit" asp-action="Index" asp-route-clientId="@Model.Id" class="btn btn-secondary mb-2">Active Deposits</a>
-    <a asp-controller="Cashback" asp-action="Index" asp-route-clientId="@Model.Id" class="btn btn-secondary mb-2">Cashback</a>
-    <a asp-controller="RegularPayment" asp-action="Index" asp-route-clientId="@Model.Id" class="btn btn-secondary mb-2">Regular Payments</a>
-    <a asp-controller="Message" asp-action="Index" asp-route-clientId="@Model.Id" class="btn btn-secondary mb-2">Messages</a>
-</div>
-
-
-<div class="mt-3">
-    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Edit</a>
-    <a asp-action="Index" class="btn btn-secondary">Back to List</a>
 </div>

@@ -10,6 +10,16 @@ namespace WebObjectsBLL
         {
             // Mapping for Clients
             CreateMap<Client, ClientDTO>().ReverseMap();
+            CreateMap<Client, ClientProfileDTO>()
+        .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => $"{src.FirstName} {src.LastName}"))
+        .ForMember(dest => dest.BirthDate, opt => opt.MapFrom(src => src.BirthDate.HasValue ? src.BirthDate.Value.ToDateTime(TimeOnly.MinValue) : (DateTime?)null))
+        .ForMember(dest => dest.BankCards, opt => opt.Ignore())
+        .ForMember(dest => dest.Credits, opt => opt.Ignore())
+        .ForMember(dest => dest.Deposits, opt => opt.Ignore())
+        .ForMember(dest => dest.Cashbacks, opt => opt.Ignore())
+        .ForMember(dest => dest.RegularPayments, opt => opt.Ignore())
+        .ForMember(dest => dest.Messages, opt => opt.Ignore());
+
 
             CreateMap<Client, ClientDetailDTO>()
                 .ForMember(dest => dest.BirthDate, opt => opt.MapFrom(src => src.BirthDate.HasValue ? src.BirthDate.Value.ToDateTime(TimeOnly.MinValue) : (DateTime?)null))
