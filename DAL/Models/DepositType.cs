@@ -12,4 +12,6 @@ public partial class DepositType
     public string? Description { get; set; }
 
     public virtual ICollection<DepositTerm> DepositTerms { get; set; } = new List<DepositTerm>();
+
+    public virtual ICollection<Deposit> Deposits { get; set; } = new List<Deposit>();
 }

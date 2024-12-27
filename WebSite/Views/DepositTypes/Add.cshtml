@@ -1,57 +1,88 @@
-﻿@model WebObjectsBLL.DTO.DepositTypeDTO
+﻿@model WebObjectsBLL.DTO.DepositTypeDetailDTO
 
-@{
-    ViewData["Title"] = "Додати депозит";
-}
-
-<h2>@ViewData["Title"]</h2>
+<h1>Добавить тип депозита</h1>
 
 <form asp-action="Add" method="post" enctype="multipart/form-data">
+    @Html.AntiForgeryToken()
+
     <div class="form-group">
-        <label asp-for="DepositName" class="control-label"></label>
+        <label asp-for="DepositName" class="control-label">Название</label>
         <input asp-for="DepositName" class="form-control" />
         <span asp-validation-for="DepositName" class="text-danger"></span>
     </div>
+
     <div class="form-group">
-        <label asp-for="Description" class="control-label"></label>
+        <label asp-for="Description" class="control-label">Описание</label>
         <textarea asp-for="Description" class="form-control"></textarea>
         <span asp-validation-for="Description" class="text-danger"></span>
     </div>
 
-    @* Добавьте поля для сроков депозита (DepositTerms) *@
-    <h3>Терміни депозиту</h3>
-    <div id="depositTermsContainer">
-        @* Здесь будут динамически добавляться поля для сроков *@
+    <div class="form-group">
+        <label>Загрузить аватар</label>
+        <input type="file" name="avatarFile" class="form-control" />
     </div>
-    <button type="button" class="btn btn-secondary" onclick="addDepositTerm()">Додати термін</button>
 
     <div class="form-group">
-        <label>Завантажити документи</label>
+        <label>Добавить медиа файлы</label>
+        <input type="file" name="mediaFiles" class="form-control" multiple />
+    </div>
+
+    <div class="form-group">
+        <label>Добавить документы</label>
         <input type="file" name="documentFiles" class="form-control" multiple />
     </div>
 
     <div class="form-group">
-        <input type="submit" value="Додати" class="btn btn-primary" />
+        <label>Условия депозита</label>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Срок (месяцы)</th>
+                    <th>Валюта</th>
+                    <th>Процентная ставка (%)</th>
+                </tr>
+            </thead>
+            <tbody id="terms-container">
+                <tr>
+                    <td><input type="number" name="DepositTerms[0].TermMonths" class="form-control" /></td>
+                    <td>
+                        <select name="DepositTerms[0].Currency" class="form-control">
+                            <option value="USD">USD</option>
+                            <option value="EUR">EUR</option>
+                            <option value="UAH">UAH</option>
+                        </select>
+                    </td>
+                    <td><input type="number" step="0.01" name="DepositTerms[0].InterestRate" class="form-control" /></td>
+                </tr>
+            </tbody>
+        </table>
+        <button type="button" id="add-term" class="btn btn-primary">Добавить условие</button>
     </div>
+
+    <button type="submit" class="btn btn-success">Сохранить</button>
+    <a asp-action="Index" class="btn btn-secondary">Отмена</a>
 </form>
 
 @section Scripts {
     <script>
-        function addDepositTerm() {
-            var container = document.getElementById('depositTermsContainer');
-            var index = container.childElementCount;
-
-            var div = document.createElement('div');
-            div.className = 'form-group';
-            div.innerHTML = `
-                <label for="DepositTerms_${index}__TermMonths">Термін (місяців):</label>
-                <input type="number" class="form-control" id="DepositTerms_${index}__TermMonths" name="DepositTerms[${index}].TermMonths" />
-                <label for="DepositTerms_${index}__InterestRate">Процентна ставка:</label>
-                <input type="number" class="form-control" id="DepositTerms_${index}__InterestRate" name="DepositTerms[${index}].InterestRate" />
-                <label for="DepositTerms_${index}__Currency">Валюта:</label>
-                <input type="text" class="form-control" id="DepositTerms_${index}__Currency" name="DepositTerms[${index}].Currency" />
+        let termIndex = 1;
+        document.getElementById('add-term').addEventListener('click', () => {
+            const container = document.getElementById('terms-container');
+            const newRow = `
+                <tr>
+                    <td><input type="number" name="DepositTerms[${termIndex}].TermMonths" class="form-control" /></td>
+                    <td>
+                        <select name="DepositTerms[${termIndex}].Currency" class="form-control">
+                            <option value="USD">USD</option>
+                            <option value="EUR">EUR</option>
+                            <option value="UAH">UAH</option>
+                        </select>
+                    </td>
+                    <td><input type="number" step="0.01" name="DepositTerms[${termIndex}].InterestRate" class="form-control" /></td>
+                </tr>
             `;
-            container.appendChild(div);
-        }
+            container.insertAdjacentHTML('beforeend', newRow);
+            termIndex++;
+        });
     </script>
 }
