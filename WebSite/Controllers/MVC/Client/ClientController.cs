@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using MediaLib.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebObjectsBLL.DTO;
 using WebObjectsBLL.Services;
@@ -7,10 +8,12 @@ using WebObjectsBLL.Services;
 public class ClientController : Controller
 {
     private readonly ClientService _clientService;
+    private readonly AvatarService _avatarService;
 
-    public ClientController(ClientService clientService)
+    public ClientController(ClientService clientService, AvatarService avatarService)
     {
         _clientService = clientService;
+        _avatarService = avatarService;
     }
 
     public async Task<IActionResult> Index()
@@ -26,23 +29,23 @@ public class ClientController : Controller
             var client = await _clientService.GetDetailByIdAsync(id);
             if (client == null)
             {
-                Console.WriteLine($"Client with ID {id} not found.");
-                return NotFound();
+                TempData["Error"] = "Client not found.";
+                return RedirectToAction(nameof(Index));
             }
 
+            client.Avatar = await _avatarService.GetAvatarAsync(client.Id);
             return View(client);
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"An error occurred: {ex.Message}");
-            throw;
+            TempData["Error"] = $"An unexpected error occurred: {ex.Message}";
+            return RedirectToAction(nameof(Index));
         }
     }
 
     public IActionResult Add()
     {
-        var clientDto = new ClientDetailDTO();
-        return View(clientDto);
+        return View(new ClientDetailDTO());
     }
 
     [HttpPost]
@@ -66,6 +69,7 @@ public class ClientController : Controller
             return View(clientDetailDto);
         }
     }
+
     [HttpGet]
     public async Task<IActionResult> Edit(Guid id)
     {
@@ -113,7 +117,6 @@ public class ClientController : Controller
         }
     }
 
-
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(Guid id)
@@ -126,7 +129,7 @@ public class ClientController : Controller
         }
         catch (Exception ex)
         {
-            TempData["Error"] = "An unexpected error occurred: " + ex.Message;
+            TempData["Error"] = $"An unexpected error occurred: {ex.Message}";
             return RedirectToAction(nameof(Index));
         }
     }
