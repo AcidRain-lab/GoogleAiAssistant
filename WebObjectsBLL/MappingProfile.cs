@@ -48,18 +48,29 @@ namespace WebObjectsBLL
             CreateMap<Message, MessageDTO>().ReverseMap();
 
             // Mapping for Credits
+            /* CreateMap<Credit, CreditDTO>()
+                 .ForMember(dest => dest.StartDate, opt => opt.MapFrom(src => src.StartDate.ToDateTime(TimeOnly.MinValue)))
+                 .ForMember(dest => dest.EndDate, opt => opt.MapFrom(src => src.EndDate.ToDateTime(TimeOnly.MinValue)))
+                 .ReverseMap()
+                 .ForMember(dest => dest.StartDate, opt => opt.MapFrom(src => DateOnly.FromDateTime(src.StartDate)))
+                 .ForMember(dest => dest.EndDate, opt => opt.MapFrom(src => DateOnly.FromDateTime(src.EndDate)))
+                 .ForMember(dest => dest.CreditType, opt => opt.Ignore()); // Exclude CreditType relationship
+
+             // Mapping for CreditType
+             CreateMap<CreditType, CreditTypeDTO>().ReverseMap();*/
+            CreateMap<CreditType, CreditTypeDTO>()
+    .ForMember(dest => dest.Documents, opt => opt.Ignore()) // Если документы не нужны
+    .ReverseMap();
+
             CreateMap<Credit, CreditDTO>()
                 .ForMember(dest => dest.StartDate, opt => opt.MapFrom(src => src.StartDate.ToDateTime(TimeOnly.MinValue)))
                 .ForMember(dest => dest.EndDate, opt => opt.MapFrom(src => src.EndDate.ToDateTime(TimeOnly.MinValue)))
                 .ReverseMap()
                 .ForMember(dest => dest.StartDate, opt => opt.MapFrom(src => DateOnly.FromDateTime(src.StartDate)))
-                .ForMember(dest => dest.EndDate, opt => opt.MapFrom(src => DateOnly.FromDateTime(src.EndDate)))
-                .ForMember(dest => dest.CreditType, opt => opt.Ignore()); // Exclude CreditType relationship
+                .ForMember(dest => dest.EndDate, opt => opt.MapFrom(src => DateOnly.FromDateTime(src.EndDate)));
 
-            // Mapping for CreditType
-            CreateMap<CreditType, CreditTypeDTO>().ReverseMap();
-           
-                        CreateMap<DepositTypeDetailDTO, DepositType>()
+
+            CreateMap<DepositTypeDetailDTO, DepositType>()
                 .ForMember(dest => dest.DepositTerms, opt => opt.Ignore()) // Пропустить внутренние коллекции, если они не изменяются
                 .ReverseMap()
                 .ForMember(dest => dest.Avatar, opt => opt.Ignore())
