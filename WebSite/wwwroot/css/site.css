@@ -20,3 +20,17 @@ html {
 body {
   margin-bottom: 60px;
 }
+.nav-link {
+    background-color: #4a4a4a;
+    color: #ffffff;
+    margin-bottom: 5px;
+    padding: 10px;
+    border-radius: 5px;
+    text-align: center;
+}
+
+    .nav-link.active {
+        background-color: #1e90ff;
+        color: #ffffff;
+        font-weight: bold;
+    }

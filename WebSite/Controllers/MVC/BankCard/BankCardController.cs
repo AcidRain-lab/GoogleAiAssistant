@@ -19,10 +19,9 @@ public class BankCardController : Controller
             return BadRequest("Client ID is required.");
 
         var cards = await _bankCardService.GetByClientIdAsync(clientId);
-        ViewBag.ClientId = clientId;
+        ViewBag.ClientId = clientId; // Убедитесь, что ViewBag заполнен
         return View(cards);
     }
-
     [HttpGet]
     public async Task<IActionResult> Add(Guid clientId)
     {

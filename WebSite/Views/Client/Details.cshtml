@@ -1,49 +1,134 @@
-﻿@model WebObjectsBLL.DTO.ClientDetailDTO
+﻿@* @model WebObjectsBLL.DTO.ClientDetailDTO
 
-<div class="container">
+<div class="container mt-4">
     <div class="row">
+        <!-- Sidebar -->
         <div class="col-md-3">
-            <nav class="nav flex-column bg-light">
-                <a class="nav-link" href="/BankCards">Bank Cards</a>
-                <a class="nav-link" href="/Credits">Active Credits</a>
-                <a class="nav-link" href="/Deposits">Active Deposits</a>
-                <a class="nav-link" href="/Cashback">Cashback</a>
-                <a class="nav-link" href="/Payments">Regular Payments</a>
-                <a class="nav-link active" href="/Clients">Client Profile</a>
+            <nav class="nav flex-column bg-light p-3 rounded">
+                <a class="nav-link @((ViewContext.RouteData.Values["controller"]?.ToString() == "BankAccount") ? "active" : "")" href="/BankAccount?clientId=@Model.Id">Bank Accounts</a>
+                <a class="nav-link @((ViewContext.RouteData.Values["controller"]?.ToString() == "BankCards") ? "active" : "")" href="/BankCards?clientId=@Model.Id">Bank Cards</a>
+                <a class="nav-link @((ViewContext.RouteData.Values["controller"]?.ToString() == "Credit") ? "active" : "")" href="/Credit/Index?clientId=@Model.Id">Active Credits</a>
+                <a class="nav-link @((ViewContext.RouteData.Values["controller"]?.ToString() == "Deposit") ? "active" : "")" href="/Deposits?clientId=@Model.Id">Active Deposits</a>
+                <a class="nav-link @((ViewContext.RouteData.Values["controller"]?.ToString() == "Cashback") ? "active" : "")" href="/Cashback?clientId=@Model.Id">Cashback</a>
+                <a class="nav-link @((ViewContext.RouteData.Values["controller"]?.ToString() == "Payments") ? "active" : "")" href="/Payments?clientId=@Model.Id">Regular Payments</a>
+                <a class="nav-link active" href="/Clients/Details/@Model.Id">Client Profile</a>
             </nav>
         </div>
 
+        <!-- Main Content -->
         <div class="col-md-9">
-            <h2>@Model.FullName</h2>
-            <div class="d-flex align-items-center mb-4">
+            <!-- Avatar and Full Name -->
+            <div class="bg-primary text-white text-center p-4 rounded">
                 @if (Model.Avatar?.Base64Image != null)
                 {
-                    <img src="data:image/png;base64,@Model.Avatar.Base64Image" alt="Client Avatar" class="rounded-circle" style="width: 100px; height: 100px;">
+                    <img src="data:image/png;base64,@Model.Avatar.Base64Image" alt="Client Avatar" class="rounded-circle mb-3" style="width: 100px; height: 100px;">
                 }
                 else
                 {
-                    <img src="/images/placeholder-avatar.png" alt="Placeholder Avatar" class="rounded-circle" style="width: 100px; height: 100px;">
+                    <img src="/images/placeholder-avatar.png" alt="Placeholder Avatar" class="rounded-circle mb-3" style="width: 100px; height: 100px;">
                 }
+                <h2 class="mb-0">@Model.FullName</h2>
             </div>
-            <h3>Client Details</h3>
-            <ul>
-                <li>Email: @Model.Email</li>
-                <li>Phone: @Model.Phone</li>
-                @if (Model.BirthDate.HasValue)
-                {
-                    <li>Birth Date: @Model.BirthDate.Value.ToShortDateString()</li>
-                }
-                else
-                {
-                    <li>Birth Date: Not specified</li>
-                }
-                <li>Passport Data: @Model.PassportData</li>
-                <li>Tax ID: @Model.TaxId</li>
-                <li>Is Active: @(Model.IsActive ? "Yes" : "No")</li>
-            </ul>
-            <div class="mt-4">
-                <a class="btn btn-primary" href="/Clients/Edit/@Model.Id">Edit</a>
-                <a class="btn btn-secondary" href="/Clients">Back to List</a>
+
+            <!-- Client Details -->
+            <div class="card mt-4 shadow-sm">
+                <div class="card-body">
+                    <h3 class="mb-3">Client Details</h3>
+                    <dl class="row">
+                        <dt class="col-sm-3">Email</dt>
+                        <dd class="col-sm-9">@(!string.IsNullOrEmpty(Model.Email) ? Model.Email : "Not specified")</dd>
+
+                        <dt class="col-sm-3">Phone</dt>
+                        <dd class="col-sm-9">@(!string.IsNullOrEmpty(Model.Phone) ? Model.Phone : "Not specified")</dd>
+
+                        <dt class="col-sm-3">Birth Date</dt>
+                        <dd class="col-sm-9">@Model.BirthDate?.ToShortDateString() ?? "Not specified"</dd>
+
+                        <dt class="col-sm-3">Passport Data</dt>
+                        <dd class="col-sm-9">@(!string.IsNullOrEmpty(Model.PassportData) ? Model.PassportData : "Not specified")</dd>
+
+                        <dt class="col-sm-3">Tax ID</dt>
+                        <dd class="col-sm-9">@(!string.IsNullOrEmpty(Model.TaxId) ? Model.TaxId : "Not specified")</dd>
+
+                        <dt class="col-sm-3">Is Active</dt>
+                        <dd class="col-sm-9">@Model.IsActive ? "Yes" : "No"</dd>
+                    </dl>
+
+                    <!-- Action Buttons -->
+                    <div class="mt-4">
+                        <a class="btn btn-primary me-2" href="/Clients/Edit/@Model.Id">Edit</a>
+                        <a class="btn btn-secondary" href="/Clients">Back to List</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> *@
+
+<div class="container mt-4">
+    <div class="row">
+       
+
+        <!-- Client Details -->
+        <!-- Avatar and Full Name -->
+        <div class="bg-primary text-white text-center p-4 rounded">
+            @if (Model.Avatar?.Base64Image != null)
+            {
+                <img src="data:image/png;base64,@Model.Avatar.Base64Image" alt="Client Avatar" class="rounded-circle mb-3" style="width: 100px; height: 100px;">
+            }
+            else
+            {
+                <img src="/images/placeholder-avatar.png" alt="Placeholder Avatar" class="rounded-circle mb-3" style="width: 100px; height: 100px;">
+            }
+            <h2 class="mb-0">@Model.FullName</h2>
+        </div>
+        <div class="card mt-4 shadow-sm">
+            <div class="card-body">
+                <h3 class="mb-3">Client Details</h3>
+                <dl class="row">
+                    <dt class="col-sm-3">Email</dt>
+                    <dd class="col-sm-9">@(!string.IsNullOrEmpty(Model.Email) ? Model.Email : "Not specified")</dd>
+
+                    <dt class="col-sm-3">Phone</dt>
+                    <dd class="col-sm-9">@(!string.IsNullOrEmpty(Model.Phone) ? Model.Phone : "Not specified")</dd>
+
+                    <dt class="col-sm-3">Birth Date</dt>
+                    <dd class="col-sm-9">@Model.BirthDate?.ToShortDateString() ?? "Not specified"</dd>
+
+                    <dt class="col-sm-3">Passport Data</dt>
+                    <dd class="col-sm-9">@(!string.IsNullOrEmpty(Model.PassportData) ? Model.PassportData : "Not specified")</dd>
+
+                    <dt class="col-sm-3">Tax ID</dt>
+                    <dd class="col-sm-9">@(!string.IsNullOrEmpty(Model.TaxId) ? Model.TaxId : "Not specified")</dd>
+
+                    <dt class="col-sm-3">Is Active</dt>
+                    <dd class="col-sm-9">@Model.IsActive ? "Yes" : "No"</dd>
+                </dl>
+
+                <!-- Action Buttons -->
+                <div class="mt-4">
+                    <a class="btn btn-primary me-2" href="/Clients/Edit/@Model.Id">Edit</a>
+                    <a class="btn btn-secondary" href="/Clients">Back to List</a>
+                </div>
+            </div>
+        </div>
+        <!-- Sidebar -->
+        <div class="col-md-3">
+            <nav class="nav flex-column bg-light p-3 rounded">
+                <a class="nav-link" href="#" data-url="/BankAccount?clientId=@Model.Id" onclick="loadContent(this); return false;">Bank Accounts</a>
+                <a class="nav-link" href="#" data-url="/BankCards?clientId=@Model.Id" onclick="loadContent(this); return false;">Bank Cards</a>
+                <a class="nav-link" href="#" data-url="/Credit/Index?clientId=@Model.Id" onclick="loadContent(this); return false;">Active Credits</a>
+                <a class="nav-link" href="#" data-url="/Deposits?clientId=@Model.Id" onclick="loadContent(this); return false;">Active Deposits</a>
+                <a class="nav-link" href="#" data-url="/Cashback?clientId=@Model.Id" onclick="loadContent(this); return false;">Cashback</a>
+                <a class="nav-link" href="#" data-url="/Payments?clientId=@Model.Id" onclick="loadContent(this); return false;">Regular Payments</a>
+                <a class="nav-link active" href="/Clients/Details/@Model.Id">Client Profile</a>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9">
+            <div id="dynamic-content" class="mt-4">
+                <!-- AJAX content will be loaded here -->
             </div>
         </div>
     </div>
