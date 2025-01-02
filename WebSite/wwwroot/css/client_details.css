@@ -1,0 +1,85 @@
+﻿/* Стили для страницы Client Details */
+
+/* Стили для боковой панели */
+.sidebar-nav {
+    background-color: #00473d; /* Темно-зеленый фон */
+    color: #ffffff; /* Белый текст */
+    padding: 15px;
+    border-radius: 1px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+    .sidebar-nav .nav-link {
+        color: #ffffff;
+        margin-bottom: 10px;
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+        .sidebar-nav .nav-link:hover {
+            background-color: #005f50; /* Светлее при наведении */
+            color: #ffffff;
+        }
+
+/* Стили для блока с аватаром */
+.client-avatar {
+    background-color: #00473d; /* Темно-зеленый фон */
+    color: #ffffff; /* Белый текст */
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+    .client-avatar img {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 50%;
+    }
+
+    .client-avatar h2 {
+        margin-top: 10px;
+        font-size: 1.5rem;
+    }
+
+/* Стили для таблицы деталей */
+.client-details-card {
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+}
+
+    .client-details-card .card-body h3 {
+        color: #000000; /* Черный текст */
+    }
+
+    .client-details-card dl dt {
+        font-weight: bold;
+        color: #333333; /* Темно-серый текст */
+    }
+
+    .client-details-card dl dd {
+        margin-bottom: 10px;
+    }
+
+/* Кнопки */
+.btn-warning {
+    background-color: #FFC107; /* Желтый */
+    color: #333333; /* Темный текст */
+    border: none;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+    .btn-warning:hover {
+        background-color: #e6ac00; /* Темнее при наведении */
+        color: #ffffff;
+    }
+
+.btn-secondary {
+    background-color: #00473d; /* Темно-зеленый */
+    color: #ffffff;
+    border: none;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+    .btn-secondary:hover {
+        background-color: #00332a; /* Темнее при наведении */
+    }

@@ -1,36 +1,69 @@
-html {
-  font-size: 14px;
+﻿body {
+    background-image: url("../images/bg_pic.png"); /* Укажите путь к изображению */
+   
+    background-repeat: no-repeat;
+    background-position: top center; /* Сместить фон вниз */
+    margin: 0;
 }
 
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+/* Верхний блок */
+.top-bar {
+    display: flex;
+    justify-content: space-between; /* Разнесение элементов по краям */
+    align-items: center; /* Выравнивание по вертикали */
+    padding: 10px 20px; /* Внутренние отступы */
+    border-bottom: 1px solid #ddd;  
+    margin: 0 auto; /* Центрирование блока */
+    background-color: #ffffff; /* Белый фон */
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+/* Название банка */
+.main-header .navbar-brand {
+    font-size: 2rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #00796B;
+    margin-right: auto; /* Отодвигаем от кнопки логина */
 }
 
-html {
-  position: relative;
-  min-height: 100%;
-}
-
-body {
-  margin-bottom: 60px;
-}
-.nav-link {
-    background-color: #4a4a4a;
-    color: #ffffff;
-    margin-bottom: 5px;
-    padding: 10px;
+/* Кнопка логина/логаута */
+.main-header .btn {
+    padding: 8px 15px;
+    font-weight: bold;
     border-radius: 5px;
-    text-align: center;
+    background-color: #FFC107; /* Желтая кнопка */
+    color: #333;
+    margin-left: auto; /* Отодвигаем от названия */
+}
+.btn-secondary {
+    background-color: #00473d; /* Темно-зеленый цвет */
+    color: #ffffff; /* Белый текст */
+    border: none;
+    transition: background-color 0.3s ease;
 }
 
-    .nav-link.active {
-        background-color: #1e90ff;
-        color: #ffffff;
-        font-weight: bold;
+    .btn-secondary:hover {
+        background-color: #005f50; /* менее темный зеленый при наведении */
     }
+
+
+/* Навбар */
+.navbar {
+    background-color: #00473d; /* Зеленый фон */
+    margin-top: 10px;
+    border-radius: 5px;
+    display: flex;
+    justify-content: center; /* Центрирование ссылок */
+}
+
+    .navbar .nav-link {
+        color: #ffffff; /* Белый текст */
+        margin: 0 10px;
+        text-transform: uppercase;
+        font-weight: bold;
+        transition: color 0.3s ease;
+    }
+
+        .navbar .nav-link:hover, .navbar .nav-link:focus {
+            color: #cce7e0; /* Светлее при наведении */
+        }
