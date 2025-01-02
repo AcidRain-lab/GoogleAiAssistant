@@ -19,8 +19,9 @@ namespace WebSite.Controllers.MVC
         {
             var cashbacks = await _cashbackService.GetByClientIdAsync(clientId);
             ViewBag.ClientId = clientId;
-            return View(cashbacks);
+            return PartialView("Index", cashbacks); // Используем PartialView
         }
+
 
         public IActionResult Add(Guid clientId)
         {

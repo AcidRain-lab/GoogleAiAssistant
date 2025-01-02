@@ -1,22 +1,11 @@
 ﻿@model IEnumerable<WebObjectsBLL.DTO.BankCardDTO>
 
-@{
-    ViewData["Title"] = "Bank Cards";
-}
-
-<h2>@ViewData["Title"]</h2>
-
-<p>
-    <a asp-action="Add" asp-route-clientId="@ViewBag.ClientId" class="btn btn-primary">Add New Card</a>
-</p>
-
 <table class="table table-bordered">
     <thead>
         <tr>
             <th>Card Number</th>
             <th>Holder Name</th>
             <th>Expiration Date</th>
-            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -26,13 +15,6 @@
                 <td>@card.CardNumber</td>
                 <td>@card.CardHolderName</td>
                 <td>@card.ExpirationDate.ToShortDateString()</td>
-                <td>
-                    <!-- Пример кнопок для редактирования и удаления -->
-                    <a asp-action="Edit" asp-route-id="@card.Id" class="btn btn-warning">Edit</a>
-                    <form asp-action="Delete" asp-route-id="@card.Id" method="post" style="display:inline;">
-                        <button type="submit" class="btn btn-danger">Delete</button>
-                    </form>
-                </td>
             </tr>
         }
     </tbody>

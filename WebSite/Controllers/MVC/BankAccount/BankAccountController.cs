@@ -24,9 +24,10 @@ namespace WebSite.Controllers.MVC.BankAccount
                 return BadRequest("Invalid client ID.");
 
             var accounts = await _bankAccountService.GetByClientIdAsync(clientId);
-            ViewBag.ClientId = clientId; // Передача clientId для создания новых счетов или возврата
-            return View(accounts);
+            ViewBag.ClientId = clientId;
+            return PartialView("Index", accounts); // Указываем частичное представление
         }
+
 
         // Добавление нового счета (GET)
         public IActionResult Add(Guid clientId)
