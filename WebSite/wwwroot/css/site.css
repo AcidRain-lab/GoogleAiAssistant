@@ -1,39 +1,39 @@
 ﻿body {
     background-image: url("../images/bg_pic.png"); /* Укажите путь к изображению */
-   
     background-repeat: no-repeat;
-    background-position: top center; /* Сместить фон вниз */
+    background-position: center 100px; /* Опускаем фон на 100px */
+    background-size: cover; /* Растягивание на весь экран */
     margin: 0;
+    height: 100%;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
 }
 
-/* Верхний блок */
 .top-bar {
     display: flex;
-    justify-content: space-between; /* Разнесение элементов по краям */
-    align-items: center; /* Выравнивание по вертикали */
-    padding: 10px 20px; /* Внутренние отступы */
-    border-bottom: 1px solid #ddd;  
-    margin: 0 auto; /* Центрирование блока */
-    background-color: #ffffff; /* Белый фон */
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 0 20px;
+    margin: 0 auto;
+    background-color: #ffffff;
+    height: 50px; /* Фиксированная высота топ-бара */
 }
 
-/* Название банка */
 .main-header .navbar-brand {
-    font-size: 2rem;
-    font-weight: bold;
+    font-size: 1.3rem;
     text-transform: uppercase;
     color: #00796B;
-    margin-right: auto; /* Отодвигаем от кнопки логина */
+    margin-right: auto;
+    line-height: 1; /* Уменьшаем межстрочный интервал */
 }
 
-/* Кнопка логина/логаута */
 .main-header .btn {
-    padding: 8px 15px;
-    font-weight: bold;
+    padding: 8px 15px; /* Уменьшаем отступы кнопки */
     border-radius: 5px;
-    background-color: #FFC107; /* Желтая кнопка */
+    background-color: #FFC107;
     color: #333;
-    margin-left: auto; /* Отодвигаем от названия */
+    margin-left: auto;
 }
 .btn-secondary {
     background-color: #00473d; /* Темно-зеленый цвет */
@@ -60,10 +60,39 @@
         color: #ffffff; /* Белый текст */
         margin: 0 10px;
         text-transform: uppercase;
-        font-weight: bold;
         transition: color 0.3s ease;
     }
 
         .navbar .nav-link:hover, .navbar .nav-link:focus {
             color: #cce7e0; /* Светлее при наведении */
         }
+
+
+.login-form {
+    background-color: #00473d;
+    padding: 20px;
+    border-radius: 5px;
+    margin-top: 100px;
+}
+
+    .login-form label {
+        color: white;
+    }
+
+    .login-form .btn-warning {
+        background-color: #FFC107;
+        color: #333;
+        border: none;
+        margin-top: 10px;
+    }
+
+
+
+footer {
+    position: absolute;
+    bottom: 0;
+    margin-bottom: 10px;
+    width: 100%;
+    background-color: #00473d; /* Зеленый фон */
+}
+
