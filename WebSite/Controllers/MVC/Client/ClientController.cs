@@ -1,4 +1,6 @@
-﻿using MediaLib.Services;
+﻿using MediaLib.DTO;
+using MediaLib.Helpers;
+using MediaLib.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebObjectsBLL.DTO;
@@ -133,4 +135,18 @@ public class ClientController : Controller
             return RedirectToAction(nameof(Index));
         }
     }
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UpdateAvatar(Guid clientId, IFormFile? avatarFile)
+    {
+        var avatar = avatarFile != null
+            ? await FileHelper.CreateDTOFromUploadedFileAsync<AvatarDTO>(avatarFile)
+            : null;
+
+        await _clientService.AvatarUpdateAsync(clientId, avatar);
+
+        TempData["Message"] = "Avatar updated successfully.";
+        return RedirectToAction(nameof(Details), new { id = clientId });
+    }
+
 }

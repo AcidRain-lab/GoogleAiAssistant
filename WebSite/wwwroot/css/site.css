@@ -1,13 +1,6 @@
 ﻿body {
-    background-image: url("../images/bg_pic.png"); /* Укажите путь к изображению */
-    background-repeat: no-repeat;
-    background-position: center 100px; /* Опускаем фон на 100px */
-    background-size: cover; /* Растягивание на весь экран */
-    margin: 0;
-    height: 100%;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
+    background-color: #f8f9fa;
+
 }
 
 .top-bar {

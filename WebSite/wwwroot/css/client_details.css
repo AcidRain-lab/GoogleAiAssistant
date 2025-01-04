@@ -83,3 +83,19 @@
     .btn-secondary:hover {
         background-color: #00332a; /* Темнее при наведении */
     }
+.client-avatar {
+    position: relative;
+    display: inline-block;
+}
+
+    .client-avatar form {
+        display: inline-block;
+        position: absolute;
+        bottom: 0;
+        right: 0;
+    }
+
+    .client-avatar label i {
+        margin-right: 5px;
+    }
+

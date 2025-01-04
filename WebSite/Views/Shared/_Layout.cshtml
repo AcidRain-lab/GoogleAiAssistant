@@ -6,7 +6,7 @@
     <title>@ViewData["Title"] - Mega Bank</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/client_details.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/layout_body.css" asp-append-version="true" />
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -15,7 +15,7 @@
         @await Html.PartialAsync("_NavBar")
     </header>
 
-    <div class="container" >
+    <div class="container">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>

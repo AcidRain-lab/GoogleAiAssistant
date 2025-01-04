@@ -36,7 +36,6 @@ builder.Services.AddScoped<RoleService>();
 // Регистрация бизнес-логики
 builder.Services.AddScoped<TransactionService>();
 builder.Services.AddScoped<ClientService>();
-builder.Services.AddScoped<ClientProfileService>();
 builder.Services.AddScoped<TermsAndRulesService>();
 builder.Services.AddScoped<DepositService>();
 builder.Services.AddScoped<CashbackService>();

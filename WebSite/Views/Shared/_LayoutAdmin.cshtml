@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
-<body>
+<body >
     <header class="main-header">
         @await Html.PartialAsync("_TopBar")
         @await Html.PartialAsync("_NavBar", new { isAdmin = true }) <!-- Передаем информацию о роли -->
