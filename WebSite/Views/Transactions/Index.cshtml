@@ -1,29 +1,42 @@
 ﻿@model IEnumerable<WebObjectsBLL.DTO.BankAccountTransactionDTO>
+<link rel="stylesheet" href="css/transactions.css" />
 
+<div class="transactions-container">
+    <div class="transactions-header">
+        <h2>Transactions</h2>
+        <a asp-controller="Transactions" asp-action="Add" asp-route-cardId="@ViewBag.CardId" class="btn btn-warning">Transfer</a>
+    </div>
 
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Date</th>
-            <th>Type</th>
-            <th>From/To</th>
-            <th>Payment System</th>
-            <th>Amount</th>
-            <th>Notes</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var transaction in Model)
+    @if (!Model.Any())
+    {
+        <p>No transactions found.</p>
+    }
+    else
+    {
+        @foreach (var group in Model.GroupBy(t => new { t.TransactionDate.Year, t.TransactionDate.Month }).OrderByDescending(g => g.Key))
         {
-            <tr>
-                <td>@transaction.TransactionDate.ToShortDateString()</td>
-                <td>@transaction.TransactionType</td>
-                <td>@transaction.FromClientName</td>
-                <td>@transaction.PaymentSystem</td>
-                <td>@transaction.Amount.ToString("C")</td>
-                <td>@transaction.Notes</td>
-            </tr>
+            <div class="transaction-group">
+                <h4>
+                    @System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(group.Key.Month) @group.Key.Year
+                </h4>
+                <ul class="transaction-list">
+                    @foreach (var transaction in group)
+                    {
+                        <li class="transaction-item">
+                            <div class="transaction-details">
+                                <span class="transaction-title">@transaction.FromClientName</span>
+                                <span class="transaction-system">@transaction.TransactionType (@transaction.PaymentSystem)</span>
+                            </div>
+                            <div class="transaction-meta">
+                                <span class="transaction-date">@transaction.TransactionDate.ToShortDateString()</span>
+                                <span class="transaction-amount @(transaction.Amount < 0 ? "negative" : "positive")">
+                                    @transaction.Amount.ToString("C")
+                                </span>
+                            </div>
+                        </li>
+                    }
+                </ul>
+            </div>
         }
-    </tbody>
-</table>
-
+    }
+</div>

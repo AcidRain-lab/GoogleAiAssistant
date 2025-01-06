@@ -1,0 +1,121 @@
+﻿/* Общий контейнер */
+.transactions-container {
+    max-width: 900px;
+    margin: 20px auto;
+    padding: 15px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Заголовок страницы */
+.transactions-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+    .transactions-header h2 {
+        font-size: 1.5rem;
+        color: #00473d; /* Темно-зеленый цвет */
+    }
+
+    /* Кнопка Transfer */
+    .transactions-header .btn-warning {
+        background-color: #FFC107;
+        color: #333;
+        padding: 8px 20px;
+        border-radius: 5px;
+        font-size: 1rem;
+        font-weight: bold;
+        text-transform: uppercase;
+        border: none;
+        transition: background-color 0.3s ease;
+    }
+
+        .transactions-header .btn-warning:hover {
+            background-color: #e0a800;
+        }
+
+/* Группировка транзакций по дате */
+.transaction-group {
+    margin-bottom: 30px;
+}
+
+    .transaction-group h4 {
+        font-size: 1.2rem;
+        color: #00473d; /* Темно-зеленый */
+        margin-bottom: 10px;
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 5px;
+    }
+
+/* Список транзакций */
+.transaction-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+    .transaction-list .transaction-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        margin-bottom: 10px;
+        background-color: #f9f9f9;
+        transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .transaction-list .transaction-item:hover {
+            background-color: #f1f1f1;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+/* Информация о транзакции */
+.transaction-item .transaction-details {
+    display: flex;
+    flex-direction: column;
+    color: #333;
+}
+
+    .transaction-item .transaction-details span {
+        margin-bottom: 2px;
+    }
+
+    .transaction-item .transaction-details .transaction-title {
+        font-weight: bold;
+        color: #00473d;
+    }
+
+    .transaction-item .transaction-details .transaction-system {
+        font-size: 0.9rem;
+        color: #777;
+    }
+
+/* Дата и сумма */
+.transaction-item .transaction-meta {
+    text-align: right;
+    font-size: 0.9rem;
+}
+
+    .transaction-item .transaction-meta .transaction-date {
+        display: block;
+        color: #777;
+        margin-bottom: 5px;
+    }
+
+    .transaction-item .transaction-meta .transaction-amount {
+        font-weight: bold;
+    }
+
+        .transaction-item .transaction-meta .transaction-amount.negative {
+            color: #d9534f; /* Красный для расходов */
+        }
+
+        .transaction-item .transaction-meta .transaction-amount.positive {
+            color: #5cb85c; /* Зеленый для доходов */
+        }

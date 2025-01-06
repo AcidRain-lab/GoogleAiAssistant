@@ -17,6 +17,7 @@ namespace WebSite.Controllers.MVC
             _transactionService = transactionService;
         }
 
+        [HttpGet]
         public async Task<IActionResult> Index(Guid cardId)
         {
             if (cardId == Guid.Empty)
@@ -24,29 +25,44 @@ namespace WebSite.Controllers.MVC
 
             var transactions = await _transactionService.GetTransactionsByAccountIdAsync(cardId);
 
-            return View(transactions); // Передаем список транзакций в представление
+            ViewBag.CardId = cardId;
+            return View(transactions);
         }
 
 
-        public IActionResult Add()
+        public IActionResult Add(Guid cardId)
         {
-            return View();
+            if (cardId == Guid.Empty)
+                return BadRequest("Invalid card ID.");
+
+            var transactionDto = new BankAccountTransactionDTO
+            {
+                BankCardId = cardId
+            };
+
+            return View(transactionDto);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Add(TransactionDTO transaction)
+        public async Task<IActionResult> Add(BankAccountTransactionDTO transaction)
         {
+            if (transaction == null || transaction.BankCardId == Guid.Empty)
+            {
+                ModelState.AddModelError("", "Transaction is invalid.");
+                return View(transaction);
+            }
+
             if (ModelState.IsValid)
             {
                 await _transactionService.AddTransactionAsync(transaction);
-                return RedirectToAction("Index");
+                return RedirectToAction("Index", new { cardId = transaction.BankCardId });
             }
 
             return View(transaction);
         }
 
-        public async Task<IActionResult> Edit(int id)
+        public async Task<IActionResult> Edit(Guid id)
         {
             var transaction = await _transactionService.GetTransactionByIdAsync(id);
             if (transaction == null)
@@ -60,7 +76,7 @@ namespace WebSite.Controllers.MVC
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(TransactionDTO transaction)
+        public async Task<IActionResult> Edit(BankAccountTransactionDTO transaction)
         {
             if (ModelState.IsValid)
             {
@@ -74,7 +90,7 @@ namespace WebSite.Controllers.MVC
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Delete(Guid id)
         {
             await _transactionService.DeleteTransactionAsync(id);
             TempData["Message"] = $"Transaction with ID {id} deleted successfully.";
