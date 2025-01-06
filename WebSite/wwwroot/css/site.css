@@ -1,22 +1,91 @@
-html {
-  font-size: 14px;
+﻿body {
+    background-color: #f8f9fa;
+
 }
 
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 0 20px;
+    margin: 0 auto;
+    background-color: #ffffff;
+    height: 50px; /* Фиксированная высота топ-бара */
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+.main-header .navbar-brand {
+    font-size: 1.3rem;
+    text-transform: uppercase;
+    color: #00796B;
+    margin-right: auto;
+    line-height: 1; /* Уменьшаем межстрочный интервал */
 }
 
-html {
-  position: relative;
-  min-height: 100%;
+.main-header .btn {
+    padding: 8px 15px; /* Уменьшаем отступы кнопки */
+    border-radius: 5px;
+    background-color: #FFC107;
+    color: #333;
+    margin-left: auto;
+}
+.btn-secondary {
+    background-color: #00473d; /* Темно-зеленый цвет */
+    color: #ffffff; /* Белый текст */
+    border: none;
+    transition: background-color 0.3s ease;
 }
 
-body {
-  margin-bottom: 60px;
+    .btn-secondary:hover {
+        background-color: #005f50; /* менее темный зеленый при наведении */
+    }
+
+
+/* Навбар */
+.navbar {
+    background-color: #00473d; /* Зеленый фон */
+    margin-top: 10px;
+    border-radius: 5px;
+    display: flex;
+    justify-content: center; /* Центрирование ссылок */
 }
+
+    .navbar .nav-link {
+        color: #ffffff; /* Белый текст */
+        margin: 0 10px;
+        text-transform: uppercase;
+        transition: color 0.3s ease;
+    }
+
+        .navbar .nav-link:hover, .navbar .nav-link:focus {
+            color: #cce7e0; /* Светлее при наведении */
+        }
+
+
+.login-form {
+    background-color: #00473d;
+    padding: 20px;
+    border-radius: 5px;
+    margin-top: 100px;
+}
+
+    .login-form label {
+        color: white;
+    }
+
+    .login-form .btn-warning {
+        background-color: #FFC107;
+        color: #333;
+        border: none;
+        margin-top: 10px;
+    }
+
+
+
+footer {
+    position: absolute;
+    bottom: 0;
+    margin-bottom: 10px;
+    width: 100%;
+    background-color: #00473d; /* Зеленый фон */
+}
+

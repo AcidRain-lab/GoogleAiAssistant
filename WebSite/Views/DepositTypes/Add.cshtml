@@ -1,12 +1,13 @@
-﻿@model WebObjectsBLL.DTO.DepositTypeDTO
+﻿@model WebObjectsBLL.DTO.DepositTypeDetailDTO
 
 @{
-    ViewData["Title"] = "Додати депозит";
+    ViewData["Title"] = "Add Deposit Type";
 }
 
 <h2>@ViewData["Title"]</h2>
 
 <form asp-action="Add" method="post" enctype="multipart/form-data">
+    @Html.AntiForgeryToken()
     <div class="form-group">
         <label asp-for="DepositName" class="control-label"></label>
         <input asp-for="DepositName" class="form-control" />
@@ -17,41 +18,91 @@
         <textarea asp-for="Description" class="form-control"></textarea>
         <span asp-validation-for="Description" class="text-danger"></span>
     </div>
-
-    @* Добавьте поля для сроков депозита (DepositTerms) *@
-    <h3>Терміни депозиту</h3>
-    <div id="depositTermsContainer">
-        @* Здесь будут динамически добавляться поля для сроков *@
-    </div>
-    <button type="button" class="btn btn-secondary" onclick="addDepositTerm()">Додати термін</button>
-
     <div class="form-group">
-        <label>Завантажити документи</label>
-        <input type="file" name="documentFiles" class="form-control" multiple />
+        <label>Avatar</label>
+        <input type="file" name="avatarFile" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label>Media Files</label>
+        <input type="file" name="mediaFiles" multiple class="form-control" />
+    </div>
+    <div class="form-group">
+        <label>Documents</label>
+        <input type="file" name="documentFiles" multiple class="form-control" />
     </div>
 
-    <div class="form-group">
-        <input type="submit" value="Додати" class="btn btn-primary" />
-    </div>
+    <hr />
+    <h4>Deposit Terms</h4>
+    <table class="table table-sm">
+        <thead>
+            <tr>
+                <th>Term (Months)</th>
+                <th>Interest Rate (%)</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.DepositTerms != null)
+            {
+                @foreach (var term in Model.DepositTerms.OrderBy(t => t.TermMonths))
+                {
+                    <tr>
+                        <td>@term.TermMonths</td>
+                        <td>@term.InterestRate</td>
+                        <td>
+                            <a asp-controller="DepositTerms"
+                               asp-action="Edit"
+                               asp-route-id="@term.Id"
+                               asp-route-depositTypeId="@Model.Id"
+                               asp-route-returnUrl="@Url.Action("Add", "DepositTypes", new { id = Model.Id })"
+                               class="btn btn-sm btn-warning">Edit</a>
+                            <button class="btn btn-sm btn-danger" onclick="showDeleteModal('@term.Id')">Delete</button>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+    <a asp-controller="DepositTerms"
+       asp-action="Add"
+       asp-route-depositTypeId="@Model.Id"
+       asp-route-returnUrl="@Url.Action("Add", "DepositTypes", new { id = Model.Id })"
+       class="btn btn-success btn-sm">Add Term</a>
+
+    <hr />
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
 </form>
 
-@section Scripts {
-    <script>
-        function addDepositTerm() {
-            var container = document.getElementById('depositTermsContainer');
-            var index = container.childElementCount;
+<!-- Delete Modal -->
+<div id="deleteModal" class="modal fade" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this deposit term?</p>
+            </div>
+            <div class="modal-footer">
+                <form asp-controller="DepositTerms" asp-action="Delete" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" id="deleteId" name="id" />
+                    <input type="hidden" name="depositTypeId" value="@Model.Id" />
+                    <input type="hidden" name="returnUrl" value="@Url.Action("Add", "DepositTypes", new { id = Model.Id })" />
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 
-            var div = document.createElement('div');
-            div.className = 'form-group';
-            div.innerHTML = `
-                <label for="DepositTerms_${index}__TermMonths">Термін (місяців):</label>
-                <input type="number" class="form-control" id="DepositTerms_${index}__TermMonths" name="DepositTerms[${index}].TermMonths" />
-                <label for="DepositTerms_${index}__InterestRate">Процентна ставка:</label>
-                <input type="number" class="form-control" id="DepositTerms_${index}__InterestRate" name="DepositTerms[${index}].InterestRate" />
-                <label for="DepositTerms_${index}__Currency">Валюта:</label>
-                <input type="text" class="form-control" id="DepositTerms_${index}__Currency" name="DepositTerms[${index}].Currency" />
-            `;
-            container.appendChild(div);
-        }
-    </script>
-}
+<script>
+    function showDeleteModal(id) {
+        document.getElementById('deleteId').value = id;
+        var deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        deleteModal.show();
+    }
+</script>

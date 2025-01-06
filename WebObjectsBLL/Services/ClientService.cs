@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
 using DAL.Models;
+using MediaLib.DTO;
+using MediaLib.Services;
 using Microsoft.EntityFrameworkCore;
 using WebObjectsBLL.DTO;
 
@@ -8,12 +10,14 @@ namespace WebObjectsBLL.Services
     public class ClientService
     {
         private readonly BankContext _context;
+        private readonly AvatarService _avatarService;
         private readonly IMapper _mapper;
 
-        public ClientService(BankContext context, IMapper mapper)
+        public ClientService(BankContext context, AvatarService avatarService, IMapper mapper)
         {
             _context = context;
             _mapper = mapper;
+            _avatarService = avatarService;
         }
 
         public async Task<IEnumerable<ClientDTO>> GetAllAsync()
@@ -68,6 +72,28 @@ namespace WebObjectsBLL.Services
 
             _context.Clients.Update(client);
             await _context.SaveChangesAsync();
+        }
+        public async Task AvatarUpdateAsync(Guid clientId, AvatarDTO? avatar)
+        {
+            // Получаем клиента
+            var client = await _context.Clients.FirstOrDefaultAsync(c => c.Id == clientId);
+            if (client == null)
+            {
+                throw new KeyNotFoundException($"Client with ID {clientId} not found.");
+            }
+
+            // Обновляем аватар
+            if (avatar != null && avatar.Content != null)
+            {
+                avatar.AssociatedRecordId = client.Id;
+                avatar.ObjectTypeId = (int)MediaLib.ObjectType.Client;
+                await _avatarService.SetAvatarAsync(avatar);
+            }
+            else
+            {
+                // Удаляем аватар, если передан null
+                await _avatarService.RemoveAvatarAsync(client.Id);
+            }
         }
 
         public async Task DeleteAsync(Guid id)

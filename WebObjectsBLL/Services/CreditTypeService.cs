@@ -25,11 +25,20 @@ namespace WebObjectsBLL.Services
             _documentService = documentService;
         }
 
+        /* public async Task<IEnumerable<CreditTypeDTO>> GetAllAsync()
+         {
+             var creditTypes = await _context.Credits.ToListAsync();
+             return _mapper.Map<IEnumerable<CreditTypeDTO>>(creditTypes);
+         }*/
         public async Task<IEnumerable<CreditTypeDTO>> GetAllAsync()
         {
-            var creditTypes = await _context.Credits.ToListAsync();
+            var creditTypes = await _context.CreditTypes
+                .Include(ct => ct.Credits) // Загружаем связанные кредиты, если нужно
+                .ToListAsync();
+
             return _mapper.Map<IEnumerable<CreditTypeDTO>>(creditTypes);
         }
+
 
         public async Task<CreditTypeDTO> GetByIdWithDetailsAsync(Guid id)
         {

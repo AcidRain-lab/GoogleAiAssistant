@@ -4,13 +4,16 @@ using WebObjectsBLL.Services;
 
 public class BankCardController : Controller
 {
+    
     private readonly BankCardService _bankCardService;
     private readonly CardTypesService _cardTypeService;
+    private readonly TransactionService _transactionService;
 
-    public BankCardController(BankCardService bankCardService, CardTypesService cardTypeService)
+    public BankCardController(BankCardService bankCardService, CardTypesService cardTypeService, TransactionService transactionService)
     {
         _bankCardService = bankCardService;
         _cardTypeService = cardTypeService;
+        _transactionService = transactionService;
     }
 
     public async Task<IActionResult> Index(Guid clientId)
@@ -20,7 +23,7 @@ public class BankCardController : Controller
 
         var cards = await _bankCardService.GetByClientIdAsync(clientId);
         ViewBag.ClientId = clientId;
-        return View(cards);
+        return PartialView("Index", cards); // Указываем частичное представление
     }
 
     [HttpGet]
@@ -58,4 +61,16 @@ public class BankCardController : Controller
     {
         return $"4000{new Random().Next(100000000, 999999999)}";
     }
+
+    [HttpGet]
+    public IActionResult Transactions(Guid cardId)
+    {
+        if (cardId == Guid.Empty)
+            return BadRequest("Invalid card ID.");
+
+        return RedirectToAction("Index", "BankAccountTransaction", new { cardId });
+    }
+
+
+
 }

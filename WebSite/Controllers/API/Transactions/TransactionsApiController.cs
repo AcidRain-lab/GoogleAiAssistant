@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿/*using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebObjectsBLL.DTO;
 using WebObjectsBLL.Services;
@@ -111,3 +111,4 @@ namespace WebSite.Controllers.API.Transactions
         }
     }
 }
+*/

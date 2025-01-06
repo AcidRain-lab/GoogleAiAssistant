@@ -6,6 +6,8 @@
 
 <h2>@ViewData["Title"]</h2>
 
+<a asp-action="Add" class="btn btn-success mb-3">Добавить тип депозита</a>
+
 @foreach (var depositType in Model)
 {
     <div class="deposit-type">
@@ -32,7 +34,7 @@
         <table class="table table-bordered">
             <thead>
                 <tr>
-                    <th>Term (Months)</th>
+                    <th>Срок (месяцы)</th>
                     @foreach (var currency in depositType.DepositTerms.Select(t => t.Currency).Distinct())
                     {
                         <th>@currency</th>
@@ -58,7 +60,7 @@
         @if (depositType.Documents != null && depositType.Documents.Any())
         {
             <div class="documents-list">
-                <h4>Attached Documents:</h4>
+                <h4>Прикрепленные документы:</h4>
                 @foreach (var document in depositType.Documents)
                 {
                     <a href="@Url.Action("DownloadDocument", "DepositTypes", new { id = document.Id })" class="btn btn-link" title="@document.Name">

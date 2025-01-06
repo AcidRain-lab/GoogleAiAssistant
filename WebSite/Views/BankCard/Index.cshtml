@@ -1,38 +1,23 @@
 ﻿@model IEnumerable<WebObjectsBLL.DTO.BankCardDTO>
 
-@{
-    ViewData["Title"] = "Bank Cards";
-}
-
-<h2>@ViewData["Title"]</h2>
-
-<p>
-    <a asp-action="Add" asp-route-clientId="@ViewBag.ClientId" class="btn btn-primary">Add New Card</a>
-</p>
+<link rel="stylesheet" href="~/css/bank_card.css" asp-append-version="true" />
+<script src="~/js/bank_card.js" asp-append-version="true"></script>
 
 <table class="table table-bordered">
     <thead>
         <tr>
+            <th>Card Type</th>
             <th>Card Number</th>
-            <th>Holder Name</th>
-            <th>Expiration Date</th>
-            <th>Actions</th>
+            <th>Balance</th>
         </tr>
     </thead>
     <tbody>
         @foreach (var card in Model)
         {
-            <tr>
+            <tr class="clickable-row" onclick="window.location.href='/Transactions/Index?cardId=@card.Id'">
+                <td>@card.CardTypeName</td>
                 <td>@card.CardNumber</td>
-                <td>@card.CardHolderName</td>
-                <td>@card.ExpirationDate.ToShortDateString()</td>
-                <td>
-                    <!-- Пример кнопок для редактирования и удаления -->
-                    <a asp-action="Edit" asp-route-id="@card.Id" class="btn btn-warning">Edit</a>
-                    <form asp-action="Delete" asp-route-id="@card.Id" method="post" style="display:inline;">
-                        <button type="submit" class="btn btn-danger">Delete</button>
-                    </form>
-                </td>
+                <td>@card.CreditLimit.ToString("C")</td>
             </tr>
         }
     </tbody>

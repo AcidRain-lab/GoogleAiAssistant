@@ -19,8 +19,9 @@ namespace WebSite.Controllers.MVC
         {
             var payments = await _paymentService.GetByClientIdAsync(clientId);
             ViewBag.ClientId = clientId;
-            return View(payments);
+            return PartialView("Index", payments); // Частичное представление
         }
+
 
         public IActionResult Add(Guid clientId)
         {

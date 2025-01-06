@@ -1,0 +1,38 @@
+﻿@model IEnumerable<WebObjectsBLL.DTO.DepositTermDTO>
+
+@{
+    ViewData["Title"] = "Deposit Terms";
+    Guid depositTypeId = (Guid)ViewBag.DepositTypeId;
+}
+
+<h2>Deposit Terms</h2>
+
+<a asp-action="Add" asp-route-depositTypeId="@depositTypeId" class="btn btn-success mb-3">Add Term</a>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Term (Months)</th>
+            <th>Currency</th>
+            <th>Interest Rate (%)</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var term in Model)
+        {
+            <tr>
+                <td>@term.TermMonths</td>
+                <td>@term.Currency</td>
+                <td>@term.InterestRate</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@term.Id" asp-route-depositTypeId="@depositTypeId" class="btn btn-warning btn-sm">Edit</a>
+                    <form asp-action="Delete" asp-route-id="@term.Id" asp-route-depositTypeId="@depositTypeId" method="post" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

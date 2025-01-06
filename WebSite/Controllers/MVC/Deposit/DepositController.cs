@@ -19,7 +19,7 @@ namespace WebSite.Controllers.MVC
         {
             var deposits = await _depositService.GetByClientIdAsync(clientId);
             ViewBag.ClientId = clientId;
-            return View(deposits);
+            return PartialView("Index", deposits); // _DepositList - частичное представление
         }
 
         public IActionResult Add(Guid clientId)

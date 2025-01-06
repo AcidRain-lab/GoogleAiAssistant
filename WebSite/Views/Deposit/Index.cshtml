@@ -1,11 +1,5 @@
 ﻿@model IEnumerable<WebObjectsBLL.DTO.DepositDTO>
 
-@{
-    ViewData["Title"] = "Deposits";
-}
-
-<h2>Deposits</h2>
-
 <table class="table table-bordered">
     <thead>
         <tr>
@@ -13,7 +7,6 @@
             <th>Currency</th>
             <th>Interest Rate</th>
             <th>Maturity Date</th>
-            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -24,20 +17,7 @@
                 <td>@deposit.Currency</td>
                 <td>@deposit.InterestRate</td>
                 <td>@deposit.MaturityDate.ToShortDateString()</td>
-                <td>
-                    <a asp-action="Edit" asp-route-id="@deposit.Id" class="btn btn-warning btn-sm">Edit</a>
-                    <form asp-action="Delete" method="post" class="d-inline">
-                        <input type="hidden" name="id" value="@deposit.Id" />
-                        <input type="hidden" name="clientId" value="@deposit.ClientId" />
-                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                    </form>
-                </td>
             </tr>
         }
     </tbody>
 </table>
-
-<div class="d-flex justify-content-between mt-3">
-    <a asp-action="Add" asp-route-clientId="@ViewBag.ClientId" class="btn btn-primary">Add New Deposit</a>
-    <a asp-action="Index" asp-controller="Client" class="btn btn-secondary">Back to Clients</a>
-</div>
