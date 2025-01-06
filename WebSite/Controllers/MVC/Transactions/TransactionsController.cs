@@ -22,7 +22,7 @@ namespace WebSite.Controllers.MVC
             if (cardId == Guid.Empty)
                 return BadRequest("Invalid card ID.");
 
-            var transactions = await _transactionService.GetTransactionsByCardIdAsync(cardId);
+            var transactions = await _transactionService.GetTransactionsByAccountIdAsync(cardId);
 
             return View(transactions); // Передаем список транзакций в представление
         }

@@ -17,7 +17,7 @@ public class BankAccountTransactionController : Controller
             return BadRequest("Invalid card ID.");
 
         // Получение транзакций, привязанных к карте
-        var transactions = await _transactionService.GetTransactionsByCardIdAsync(cardId);
+        var transactions = await _transactionService.GetTransactionsByAccountIdAsync(cardId);
 
         return View(transactions);
     }

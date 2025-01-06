@@ -1,14 +1,14 @@
 ﻿@model IEnumerable<WebObjectsBLL.DTO.BankAccountTransactionDTO>
 
-<h2>Transactions</h2>
 
 <table class="table table-striped">
     <thead>
         <tr>
-            <th>Transaction Date</th>
+            <th>Date</th>
             <th>Type</th>
+            <th>From/To</th>
+            <th>Payment System</th>
             <th>Amount</th>
-            <th>Balance After</th>
             <th>Notes</th>
         </tr>
     </thead>
@@ -18,10 +18,12 @@
             <tr>
                 <td>@transaction.TransactionDate.ToShortDateString()</td>
                 <td>@transaction.TransactionType</td>
+                <td>@transaction.FromClientName</td>
+                <td>@transaction.PaymentSystem</td>
                 <td>@transaction.Amount.ToString("C")</td>
-                <td>@transaction.BalanceAfterTransaction.ToString("C")</td>
                 <td>@transaction.Notes</td>
             </tr>
         }
     </tbody>
 </table>
+
