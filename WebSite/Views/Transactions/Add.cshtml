@@ -2,29 +2,34 @@
 
 <h2>Create Transfer</h2>
 
-<form asp-controller="BankAccountTransaction" asp-action="Add" method="post">
+<form asp-controller="Transactions" asp-action="Add" method="post">
     <input type="hidden" id="BankCardId" name="BankCardId" value="@Model.BankCardId" />
 
     <div class="form-group">
         <label for="Amount">Amount</label>
         <input type="number" class="form-control" id="Amount" name="Amount" step="0.01" required />
     </div>
+
     <div class="form-group">
         <label for="RecipientName">Recipient Name</label>
         <input type="text" class="form-control" id="RecipientName" name="RecipientName" required />
     </div>
+
     <div class="form-group">
         <label for="AccountNumber">Account Number (IBAN)</label>
         <input type="text" class="form-control" id="AccountNumber" name="AccountNumber" required />
     </div>
+
     <div class="form-group">
         <label for="PaymentReference">Payment Reference</label>
         <input type="text" class="form-control" id="PaymentReference" name="PaymentReference" />
     </div>
+
     <div class="form-group">
-        <label for="Description">Description</label>
-        <textarea class="form-control" id="Description" name="Description"></textarea>
+        <label for="Notes">Description</label>
+        <textarea class="form-control" id="Notes" name="Notes"></textarea>
     </div>
+
     <button type="submit" class="btn btn-success mt-3">Submit</button>
-    <a asp-controller="BankAccountTransaction" asp-action="Index" asp-route-cardId="@Model.BankCardId" class="btn btn-secondary mt-3">Cancel</a>
+    <a asp-controller="Transactions" asp-action="Index" asp-route-cardId="@Model.BankCardId" class="btn btn-secondary mt-3">Cancel</a>
 </form>

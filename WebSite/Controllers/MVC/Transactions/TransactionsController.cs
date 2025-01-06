@@ -7,7 +7,6 @@ namespace WebSite.Controllers.MVC
 {
     [Authorize(Policy = "CookiePolicy")]
     [AuthorizeRoles("Admin", "User")]
-    [Controller]
     public class TransactionsController : Controller
     {
         private readonly TransactionService _transactionService;
@@ -24,12 +23,11 @@ namespace WebSite.Controllers.MVC
                 return BadRequest("Invalid card ID.");
 
             var transactions = await _transactionService.GetTransactionsByAccountIdAsync(cardId);
-
             ViewBag.CardId = cardId;
             return View(transactions);
         }
 
-
+        [HttpGet]
         public IActionResult Add(Guid cardId)
         {
             if (cardId == Guid.Empty)
@@ -53,7 +51,7 @@ namespace WebSite.Controllers.MVC
                 return View(transaction);
             }
 
-            if (ModelState.IsValid)
+            //if (ModelState.IsValid)
             {
                 await _transactionService.AddTransactionAsync(transaction);
                 return RedirectToAction("Index", new { cardId = transaction.BankCardId });
@@ -62,39 +60,5 @@ namespace WebSite.Controllers.MVC
             return View(transaction);
         }
 
-        public async Task<IActionResult> Edit(Guid id)
-        {
-            var transaction = await _transactionService.GetTransactionByIdAsync(id);
-            if (transaction == null)
-            {
-                TempData["Error"] = $"Transaction with ID {id} not found.";
-                return RedirectToAction("Index");
-            }
-
-            return View(transaction);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(BankAccountTransactionDTO transaction)
-        {
-            if (ModelState.IsValid)
-            {
-                await _transactionService.UpdateTransactionAsync(transaction);
-                TempData["Message"] = "Transaction updated successfully.";
-                return RedirectToAction("Index");
-            }
-
-            return View(transaction);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Delete(Guid id)
-        {
-            await _transactionService.DeleteTransactionAsync(id);
-            TempData["Message"] = $"Transaction with ID {id} deleted successfully.";
-            return RedirectToAction("Index");
-        }
     }
 }
