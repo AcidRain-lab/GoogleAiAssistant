@@ -1,20 +1,23 @@
 ﻿@model IEnumerable<WebObjectsBLL.DTO.BankCardDTO>
 
+<link rel="stylesheet" href="~/css/bank_card.css" asp-append-version="true" />
+<script src="~/js/bank_card.js" asp-append-version="true"></script>
+
 <table class="table table-bordered">
     <thead>
         <tr>
+            <th>Card Type</th>
             <th>Card Number</th>
-            <th>Holder Name</th>
-            <th>Expiration Date</th>
+            <th>Balance</th>
         </tr>
     </thead>
     <tbody>
         @foreach (var card in Model)
         {
-            <tr>
+            <tr class="clickable-row" onclick="window.location.href='/Transactions/Index?cardId=@card.Id'">
+                <td>@card.CardTypeName</td>
                 <td>@card.CardNumber</td>
-                <td>@card.CardHolderName</td>
-                <td>@card.ExpirationDate.ToShortDateString()</td>
+                <td>@card.CreditLimit.ToString("C")</td>
             </tr>
         }
     </tbody>

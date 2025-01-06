@@ -2,7 +2,7 @@
     background-image: url("../images/bg_pic.png");
     background-repeat: no-repeat;
     background-position: center 100px; /* Опускаем фон на 100px */
-    background-size: cover; /* Растягивание на весь экран */
+    background-size: contain;
     margin: 0;
     height: 100%;
     margin: 0;

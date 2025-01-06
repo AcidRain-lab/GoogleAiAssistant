@@ -17,11 +17,16 @@ namespace WebSite.Controllers.MVC
             _transactionService = transactionService;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(Guid cardId)
         {
-            var transactions = await _transactionService.GetAllTransactionsAsync();
-            return View(transactions);
+            if (cardId == Guid.Empty)
+                return BadRequest("Invalid card ID.");
+
+            var transactions = await _transactionService.GetTransactionsByCardIdAsync(cardId);
+
+            return View(transactions); // Передаем список транзакций в представление
         }
+
 
         public IActionResult Add()
         {

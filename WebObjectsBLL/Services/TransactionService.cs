@@ -82,5 +82,28 @@ namespace WebObjectsBLL.Services
 
             await _context.SaveChangesAsync();
         }
+        public async Task<IEnumerable<TransactionDTO>> GetByCardIdAsync(Guid cardId)
+        {
+            var transactions = await _context.BankAccountTransactions
+                .Where(t => t.BankCardId == cardId)
+                .OrderByDescending(t => t.TransactionDate)
+                .ToListAsync();
+
+            return _mapper.Map<IEnumerable<TransactionDTO>>(transactions);
+        }
+        public async Task<IEnumerable<BankAccountTransactionDTO>> GetTransactionsByCardIdAsync(Guid cardId)
+        {
+            var transactions = await _context.BankAccountTransactions
+                .Where(t => t.BankCardId == cardId) // Фильтрация по ID карты
+                .Include(t => t.TransactionType) // Подключение типа транзакции
+                .OrderByDescending(t => t.TransactionDate)
+                .ToListAsync();
+
+            return _mapper.Map<IEnumerable<BankAccountTransactionDTO>>(transactions);
+        }
+
+
+
+
     }
 }

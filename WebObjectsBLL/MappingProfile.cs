@@ -20,6 +20,9 @@ namespace WebObjectsBLL
 
             // Mapping for Transactions
             CreateMap<Transaction, TransactionDTO>().ReverseMap();
+            CreateMap<BankAccountTransaction, BankAccountTransactionDTO>()
+    .ForMember(dest => dest.TransactionType, opt => opt.MapFrom(src => src.TransactionType.Name)); // Если у TransactionType есть свойство Name
+
 
             // Mapping for Deposits
             CreateMap<Deposit, DepositDTO>()
