@@ -1,25 +1,28 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using MediaLib.DTO;
+using MediaLib.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using WebSite.Models;
 using WebAuthCoreBLL.SecureByRoleClasses;
-using MediaLib.Services;
+using WebObjectsBLL.Services;
 
 namespace WebSite.Controllers.MVC
 {
     //[Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
-
     //[LayoutByRole]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
         private readonly AvatarService _avatarService;
+        private readonly ClientService _clientService; // Добавлено
 
-        public HomeController(ILogger<HomeController> logger, AvatarService avatarService)
+        public HomeController(ILogger<HomeController> logger, AvatarService avatarService, ClientService clientService)
         {
             _logger = logger;
             _avatarService = avatarService;
+            _clientService = clientService; // Инициализация
         }
 
         public async Task<IActionResult> Index()
@@ -42,6 +45,25 @@ namespace WebSite.Controllers.MVC
 
                     Guid userId = Guid.Parse(userIdClaim);
 
+                    // Проверяем, сохранен ли ActiveClientId в сессии
+                    string? activeClientId = HttpContext.Session.GetString("ActiveClientId");
+
+                    if (string.IsNullOrEmpty(activeClientId))
+                    {
+                        // Если ActiveClientId нет в сессии, получаем клиента, связанного с userId
+                        var client = await _clientService.GetClientByUserIdAsync(userId);
+
+                        if (client != null)
+                        {
+                            // Сохраняем ActiveClientId в сессию
+                            HttpContext.Session.SetString("ActiveClientId", client.Id.ToString());
+                        }
+                        else
+                        {
+                            _logger.LogWarning($"No client found for UserId: {userId}");
+                        }
+                    }
+
                     // Загружаем аватар пользователя
                     var avatar = await _avatarService.GetAvatarAsync(userId);
 
@@ -52,7 +74,7 @@ namespace WebSite.Controllers.MVC
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Failed to load user avatar.");
+                    _logger.LogError(ex, "Failed to load user avatar or active client.");
                     ViewBag.UserAvatar = "/images/default-avatar.png"; // Устанавливаем аватар по умолчанию в случае ошибки
                 }
             }
@@ -64,8 +86,6 @@ namespace WebSite.Controllers.MVC
 
             return View();
         }
-
-
 
         public IActionResult Privacy()
         {
