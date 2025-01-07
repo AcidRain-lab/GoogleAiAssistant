@@ -4,7 +4,12 @@
 <div class="transactions-container">
     <div class="transactions-header">
         <h2>Transactions</h2>
-        <a asp-controller="Transactions" asp-action="Add" asp-route-cardId="@ViewBag.CardId" class="btn btn-warning">Transfer</a>
+        <div class="transaction-buttons">
+            <a asp-controller="Transactions" asp-action="AddCardTransfer" asp-route-cardId="@ViewBag.CardId" class="btn btn-warning">Transfer to Card</a>
+            <a asp-controller="Transactions" asp-action="AddIbanTransfer" asp-route-cardId="@ViewBag.CardId" class="btn btn-warning">Transfer by IBAN</a>
+            <a asp-controller="Transactions" asp-action="AddRequisitesTransfer" asp-route-cardId="@ViewBag.CardId" class="btn btn-warning">Transfer by Details</a>
+        </div>
+
     </div>
 
     @if (!Model.Any())
