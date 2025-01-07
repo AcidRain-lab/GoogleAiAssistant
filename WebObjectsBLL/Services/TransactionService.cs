@@ -1,7 +1,11 @@
 ﻿using AutoMapper;
 using DAL.Models;
-using WebObjectsBLL.DTO;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using WebObjectsBLL.DTO;
 
 namespace WebObjectsBLL.Services
 {
@@ -21,75 +25,25 @@ namespace WebObjectsBLL.Services
             var transactions = await _context.BankAccountTransactions
                 .Include(t => t.TransactionType)
                 .Include(t => t.TransactionSourceType)
-                .OrderBy(t => t.TransactionDate)
+                .OrderByDescending(t => t.TransactionDate)
                 .ToListAsync();
 
             return _mapper.Map<List<BankAccountTransactionDTO>>(transactions);
         }
 
-        /*public async Task<BankAccountTransactionDTO> AddTransactionAsync(BankAccountTransactionDTO transactionDto)
+        public async Task<IEnumerable<BankAccountTransactionDTO>> GetTransactionsByAccountIdAsync(Guid accountId)
         {
-            var transaction = _mapper.Map<BankAccountTransaction>(transactionDto);
-            transaction.Id = Guid.NewGuid();
-            transaction.TransactionDate = DateTime.Now;
+            var transactions = await _context.BankAccountTransactions
+                .Where(t => t.BankAccountId == accountId)
+                .Include(t => t.TransactionType)
+                .Include(t => t.TransactionSourceType)
+                .OrderByDescending(t => t.TransactionDate)
+                .ToListAsync();
 
-            _context.BankAccountTransactions.Add(transaction);
-            await _context.SaveChangesAsync();
-
-            return _mapper.Map<BankAccountTransactionDTO>(transaction);
-        }*/
-        public async Task<BankAccountTransactionDTO> AddTransactionAsync(BankAccountTransactionDTO transactionDto)
-        {
-            // Устанавливаем дефолтные значения
-            string defaultTransactionType = "Expenses";
-            string defaultPaymentSystem = "Visa";
-
-            // Проверяем, передано ли значение TransactionType
-            string transactionTypeName = string.IsNullOrWhiteSpace(transactionDto.TransactionType)
-                ? defaultTransactionType
-                : transactionDto.TransactionType;
-
-            // Получаем TransactionType из базы данных
-            var transactionType = await _context.TransactionTypes
-                .FirstOrDefaultAsync(tt => tt.Name == transactionTypeName);
-
-            if (transactionType == null)
-            {
-                throw new KeyNotFoundException($"TransactionType '{transactionTypeName}' not found.");
-            }
-
-            // Проверяем PaymentSystem
-            string paymentSystemName = string.IsNullOrWhiteSpace(transactionDto.PaymentSystem)
-                ? defaultPaymentSystem
-                : transactionDto.PaymentSystem;
-
-            var transactionSourceType = await _context.TransactionSourceTypes
-                .FirstOrDefaultAsync(ts => ts.Name == paymentSystemName);
-
-            if (transactionSourceType == null)
-            {
-                throw new KeyNotFoundException($"TransactionSourceType '{paymentSystemName}' not found.");
-            }
-
-            // Маппинг DTO на сущность
-            var transaction = _mapper.Map<BankAccountTransaction>(transactionDto);
-            transaction.Id = Guid.NewGuid();
-            transaction.TransactionDate = DateTime.Now;
-            transaction.TransactionType = transactionType;
-            transaction.TransactionSourceType = transactionSourceType;
-
-            // Добавляем транзакцию в БД
-            _context.BankAccountTransactions.Add(transaction);
-            await _context.SaveChangesAsync();
-
-            return _mapper.Map<BankAccountTransactionDTO>(transaction);
+            return _mapper.Map<IEnumerable<BankAccountTransactionDTO>>(transactions);
         }
 
-
-
-
-
-        public async Task<IEnumerable<BankAccountTransactionDTO>> GetTransactionsByAccountIdAsync(Guid cardId)
+        public async Task<IEnumerable<BankAccountTransactionDTO>> GetTransactionsByCardIdAsync(Guid cardId)
         {
             var transactions = await _context.BankAccountTransactions
                 .Where(t => t.BankCardId == cardId)
@@ -99,6 +53,78 @@ namespace WebObjectsBLL.Services
                 .ToListAsync();
 
             return _mapper.Map<IEnumerable<BankAccountTransactionDTO>>(transactions);
+        }
+
+        public async Task AddCardTransferAsync(BankAccountTransactionDTO transactionDto)
+        {
+            if (transactionDto.BankCardId == Guid.Empty)
+            {
+                throw new ArgumentException("Bank card ID is invalid.");
+            }
+
+            var transactionType = await _context.TransactionTypes
+                .FirstOrDefaultAsync(tt => tt.Name == transactionDto.TransactionType);
+
+            if (transactionType == null)
+            {
+                throw new KeyNotFoundException($"Transaction type '{transactionDto.TransactionType}' not found.");
+            }
+
+            var transaction = _mapper.Map<BankAccountTransaction>(transactionDto);
+            transaction.Id = Guid.NewGuid();
+            transaction.TransactionDate = DateTime.Now;
+            transaction.TransactionType = transactionType;
+
+            _context.BankAccountTransactions.Add(transaction);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task AddIbanTransferAsync(BankAccountTransactionDTO transactionDto)
+        {
+            if (string.IsNullOrWhiteSpace(transactionDto.Iban))
+            {
+                throw new ArgumentException("IBAN is required for this transfer.");
+            }
+
+            var transactionType = await _context.TransactionTypes
+                .FirstOrDefaultAsync(tt => tt.Name == transactionDto.TransactionType);
+
+            if (transactionType == null)
+            {
+                throw new KeyNotFoundException($"Transaction type '{transactionDto.TransactionType}' not found.");
+            }
+
+            var transaction = _mapper.Map<BankAccountTransaction>(transactionDto);
+            transaction.Id = Guid.NewGuid();
+            transaction.TransactionDate = DateTime.Now;
+            transaction.TransactionType = transactionType;
+
+            _context.BankAccountTransactions.Add(transaction);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task AddRequisitesTransferAsync(BankAccountTransactionDTO transactionDto)
+        {
+            if (string.IsNullOrWhiteSpace(transactionDto.Mfo) || string.IsNullOrWhiteSpace(transactionDto.AccountNumber))
+            {
+                throw new ArgumentException("MFO and Account Number are required for this transfer.");
+            }
+
+            var transactionType = await _context.TransactionTypes
+                .FirstOrDefaultAsync(tt => tt.Name == transactionDto.TransactionType);
+
+            if (transactionType == null)
+            {
+                throw new KeyNotFoundException($"Transaction type '{transactionDto.TransactionType}' not found.");
+            }
+
+            var transaction = _mapper.Map<BankAccountTransaction>(transactionDto);
+            transaction.Id = Guid.NewGuid();
+            transaction.TransactionDate = DateTime.Now;
+            transaction.TransactionType = transactionType;
+
+            _context.BankAccountTransactions.Add(transaction);
+            await _context.SaveChangesAsync();
         }
     }
 }

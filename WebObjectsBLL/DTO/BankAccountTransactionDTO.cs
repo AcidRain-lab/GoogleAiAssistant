@@ -6,14 +6,18 @@ namespace WebObjectsBLL.DTO
     {
         public Guid Id { get; set; }
         public DateTime TransactionDate { get; set; }
-        public string TransactionType { get; set; } = "Expenses"; // Установлено значение по умолчанию
-        public decimal Amount { get; set; }
+        public string TransactionType { get; set; } = "Expenses";
+        public double Amount { get; set; }
+        public double BalanceAfterTransaction { get; set; }
         public string FromClientName { get; set; }
-        public string PaymentSystem { get; set; } = "Visa"; // Установлено значение по умолчанию
-        public string Notes { get; set; }
+        public string PaymentSystem { get; set; } = "Visa";
+        public string? Notes { get; set; }
         public Guid BankCardId { get; set; }
-        public Guid? TargetBankCardId { get; set; } // Для карты-получателя
+        public Guid BankAccountId { get; set; }
+        public string? Iban { get; set; }
+        public string? Mfo { get; set; }
+
+        // Добавляем свойство AccountNumber
+        public string AccountNumber { get; set; } = string.Empty;
     }
-
-
 }
