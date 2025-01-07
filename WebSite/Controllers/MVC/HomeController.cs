@@ -7,6 +7,7 @@ using System.Diagnostics;
 using WebSite.Models;
 using WebAuthCoreBLL.SecureByRoleClasses;
 using WebObjectsBLL.Services;
+using System.Security.Claims;
 
 namespace WebSite.Controllers.MVC
 {
@@ -28,64 +29,36 @@ namespace WebSite.Controllers.MVC
         public async Task<IActionResult> Index()
         {
             ViewData["IsAuthenticated"] = User.Identity?.IsAuthenticated ?? false;
-            ViewData["UserName"] = HttpContext.Session.GetString("UserName");
+            ViewData["UserName"] = HttpContext.Session.GetString("ActiveLoginedUser");
             ViewData["UserRole"] = HttpContext.Session.GetString("UserRole");
+            ViewBag.UserAvatar = "/images/default-avatar.png"; // Дефолтный аватар
 
             if (User.Identity?.IsAuthenticated == true)
             {
-                try
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (userIdClaim != null)
                 {
-                    // Получаем GUID текущего пользователя из claims
-                    var userIdClaim = User.FindFirst("UserId")?.Value;
-
-                    if (userIdClaim == null)
+                    try
                     {
-                        throw new Exception("UserId claim is missing.");
+                        Guid userId = Guid.Parse(userIdClaim);
+
+                        // Загружаем аватар пользователя через сервис
+                        var avatar = await _avatarService.GetAvatarAsync(userId);
+
+                        ViewBag.UserAvatar = avatar?.Base64Image != null
+                            ? $"data:image/{avatar.Extension};base64,{avatar.Base64Image}"
+                            : "/images/default-avatar.png";
                     }
-
-                    Guid userId = Guid.Parse(userIdClaim);
-
-                    // Проверяем, сохранен ли ActiveClientId в сессии
-                    string? activeClientId = HttpContext.Session.GetString("ActiveClientId");
-
-                    if (string.IsNullOrEmpty(activeClientId))
+                    catch (Exception ex)
                     {
-                        // Если ActiveClientId нет в сессии, получаем клиента, связанного с userId
-                        var client = await _clientService.GetClientByUserIdAsync(userId);
-
-                        if (client != null)
-                        {
-                            // Сохраняем ActiveClientId в сессию
-                            HttpContext.Session.SetString("ActiveClientId", client.Id.ToString());
-                        }
-                        else
-                        {
-                            _logger.LogWarning($"No client found for UserId: {userId}");
-                        }
+                        _logger.LogError(ex, "Failed to load user avatar.");
                     }
-
-                    // Загружаем аватар пользователя
-                    var avatar = await _avatarService.GetAvatarAsync(userId);
-
-                    // Устанавливаем Base64 строку для отображения аватара
-                    ViewBag.UserAvatar = avatar?.Base64Image != null
-                        ? $"data:image/{avatar.Extension};base64,{avatar.Base64Image}"
-                        : "/images/default-avatar.png";
                 }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Failed to load user avatar or active client.");
-                    ViewBag.UserAvatar = "/images/default-avatar.png"; // Устанавливаем аватар по умолчанию в случае ошибки
-                }
-            }
-            else
-            {
-                // Устанавливаем дефолтную картинку для неавторизованных пользователей
-                ViewBag.UserAvatar = "/images/default-avatar.png";
             }
 
             return View();
         }
+
 
         public IActionResult Privacy()
         {

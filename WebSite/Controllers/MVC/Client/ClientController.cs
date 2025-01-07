@@ -135,18 +135,38 @@ public class ClientController : Controller
             return RedirectToAction(nameof(Index));
         }
     }
+    //[HttpPost]
+    //[ValidateAntiForgeryToken]
+    //public async Task<IActionResult> UpdateAvatar(Guid clientId, IFormFile? avatarFile)
+    //{
+    //    var avatar = avatarFile != null
+    //        ? await FileHelper.CreateDTOFromUploadedFileAsync<AvatarDTO>(avatarFile)
+    //        : null;
+
+    //    await _clientService.AvatarUpdateAsync(clientId, avatar);
+
+    //    TempData["Message"] = "Avatar updated successfully.";
+    //    return RedirectToAction(nameof(Details), new { id = clientId });
+    //}
+
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> UpdateAvatar(Guid clientId, IFormFile? avatarFile)
+    public async Task<IActionResult> UpdateAvatar(Guid associatedRecordId, IFormFile? avatarFile)
     {
-        var avatar = avatarFile != null
-            ? await FileHelper.CreateDTOFromUploadedFileAsync<AvatarDTO>(avatarFile)
-            : null;
+        if (avatarFile != null)
+        {
+            var avatarDto = await FileHelper.CreateDTOFromUploadedFileAsync<AvatarDTO>(avatarFile);
+            avatarDto.AssociatedRecordId = associatedRecordId;
+            avatarDto.ObjectTypeId = (int)MediaLib.ObjectType.Client; // Замените на нужный тип
 
-        await _clientService.AvatarUpdateAsync(clientId, avatar);
+            await _avatarService.SetAvatarAsync(avatarDto);
+        }
+        else
+        {
+            await _avatarService.RemoveAvatarAsync(associatedRecordId);
+        }
 
-        TempData["Message"] = "Avatar updated successfully.";
-        return RedirectToAction(nameof(Details), new { id = clientId });
+        return RedirectToAction("Details", new { id = associatedRecordId });
     }
 
 }

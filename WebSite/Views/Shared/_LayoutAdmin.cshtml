@@ -10,7 +10,7 @@
 <body >
     <header class="main-header">
         @await Html.PartialAsync("_TopBar")
-        @await Html.PartialAsync("_NavBar", new { isAdmin = true }) <!-- Передаем информацию о роли -->
+        @await Html.PartialAsync("_NavBarAdmin", new { isAdmin = true }) <!-- Передаем информацию о роли -->
     </header>
 
     <div class="container">
