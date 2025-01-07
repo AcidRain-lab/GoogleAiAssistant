@@ -1,9 +1,10 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Diagnostics;
 using WebSite.Models;
 using WebAuthCoreBLL.SecureByRoleClasses;
+using MediaLib.Services;
 
 namespace WebSite.Controllers.MVC
 {
@@ -13,19 +14,58 @@ namespace WebSite.Controllers.MVC
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
+        private readonly AvatarService _avatarService;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ILogger<HomeController> logger, AvatarService avatarService)
         {
             _logger = logger;
+            _avatarService = avatarService;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             ViewData["IsAuthenticated"] = User.Identity?.IsAuthenticated ?? false;
             ViewData["UserName"] = HttpContext.Session.GetString("UserName");
             ViewData["UserRole"] = HttpContext.Session.GetString("UserRole");
+
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                try
+                {
+                    // Получаем GUID текущего пользователя из claims
+                    var userIdClaim = User.FindFirst("UserId")?.Value;
+
+                    if (userIdClaim == null)
+                    {
+                        throw new Exception("UserId claim is missing.");
+                    }
+
+                    Guid userId = Guid.Parse(userIdClaim);
+
+                    // Загружаем аватар пользователя
+                    var avatar = await _avatarService.GetAvatarAsync(userId);
+
+                    // Устанавливаем Base64 строку для отображения аватара
+                    ViewBag.UserAvatar = avatar?.Base64Image != null
+                        ? $"data:image/{avatar.Extension};base64,{avatar.Base64Image}"
+                        : "/images/default-avatar.png";
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to load user avatar.");
+                    ViewBag.UserAvatar = "/images/default-avatar.png"; // Устанавливаем аватар по умолчанию в случае ошибки
+                }
+            }
+            else
+            {
+                // Устанавливаем дефолтную картинку для неавторизованных пользователей
+                ViewBag.UserAvatar = "/images/default-avatar.png";
+            }
+
             return View();
         }
+
+
 
         public IActionResult Privacy()
         {

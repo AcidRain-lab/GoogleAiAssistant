@@ -88,4 +88,22 @@ footer {
     width: 100%;
     background-color: #00473d; /* Зеленый фон */
 }
+.avatar-container {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Расстояние между аватаром и кнопкой */
+}
 
+.avatar-img {
+    width: 40px; /* Размер аватара */
+    height: 40px;
+    border-radius: 50%; /* Круглый аватар */
+    object-fit: cover; /* Обрезка по центру */
+    border: 2px solid #ffffff; /* Белая рамка */
+}
+
+.btn {
+    padding: 5px 10px;
+    font-size: 14px;
+    border-radius: 5px;
+}

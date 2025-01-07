@@ -2,10 +2,21 @@
     <a class="navbar-brand text-dark" asp-area="" asp-controller="Home" asp-action="Index">Mega Bank</a>
     @if (User.Identity?.IsAuthenticated ?? false)
     {
-        <a class="btn btn-warning text-dark" asp-area="" asp-controller="Auth" asp-action="Logout">Logout</a>
+        <div class="avatar-container">
+            <!-- Аватар авторизованного пользователя -->
+            <a href="@Url.Action("Details", "Client", new { id = User.FindFirst("UserId")?.Value })" class="avatar-link">
+                <img src="@ViewBag.UserAvatar" class="avatar-img" alt="User Avatar">
+            </a>
+            <a class="btn btn-warning text-dark" asp-area="" asp-controller="Auth" asp-action="Logout">Logout</a>
+        </div>
     }
     else
     {
-        <a class="btn btn-warning text-dark" asp-area="" asp-controller="Auth" asp-action="LoginBasic">Login</a>
+        <div class="avatar-container">
+            <a href="@Url.Action("LoginBasic", "Auth")" class="avatar-link">
+                <img src="/images/default-avatar.png" class="avatar-img" alt="Default Avatar">
+            </a>
+            <a class="btn btn-warning text-dark" asp-area="" asp-controller="Auth" asp-action="LoginBasic">Login</a>
+        </div>
     }
 </div>

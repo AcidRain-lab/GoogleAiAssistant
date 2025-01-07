@@ -1,5 +1,8 @@
 ﻿@model IEnumerable<WebObjectsBLL.DTO.BankAccountDTO>
 
+<link rel="stylesheet" href="~/css/side_bar.css" asp-append-version="true" />
+<script src="~/js/bank_account.js" asp-append-version="true"></script>
+
 <table class="table table-bordered">
     <thead>
         <tr>
@@ -11,7 +14,7 @@
     <tbody>
         @foreach (var account in Model)
         {
-            <tr>
+            <tr class="clickable-row" onclick="window.location.href='/BankAccount/Details?AccountId=@account.Id'">
                 <td>@account.AccountNumber</td>
                 <td>@account.AccountName</td>
                 <td>@account.Balance.ToString("C")</td>
