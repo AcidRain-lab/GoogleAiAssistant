@@ -15,5 +15,15 @@ namespace WebObjectsBLL.DTO
         public decimal Balance { get; set; }
         public int BankCurrencyId { get; set; }
         public bool IsFop { get; set; }
+
+        // Связанные карты
+        public List<BankCardDTO> BankCards { get; set; } = new();
+
+        // Информация о клиенте
+        public ClientDTO Client { get; set; } = null!;
+
+        // Добавляем свойства для заранее вычисленных данных
+        public string ClientFullName { get; set; } = null!;
+        public List<string> LinkedCardInfo { get; set; } = new();
     }
 }

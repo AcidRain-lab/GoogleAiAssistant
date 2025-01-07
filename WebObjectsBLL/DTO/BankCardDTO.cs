@@ -14,7 +14,7 @@ namespace WebObjectsBLL.DTO
         public Guid CardTypeId { get; set; } // Добавлено свойство
         public decimal CreditLimit { get; set; }
         public bool IsPrimary { get; set; }
-        public bool AllowExternalTransfers { get; set; }
+        public bool AllowExternalTransfers { get; set; }public decimal Balance { get; set; }
     }
 
 }
