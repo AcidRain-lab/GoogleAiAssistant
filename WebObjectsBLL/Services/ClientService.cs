@@ -105,5 +105,39 @@ namespace WebObjectsBLL.Services
             _context.Clients.Remove(client);
             await _context.SaveChangesAsync();
         }
+
+
+        public async Task<ClientDetailDTO?> GetClientByUserIdAsync(Guid userId)
+        {
+            var client = await _context.Clients
+                //.Include(c => c.Avatar) // Загрузка аватара, если он связан
+                .FirstOrDefaultAsync(c => c.UserId == userId);
+
+            if (client == null)
+                return null;
+
+            return new ClientDetailDTO
+            {
+                Id = client.Id,
+                FirstName = client.FirstName,
+                LastName = client.LastName,
+                Email = client.Email,
+                Phone = client.Phone,
+                BirthDate = client.BirthDate?.ToDateTime(TimeOnly.MinValue),
+                PassportData = client.PassportData,
+                TaxId = client.TaxId,
+                //IsActive = client.IsActive,
+                //Avatar = client.Avatar != null ? new AvatarDTO
+                //{
+                //    Id = client.Avatar.AssociatedRecordId,
+                //    Name = client.Avatar.Name,
+                //    Extension = client.Avatar.Extension,
+                //    Base64Image = client.Avatar.Content != null
+                //        ? Convert.ToBase64String(client.Avatar.Content)
+                //        : null
+                //} : null
+            };
+        }
+
     }
 }
