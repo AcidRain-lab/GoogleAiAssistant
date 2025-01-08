@@ -23,22 +23,7 @@
     </div>
 
     <!-- Avatar Management -->
-    <hr />
-    <h4>Avatar</h4>
-    @if (Model.Avatar != null && Model.Avatar.Content != null)
-    {
-        <div class="mb-3">
-            <img src="data:image/png;base64,@Convert.ToBase64String(Model.Avatar.Content)" alt="Avatar" class="img-thumbnail" style="max-width: 150px;" />
-            <div class="form-check">
-                <input type="checkbox" name="AvatarToDelete" value="@Model.Avatar.Id" class="form-check-input" />
-                <label class="form-check-label">Delete Avatar</label>
-            </div>
-        </div>
-    }
-    <div class="form-group">
-        <label>Upload New Avatar</label>
-        <input type="file" name="avatarFile" class="form-control" />
-    </div>
+    <partial name="_AvatarBlockPartial" model="Model.Avatar" />
 
     <!-- Media Files Management -->
     <hr />
