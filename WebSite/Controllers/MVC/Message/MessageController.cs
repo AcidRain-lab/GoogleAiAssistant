@@ -19,8 +19,9 @@ namespace WebSite.Controllers.MVC
         {
             var messages = await _messageService.GetByUserIdAsync(userId);
             ViewBag.UserId = userId;
-            return View(messages);
+            return PartialView("Index", messages); // Частичное представление
         }
+
 
         public IActionResult Add(Guid userId)
         {

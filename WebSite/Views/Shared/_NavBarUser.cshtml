@@ -1,0 +1,44 @@
+﻿<nav class="navbar navbar-expand-sm box-shadow">
+    <div class="container-fluid">
+        <div class="navbar-collapse collapse d-sm-inline-flex justify-content-center">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" asp-area="" asp-controller="CardTypes" asp-action="Index">Картки</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" asp-area="" asp-controller="DepositTypes" asp-action="Index">Депозити</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" asp-area="" asp-controller="CreditTypes" asp-action="Index">Кредити</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">ФОП</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Послуги</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Контакти</a>
+                </li>
+                @if (User.Identity?.IsAuthenticated ?? false)
+                {
+                    <div class="avatar-container">
+                        <a href="@Url.Action("Details", "Client", new { id = ViewContext.HttpContext.Session.GetString("ActiveClientId") })" class="avatar-link">
+                            <img src="@ViewBag.UserAvatar" class="avatar-img" alt="User Avatar" />
+                        </a>
+                        <a class="btn btn-warning text-dark" asp-area="" asp-controller="Auth" asp-action="Logout">Logout</a>
+                    </div>
+                }
+                else
+                {
+                    <div class="avatar-container">
+                        <a href="@Url.Action("LoginBasic", "Auth")" class="avatar-link">
+                            <img src="/images/default-avatar.png" class="avatar-img" alt="Default Avatar" />
+                        </a>
+                        <a class="btn btn-warning text-dark" asp-area="" asp-controller="Auth" asp-action="LoginBasic">Login</a>
+                    </div>
+                }
+            </ul>
+        </div>
+    </div>
+</nav>

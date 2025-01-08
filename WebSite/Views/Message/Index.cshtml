@@ -1,17 +1,10 @@
 @model IEnumerable<WebObjectsBLL.DTO.MessageDTO>
 
-@{
-    ViewData["Title"] = "Messages";
-}
-
-<h2>Messages</h2>
-
 <table class="table table-bordered">
     <thead>
         <tr>
             <th>Content</th>
             <th>Created Date</th>
-            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -20,18 +13,7 @@
             <tr>
                 <td>@message.Content</td>
                 <td>@message.CreatedDate?.ToShortDateString()</td>
-                <td>
-                    <a asp-action="Edit" asp-route-id="@message.Id" class="btn btn-warning btn-sm">Edit</a>
-                    <form asp-action="Delete" method="post" class="d-inline">
-                        <input type="hidden" name="id" value="@message.Id" />
-                        <input type="hidden" name="userId" value="@message.UserId" />
-                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                    </form>
-                </td>
             </tr>
         }
     </tbody>
 </table>
-
-<a asp-action="Add" asp-route-userId="@ViewBag.ClientId" class="btn btn-primary">Add New Message</a>
-<a asp-action="Index" asp-controller="Client" class="btn btn-secondary">Back to Clients</a>

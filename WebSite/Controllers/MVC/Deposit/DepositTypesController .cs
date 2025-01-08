@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using MediaLib.DTO;
 using MediaLib.Helpers;
 using MediaLib.Services;
@@ -15,13 +14,16 @@ namespace WebSite.Controllers.MVC.DepositType
     public class DepositTypesController : Controller
     {
         private readonly DepositTypeService _depositTypeService;
+        private readonly DepositTermService _depositTermService;
         private readonly DocumentService _documentService;
 
         public DepositTypesController(
             DepositTypeService depositTypeService,
+            DepositTermService depositTermService,
             DocumentService documentService)
         {
             _depositTypeService = depositTypeService;
+            _depositTermService = depositTermService;
             _documentService = documentService;
         }
 
@@ -33,13 +35,12 @@ namespace WebSite.Controllers.MVC.DepositType
         [HttpGet("")]
         public async Task<IActionResult> Index()
         {
-            var depositTypes = await _depositTypeService.GetAllWithDetailsAsync(); // Используем метод, который возвращает детальную информацию
+            var depositTypes = await _depositTypeService.GetAllWithDetailsAsync();
             return View(depositTypes);
         }
 
-
         [HttpGet("Add")]
-        public async Task<IActionResult> Add()
+        public IActionResult Add()
         {
             return View();
         }
@@ -53,9 +54,7 @@ namespace WebSite.Controllers.MVC.DepositType
             List<IFormFile>? documentFiles)
         {
             if (!ModelState.IsValid)
-            {
                 return View(depositTypeDto);
-            }
 
             var ownerId = GetOwnerId();
 
@@ -74,51 +73,53 @@ namespace WebSite.Controllers.MVC.DepositType
             if (depositType == null)
                 return NotFound();
 
+            var terms = await _depositTermService.GetByDepositTypeIdAsync(id);
+            ViewBag.DepositTerms = terms.OrderBy(t => t.TermMonths).ToList();
             return View(depositType);
         }
 
         [HttpPost("Edit/{id}")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(
-            DepositTypeDetailDTO depositTypeDto,
-            IFormFile? avatarFile,
-            List<IFormFile>? mediaFiles,
-            List<IFormFile>? documentFiles,
-            Guid? PrimaryMediaId,
-            List<Guid>? MediaToDelete,
-            Guid? PrimaryDocumentId,
-            List<Guid>? DocumentsToDelete)
+     DepositTypeDetailDTO depositTypeDto,
+     IFormFile? avatarFile,
+     List<IFormFile>? mediaFiles,
+     List<IFormFile>? documentFiles,
+     Guid? primaryMediaId,
+     List<Guid>? mediaToDelete,
+     Guid? primaryDocumentId,
+     List<Guid>? documentsToDelete)
         {
             if (!ModelState.IsValid)
-            {
                 return View(depositTypeDto);
-            }
 
             var ownerId = GetOwnerId();
 
             var avatar = await FileHelper.CreateDTOFromUploadedFileAsync<AvatarDTO>(avatarFile);
 
+            // Обновляем только тип депозита и связанные медиа и документы
             await _depositTypeService.UpdateAsync(
                 depositTypeDto,
                 avatar,
                 mediaFiles,
                 documentFiles,
-                PrimaryMediaId,
-                MediaToDelete,
-                PrimaryDocumentId,
-                DocumentsToDelete,
+                primaryMediaId,
+                mediaToDelete,
+                primaryDocumentId,
+                documentsToDelete,
                 ownerId);
 
+            TempData["Message"] = "Deposit Type updated successfully.";
             return RedirectToAction(nameof(Index));
         }
 
-        [HttpPost]
+        [HttpPost("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(Guid id)
         {
             await _depositTypeService.DeleteAsync(id);
             TempData["Message"] = $"Deposit Type with ID {id} deleted successfully.";
-            return RedirectToAction("Index");
+            return RedirectToAction(nameof(Index));
         }
 
         [HttpGet("Details/{id}")]

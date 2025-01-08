@@ -1,162 +1,147 @@
-﻿@model WebObjectsBLL.DTO.CardTypeDetailDTO
+﻿@model WebObjectsBLL.DTO.DepositTypeDetailDTO
 
-<h1>Редактировать тип карты</h1>
+@{
+    ViewData["Title"] = "Edit Deposit Type";
+}
+
+<h2>@ViewData["Title"]</h2>
 
 <form asp-action="Edit" method="post" enctype="multipart/form-data">
     @Html.AntiForgeryToken()
     <input type="hidden" asp-for="Id" />
 
+    <!-- Deposit Type Details -->
     <div class="form-group">
-        <label asp-for="Name" class="control-label">Название</label>
-        <input asp-for="Name" class="form-control" />
-        <span asp-validation-for="Name" class="text-danger"></span>
+        <label asp-for="DepositName" class="control-label">Name</label>
+        <input asp-for="DepositName" class="form-control" />
+        <span asp-validation-for="DepositName" class="text-danger"></span>
     </div>
-
     <div class="form-group">
-        <label asp-for="Description" class="control-label">Описание</label>
+        <label asp-for="Description" class="control-label">Description</label>
         <textarea asp-for="Description" class="form-control"></textarea>
         <span asp-validation-for="Description" class="text-danger"></span>
     </div>
 
-    <div class="form-group">
-        <label asp-for="PaymentSystemTypeId" class="control-label">Платежная система</label>
-        <select asp-for="PaymentSystemTypeId" class="form-control" asp-items="ViewBag.PaymentSystemTypes"></select>
-        <span asp-validation-for="PaymentSystemTypeId" class="text-danger"></span>
-    </div>
+    <!-- Avatar Management -->
+    <partial name="_AvatarBlockPartial" model="Model.Avatar" />
 
-    <div class="form-group">
-        <label>Текущий аватар</label>
-        @if (Model.Avatar != null && Model.Avatar.Content != null)
-        {
-            <div class="mb-3">
-                <img src="data:image/png;base64,@Convert.ToBase64String(Model.Avatar.Content)" alt="Avatar" style="max-width: 150px; max-height: 150px; border: 1px solid #ccc;" />
-            </div>
-        }
-        else
-        {
-            <p>Аватар не загружен.</p>
-        }
-        <input type="file" name="avatarFile" class="form-control" />
-    </div>
-
-    <div class="form-group">
-        <label>Добавить медиа файлы</label>
-        <input type="file" name="mediaFiles" class="form-control" multiple />
-    </div>
-
-    <div class="form-group">
-        <label>Существующие медиа файлы</label>
-        @if (Model.MediaFiles != null && Model.MediaFiles.Any())
-        {
-            <div class="row">
-                @foreach (var media in Model.MediaFiles)
-                {
-                    <div class="col-md-3 text-center mb-3">
-                        @if (!string.IsNullOrEmpty(media.Base64Image))
-                        {
-                            <div>
-                                <img src="data:image/jpeg;base64,@media.Base64Image" alt="@media.Name" style="max-width: 100%; max-height: 150px; border: 1px solid #ddd;" />
-                            </div>
-                        }
-                        else
-                        {
-                            <div>
-                                <a href="@Url.Action("DownloadMedia", "CardTypes", new { id = media.Id })">@media.Name</a>
-                            </div>
-                        }
-
-                        <div class="form-check mt-2">
-                            <input class="form-check-input" type="radio" name="PrimaryMediaId" value="@media.Id" @(media.IsPrime ? "checked" : "") />
-                            <label class="form-check-label">Установить как основное</label>
-                        </div>
-
-                        <div>
-                            <input type="checkbox" name="MediaToDelete" value="@media.Id" />
-                            <label>Удалить</label>
-                        </div>
+    <!-- Media Files Management -->
+    <hr />
+    <h4>Media Files</h4>
+    @if (Model.MediaFiles != null && Model.MediaFiles.Any())
+    {
+        <div class="row">
+            @foreach (var media in Model.MediaFiles)
+            {
+                <div class="col-md-3 text-center mb-3">
+                    @if (!string.IsNullOrEmpty(media.Base64Image))
+                    {
+                        <img src="data:image/jpeg;base64,@media.Base64Image" alt="@media.Name" class="img-thumbnail" style="max-width: 150px;" />
+                    }
+                    <div class="form-check mt-2">
+                        <input class="form-check-input" type="radio" name="PrimaryMediaId" value="@media.Id" @(media.IsPrime ? "checked" : "") />
+                        <label class="form-check-label">Set as Primary</label>
                     </div>
-                }
-            </div>
-        }
-        else
-        {
-            <p>Нет прикрепленных медиа файлов.</p>
-        }
-    </div>
-
-    <div class="form-group">
-        <label>Добавить документы</label>
-        <input type="file" name="documentFiles" class="form-control" multiple />
-    </div>
-
-    <div class="form-group">
-        <label>Существующие документы</label>
-        @if (Model.Documents != null && Model.Documents.Any())
-        {
-            <div class="row">
-                @foreach (var document in Model.Documents)
-                {
-                    <div class="col-md-3 text-center mb-3">
-                        <div>
-                            <a href="@Url.Action("DownloadDocument", "CardTypes", new { id = document.Id })">@document.Name</a>
-
-                        </div>
-
-                        <div class="form-check mt-2">
-                            <input class="form-check-input" type="radio" name="PrimaryDocumentId" value="@document.Id" @(document.IsPrime ? "checked" : "") />
-                            <label class="form-check-label">Установить как основное</label>
-                        </div>
-
-                        <div>
-                            <input type="checkbox" name="DocumentsToDelete" value="@document.Id" />
-                            <label>Удалить</label>
-                        </div>
+                    <div>
+                        <input type="checkbox" name="MediaToDelete" value="@media.Id" />
+                        <label>Delete</label>
                     </div>
-                }
-            </div>
-        }
-        else
-        {
-            <p>Нет прикрепленных документов.</p>
-        }
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <p>No media files attached.</p>
+    }
+    <div class="form-group">
+        <label>Upload Media Files</label>
+        <input type="file" name="mediaFiles" multiple class="form-control" />
     </div>
 
-    <button type="submit" class="btn btn-success">Сохранить</button>
-    <a asp-action="Index" class="btn btn-secondary">Отмена</a>
+    <!-- Document Management -->
+    <hr />
+    <h4>Documents</h4>
+    @if (Model.Documents != null && Model.Documents.Any())
+    {
+        <div class="row">
+            @foreach (var document in Model.Documents)
+            {
+                <div class="col-md-3 text-center mb-3">
+                    <a href="@Url.Action("DownloadDocument", "DepositTypes", new { id = document.Id })">@document.Name</a>
+                    <div class="form-check mt-2">
+                        <input class="form-check-input" type="radio" name="PrimaryDocumentId" value="@document.Id" @(document.IsPrime ? "checked" : "") />
+                        <label class="form-check-label">Set as Primary</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" name="DocumentsToDelete" value="@document.Id" />
+                        <label>Delete</label>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <p>No documents attached.</p>
+    }
+    <div class="form-group">
+        <label>Upload Documents</label>
+        <input type="file" name="documentFiles" multiple class="form-control" />
+    </div>
+
+    <!-- Deposit Terms -->
+    <hr />
+    <h4>Deposit Terms</h4>
+    @if (Model.DepositTerms != null && Model.DepositTerms.Any())
+    {
+        var groupedTerms = Model.DepositTerms
+        .GroupBy(t => t.Currency)
+        .OrderBy(g => g.Key);
+
+        foreach (var group in groupedTerms)
+        {
+            <h5>@group.Key</h5>
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>Term (Months)</th>
+                        <th>Interest Rate (%)</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var term in group.OrderBy(t => t.TermMonths))
+                    {
+                        <tr>
+                            <td>@term.TermMonths</td>
+                            <td>@term.InterestRate</td>
+                            <td>
+                                <a asp-controller="DepositTerms"
+                                   asp-action="Edit"
+                                   asp-route-id="@term.Id"
+                                   asp-route-depositTypeId="@Model.Id"
+                                   asp-route-returnUrl="@Url.Action("Edit", "DepositTypes", new { id = Model.Id })"
+                                   class="btn btn-sm btn-warning">Edit</a>
+                                <button class="btn btn-sm btn-danger" onclick="showDeleteModal('@term.Id')">Delete</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    }
+    else
+    {
+        <p>No deposit terms available.</p>
+    }
+    <a asp-controller="DepositTerms"
+       asp-action="Add"
+       asp-route-depositTypeId="@Model.Id"
+       asp-route-returnUrl="@Url.Action("Edit", "DepositTypes", new { id = Model.Id })"
+       class="btn btn-success btn-sm">Add Term</a>
+
+    <hr />
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
 </form>
-
-@section Scripts {
-    <script>
-        function removeMedia(mediaId) {
-            if (confirm('Вы уверены, что хотите удалить этот медиа файл?')) {
-                $.ajax({
-                    url: '@Url.Action("DeleteMedia", "CardTypes")',
-                    type: 'POST',
-                    data: { id: mediaId },
-                    success: function () {
-                        location.reload();
-                    },
-                    error: function () {
-                        alert('Ошибка при удалении медиа файла.');
-                    }
-                });
-            }
-        }
-
-        function removeDocument(documentId) {
-            if (confirm('Вы уверены, что хотите удалить этот документ?')) {
-                $.ajax({
-                    url: '@Url.Action("DeleteDocument", "CardTypes")',
-                    type: 'POST',
-                    data: { id: documentId },
-                    success: function () {
-                        location.reload();
-                    },
-                    error: function () {
-                        alert('Ошибка при удалении документа.');
-                    }
-                });
-            }
-        }
-    </script>
-}

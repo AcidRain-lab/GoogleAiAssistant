@@ -1,36 +1,73 @@
 ﻿@model WebObjectsBLL.DTO.ClientDetailDTO
+<link rel="stylesheet" href="~/css/client_details.css" asp-append-version="true" />
+<script src="~/js/client_scripts.js" asp-append-version="true"></script>
 
-@{
-    ViewData["Title"] = "Client Details";
-}
+<div class="container mt-4">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3">
+            <nav class="nav flex-column sidebar-nav">
+                <a class="nav-link" href="#" data-url="/BankAccount/Index?clientId=@Model.Id" onclick="loadContent(this); return false;" id="default-link">Payment Accounts</a>
+                <a class="nav-link" href="#" data-url="/BankCard/Index?clientId=@Model.Id" onclick="loadContent(this); return false;">Bank Cards</a>
+                <a class="nav-link" href="#" data-url="/Credit/Index?clientId=@Model.Id" onclick="loadContent(this); return false;">Active Credits</a>
+                <a class="nav-link" href="#" data-url="/Deposit/Index?clientId=@Model.Id" onclick="loadContent(this); return false;">Active Deposits</a>
+                <a class="nav-link" href="#" data-url="/Cashback/Index?clientId=@Model.Id" onclick="loadContent(this); return false;">Cashback</a>
+                <a class="nav-link" href="#" data-url="/RegularPayment/Index?clientId=@Model.Id" onclick="loadContent(this); return false;">Regular Payments</a>
+                <a class="nav-link" href="#" data-url="/Message/Index?userId=@Model.Id" onclick="loadContent(this); return false;">Messages</a>
+            </nav>
+        </div>
 
-<h2>Client Details</h2>
+        <!-- Client Details and Dynamic Content -->
+        <div class="col-md-9">
+            <div class="row">
+                <!-- Dynamic Content -->
+                <div class="col-md-12 col-lg-7 mb-3">
+                    <div id="dynamic-content" class="bg-white p-3 rounded shadow-sm">
+                        <!-- AJAX content will be loaded here -->
+                        <p class="text-muted">Loading content...</p>
+                    </div>
+                </div>
 
-<div class="card">
-    <div class="card-header bg-primary text-white">
-        <h4>@Model.FirstName @Model.LastName</h4>
+                <!-- Client Details -->
+                <div class="col-md-12 col-lg-5">
+                    <!-- Avatar Section -->
+                       @await Html.PartialAsync("_AvatarBlockPartial", Model.Avatar, new ViewDataDictionary(ViewData)
+                       {
+                           ["ControllerName"] = "Client", // Или другой контроллер
+                           ["AssociatedRecordId"] = Model.Id
+                       })
+
+                    <!-- Client Information Card -->
+                    <div class="card mt-4 client-details-card">
+                        <div class="card-body">
+                            <h3 class="mb-3">Client Details</h3>
+                            <dl class="row">
+                                <dt class="col-sm-4">Email</dt>
+                                <dd class="col-sm-8">@(!string.IsNullOrEmpty(Model.Email) ? Model.Email : "Not specified")</dd>
+
+                                <dt class="col-sm-4">Phone</dt>
+                                <dd class="col-sm-8">@(!string.IsNullOrEmpty(Model.Phone) ? Model.Phone : "Not specified")</dd>
+
+                                <dt class="col-sm-4">Birth Date</dt>
+                                <dd class="col-sm-8">@Model.BirthDate?.ToShortDateString() ?? "Not specified"</dd>
+
+                                <dt class="col-sm-4">Passport</dt>
+                                <dd class="col-sm-8">@(!string.IsNullOrEmpty(Model.PassportData) ? Model.PassportData : "Not specified")</dd>
+
+                                <dt class="col-sm-4">Tax ID</dt>
+                                <dd class="col-sm-8">@(!string.IsNullOrEmpty(Model.TaxId) ? Model.TaxId : "Not specified")</dd>
+
+                                <dt class="col-sm-4">Is Active</dt>
+                                <dd class="col-sm-8">@Model.IsActive ? "Yes" : "No"</dd>
+                            </dl>
+                            <div class="mt-4 d-flex justify-content-between">
+                                <a class="btn btn-warning" href="/Client/Edit/@Model.Id">Edit</a>
+                                <a class="btn btn-secondary" href="/Client/index">Back to List</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="card-body">
-        <p><strong>Email:</strong> @Model.Email</p>
-        <p><strong>Phone:</strong> @Model.Phone</p>
-        <p><strong>Birth Date:</strong> @(Model.BirthDate.HasValue ? Model.BirthDate.Value.ToShortDateString() : "N/A")</p>
-        <p><strong>Passport Data:</strong> @(string.IsNullOrWhiteSpace(Model.PassportData) ? "N/A" : Model.PassportData)</p>
-        <p><strong>Tax ID:</strong> @(string.IsNullOrWhiteSpace(Model.TaxId) ? "N/A" : Model.TaxId)</p>
-        <p><strong>Is Active:</strong> @(Model.IsActive ? "Yes" : "No")</p>
-    </div>
-</div>
-
-<div class="mt-3 d-flex flex-column">
-    <a asp-controller="BankCard" asp-action="Index" asp-route-clientId="@Model.Id" class="btn btn-secondary mb-2">Bank Cards</a>
-    <a asp-controller="Credit" asp-action="Index" asp-route-clientId="@Model.Id" class="btn btn-secondary mb-2">Active Credits</a>
-    <a asp-controller="Deposit" asp-action="Index" asp-route-clientId="@Model.Id" class="btn btn-secondary mb-2">Active Deposits</a>
-    <a asp-controller="Cashback" asp-action="Index" asp-route-clientId="@Model.Id" class="btn btn-secondary mb-2">Cashback</a>
-    <a asp-controller="RegularPayment" asp-action="Index" asp-route-clientId="@Model.Id" class="btn btn-secondary mb-2">Regular Payments</a>
-    <a asp-controller="Message" asp-action="Index" asp-route-clientId="@Model.Id" class="btn btn-secondary mb-2">Messages</a>
-</div>
-
-
-<div class="mt-3">
-    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Edit</a>
-    <a asp-action="Index" class="btn btn-secondary">Back to List</a>
 </div>

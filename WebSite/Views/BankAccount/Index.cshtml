@@ -1,10 +1,7 @@
 ﻿@model IEnumerable<WebObjectsBLL.DTO.BankAccountDTO>
 
-@{
-    ViewData["Title"] = "Bank Accounts";
-}
-
-<h2>Bank Accounts</h2>
+<link rel="stylesheet" href="~/css/side_bar.css" asp-append-version="true" />
+<script src="~/js/bank_account.js" asp-append-version="true"></script>
 
 <table class="table table-bordered">
     <thead>
@@ -12,29 +9,16 @@
             <th>Account Number</th>
             <th>Account Name</th>
             <th>Balance</th>
-            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
         @foreach (var account in Model)
         {
-            <tr>
+            <tr class="clickable-row" onclick="window.location.href='/BankAccount/Details?AccountId=@account.Id'">
                 <td>@account.AccountNumber</td>
                 <td>@account.AccountName</td>
                 <td>@account.Balance.ToString("C")</td>
-                <td>
-                    <a asp-action="Edit" asp-route-id="@account.Id" class="btn btn-warning btn-sm">Edit</a>
-                    <form asp-action="Delete" method="post" class="d-inline">
-                        <input type="hidden" name="clientId" value="@ViewBag.ClientId" />
-                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                    </form>
-                </td>
             </tr>
         }
     </tbody>
 </table>
-
-<div class="d-flex justify-content-between mt-3">
-    <a asp-action="Add" asp-route-clientId="@ViewBag.ClientId" class="btn btn-primary">Open New Account</a>
-    <a asp-action="Index" asp-controller="Client" class="btn btn-secondary">Back to Clients</a>
-</div>

@@ -15,11 +15,21 @@ namespace WebSite.Controllers.MVC
             _creditService = creditService;
         }
 
+        /* public async Task<IActionResult> Index(Guid clientId)
+         {
+             var credits = await _creditService.GetByClientIdAsync(clientId);
+             ViewBag.ClientId = clientId;
+             return View(credits);
+         }*/
+
         public async Task<IActionResult> Index(Guid clientId)
         {
+            if (clientId == Guid.Empty)
+                return BadRequest("Client ID is required.");
+
             var credits = await _creditService.GetByClientIdAsync(clientId);
             ViewBag.ClientId = clientId;
-            return View(credits);
+            return PartialView("Index", credits); // Используйте PartialView вместо View
         }
 
         public IActionResult Add(Guid clientId)

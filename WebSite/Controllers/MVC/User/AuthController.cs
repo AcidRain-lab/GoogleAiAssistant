@@ -1,24 +1,24 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication;
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using WebLoginBLL.DTO;
 using WebLoginBLL.Services;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
+using WebObjectsBLL.Services;
 
 namespace WebSite.Controllers.MVC.User
 {
     [AllowAnonymous]
-    [Controller]
     public class AuthController : Controller
     {
         private readonly AuthService _authService;
         private readonly UserService _userService;
+        private readonly ClientService _clientService; // Для работы с клиентами
 
-        public AuthController(AuthService authService, UserService userService)
+        public AuthController(AuthService authService, UserService userService, ClientService clientService)
         {
             _authService = authService;
             _userService = userService;
+            _clientService = clientService;
         }
 
         [HttpGet]
@@ -40,8 +40,26 @@ namespace WebSite.Controllers.MVC.User
                 return View(model);
             }
 
-            // Используем метод сервиса для установки куков и записи в сессию
+            // Устанавливаем аутентификацию через сервис
             await _authService.SetCookieAuthentication(user);
+
+            // Получаем клиента, связанного с пользователем
+            var client = await _clientService.GetClientByUserIdAsync(user.Id);
+
+            // Сохраняем ID клиента в сессию
+            if (client != null)
+            {
+                HttpContext.Session.SetString("ActiveClientId", client.Id.ToString());
+            }
+
+            return RedirectToAction("Index", "Home");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Logout()
+        {
+            // Очищаем сессию и куки через сервис
+            await _authService.Logout();
 
             return RedirectToAction("Index", "Home");
         }
@@ -50,18 +68,6 @@ namespace WebSite.Controllers.MVC.User
         public IActionResult AccessDenied()
         {
             return View();
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> Logout()
-        {
-       
-
-            // Выходим из системы
-            await _authService.Logout();
-
-            // Перенаправляем на главную страницу
-            return RedirectToAction("Index", "Home");
         }
     }
 }

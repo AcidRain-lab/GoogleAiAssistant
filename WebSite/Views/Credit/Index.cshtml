@@ -1,4 +1,4 @@
-﻿@model IEnumerable<WebObjectsBLL.DTO.CreditDTO>
+﻿@* @model IEnumerable<WebObjectsBLL.DTO.CreditDTO>
 
 @{
     ViewData["Title"] = "Credits";
@@ -48,4 +48,32 @@
 <div class="d-flex justify-content-between mt-3">
     <a asp-action="Add" asp-route-clientId="@ViewBag.ClientId" class="btn btn-primary">Add New Credit</a>
     <a asp-action="Index" asp-controller="Client" class="btn btn-secondary mb-3">Back to Clients</a>
-</div>
+</div> *@
+
+@model IEnumerable<WebObjectsBLL.DTO.CreditDTO>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Amount</th>
+            <th>Currency</th>
+            <th>Interest Rate</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Is Active</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var credit in Model)
+        {
+            <tr>
+                <td>@credit.CreditAmount</td>
+                <td>@credit.Currency</td>
+                <td>@credit.InterestRate</td>
+                <td>@credit.StartDate.ToShortDateString()</td>
+                <td>@credit.EndDate.ToShortDateString()</td>
+                <td>@(credit.IsActive ? "Yes" : "No")</td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -1,5 +1,4 @@
-﻿// BankAccountService.cs
-using AutoMapper;
+﻿using AutoMapper;
 using DAL.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -31,73 +30,46 @@ namespace WebObjectsBLL.Services
             return _mapper.Map<IEnumerable<BankAccountDTO>>(accounts);
         }
 
-        public async Task<BankAccountDTO> GetByIdAsync(Guid id)
+        public async Task<BankAccountDTO?> GetAccountDetailsAsync(Guid accountId)
         {
             var account = await _context.BankAccounts
-                .FirstOrDefaultAsync(a => a.Id == id);
+                .Include(a => a.BankCards).ThenInclude(c => c.CardType)
+                .Include(a => a.Client)
+                .FirstOrDefaultAsync(a => a.Id == accountId);
 
-            if (account == null)
-                throw new KeyNotFoundException("Bank account not found");
+            if (account == null) return null;
 
-            return _mapper.Map<BankAccountDTO>(account);
-        }
-
-        public async Task<BankAccountDTO> CreateForClientAsync(Guid clientId, int bankAccountTypeId, int currencyId, string accountName)
-        {
-            // Генерация уникального номера счета
-            var accountNumber = GenerateAccountNumber();
-
-            // Создание объекта BankAccount
-            var newAccount = new BankAccount
+            return new BankAccountDTO
             {
-                Id = Guid.NewGuid(),
-                ClientId = clientId,
-                BankAccountTypeId = bankAccountTypeId,
-                BankCurrencyId = currencyId,
-                AccountName = accountName,
-                AccountNumber = accountNumber,
-                OpenedDate = DateOnly.FromDateTime(DateTime.Now),
-                Balance = 0, // Начальный баланс
-                IsFop = false // Укажите FOP, если необходимо
+                Id = account.Id,
+                AccountNumber = account.AccountNumber,
+                AccountName = account.AccountName,
+                BankAccountTypeId = account.BankAccountTypeId,
+                ClientId = account.ClientId,
+                OpenedDate = account.OpenedDate.ToDateTime(new TimeOnly()),
+                ClosedDate = account.ClosedDate?.ToDateTime(new TimeOnly()),
+                ContractTerms = account.ContractTerms,
+                Balance = account.Balance,
+                BankCurrencyId = account.BankCurrencyId,
+                IsFop = account.IsFop,
+                BankCards = account.BankCards.Select(card => new BankCardDTO
+                {
+                    Id = card.Id,
+                    CardNumber = card.CardNumber,
+                    CardTypeName = card.CardType.Name,
+                    CreditLimit = card.CreditLimit
+                }).ToList(),
+                Client = new ClientDTO
+                {
+                    Id = account.Client.Id,
+                    Email = account.Client.Email,
+                    Phone = account.Client.Phone
+                },
+                ClientFullName = $"{account.Client.FirstName} {account.Client.LastName}"
             };
-
-            // Добавление счета в базу данных
-            _context.BankAccounts.Add(newAccount);
-            await _context.SaveChangesAsync();
-
-            // Возврат созданного объекта в виде DTO
-            return _mapper.Map<BankAccountDTO>(newAccount);
         }
 
-        public async Task UpdateAsync(BankAccountDTO accountDto)
-        {
-            var account = await _context.BankAccounts.FirstOrDefaultAsync(a => a.Id == accountDto.Id);
-            if (account == null)
-                throw new KeyNotFoundException("Bank account not found");
 
-            _mapper.Map(accountDto, account);
-            await _context.SaveChangesAsync();
-        }
 
-        public async Task DeleteAsync(Guid id)
-        {
-            var account = await _context.BankAccounts.FirstOrDefaultAsync(a => a.Id == id);
-            if (account == null)
-                throw new KeyNotFoundException("Bank account not found");
-
-            _context.BankAccounts.Remove(account);
-            await _context.SaveChangesAsync();
-        }
-
-        private string GenerateAccountNumber()
-        {
-            return $"UA{new Random().Next(100000000, 999999999)}";
-        }
-
-        public async Task<string> GetClientNameAsync(Guid clientId)
-        {
-            var client = await _context.Clients.FirstOrDefaultAsync(c => c.Id == clientId);
-            return client != null ? $"{client.FirstName} {client.LastName}" : "Unknown Client";
-        }
     }
 }

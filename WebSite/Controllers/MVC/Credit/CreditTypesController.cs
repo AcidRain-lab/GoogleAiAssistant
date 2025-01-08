@@ -117,5 +117,21 @@ namespace WebSite.Controllers.MVC
             TempData["Message"] = $"Document with ID {documentId} deleted successfully.";
             return RedirectToAction(nameof(Index));
         }
+        [HttpGet("DownloadDocument/{id}")]
+        public async Task<IActionResult> DownloadDocument(Guid id)
+        {
+            var document = await _documentService.GetDocumentByIdAsync(id);
+            if (document == null)
+            {
+                return NotFound("Document not found.");
+            }
+
+            if (document.Content == null)
+            {
+                return BadRequest("Document content is empty.");
+            }
+
+            return File(document.Content, "application/octet-stream", document.Name + document.Extension);
+        }
     }
 }

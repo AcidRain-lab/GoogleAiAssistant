@@ -96,15 +96,17 @@ namespace WebObjectsBLL.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<BankCardDTO>> GetByBankAccountIdAsync(Guid bankAccountId)
+        public async Task<IEnumerable<TransactionDTO>> GetByCardIdAsync(Guid cardId)
         {
-            var cards = await _context.BankCards
-                .Include(c => c.CardType)
-                .Where(c => c.BankAccountId == bankAccountId)
+            var transactions = await _context.BankAccountTransactions
+                .Where(t => t.BankCardId == cardId)
+                .OrderBy(t => t.TransactionDate)
                 .ToListAsync();
-
-            return _mapper.Map<IEnumerable<BankCardDTO>>(cards);
+            Console.WriteLine($"Found {transactions.Count} transactions for cardId: {cardId}");
+            return _mapper.Map<IEnumerable<TransactionDTO>>(transactions);
         }
+
+
 
         private string GenerateAccountNumber()
         {

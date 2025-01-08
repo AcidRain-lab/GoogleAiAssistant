@@ -1,0 +1,45 @@
+﻿@model WebObjectsBLL.DTO.UserDetailDTO
+<link rel="stylesheet" href="~/css/user_details.css" asp-append-version="true" />
+
+<div class="container mt-4">
+    <h2>User Details</h2>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    User Information
+                </div>
+                <div class="card-body">
+                    <p><strong>Username:</strong> @Model.User.UserName</p>
+                    <p><strong>Email:</strong> @Model.User.Email</p>
+                    <p><strong>Role:</strong> @Model.User.RoleName</p>
+                    <p><strong>Status:</strong> @(Model.User.IsActive ? "Active" : "Inactive")</p>
+                </div>
+            </div>
+        </div>
+
+        @if (Model.Client != null)
+        {
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        Bank Client Information
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Full Name:</strong> @Model.Client.FullName</p>
+                        <p><strong>Email:</strong> @Model.Client.Email</p>
+                        <p><strong>Phone:</strong> @Model.Client.Phone</p>
+                        <p><strong>Status:</strong> @(Model.Client.IsActive ? "Active" : "Inactive")</p>
+                        <a class="btn btn-primary mt-3" href="@Url.Action("Details", "Client", new { id = Model.Client.Id })">Go to Client Details</a>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="col-md-6">
+                <p class="text-muted">This user is not associated with any bank client.</p>
+            </div>
+        }
+    </div>
+</div>
